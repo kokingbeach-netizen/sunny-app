@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunny — しくみを見る</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F4F0;
+  --white: #FFFFFF;
+  --black: #1A1A1A;
+  --amber: #F5A623;
+  --amber-dk: #D4880F;
+  --amber-lt: rgba(245,166,35,0.1);
+  --gray: #6B7280;
+  --gray-lt: #EFEFEC;
+  --border: rgba(0,0,0,0.08);
+  --border-md: rgba(0,0,0,0.12);
+  --red: #EF4444;
+  --green: #10B981;
+  --blue: #3B82F6;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--black);
+  font-family: 'Noto Sans JP', sans-serif;
+  padding-bottom: 80px;
+}
+
+/* HERO */
+.hero {
+  padding: 56px 24px 48px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+}
+.hero-badge {
+  display: inline-block;
+  background: var(--amber-lt);
+  border: 1px solid rgba(245,166,35,0.35);
+  color: var(--amber-dk);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 4px;
+  padding: 5px 16px; border-radius: 20px;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(26px, 5.5vw, 44px);
+  font-weight: 900; line-height: 1.25;
+  margin-bottom: 14px;
+}
+.hero h1 em {
+  font-style: normal;
+  border-bottom: 4px solid var(--amber);
+  padding-bottom: 2px;
+}
+.hero-sub {
+  font-size: 14px; color: var(--gray);
+  line-height: 1.9; max-width: 520px;
+  margin: 0 auto 36px;
+}
+.formula-banner {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; flex-wrap: wrap;
+  background: var(--bg);
+  border: 1px solid var(--border-md);
+  border-radius: 16px; padding: 18px 24px;
+  max-width: 640px; margin: 0 auto;
+}
+.fb-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--white);
+  border: 1px solid var(--border-md);
+  border-radius: 10px; padding: 8px 14px;
+  font-size: 13px; white-space: nowrap;
+  font-weight: 500;
+}
+.fb-op { font-size: 18px; color: var(--gray); }
+.fb-result {
+  background: rgba(245,166,35,0.12);
+  border: 2px solid var(--amber);
+  border-radius: 10px; padding: 8px 16px;
+  font-size: 14px; font-weight: 700; color: var(--amber-dk);
+}
+
+/* SECTION */
+.section { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+.section-label {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 4px; color: var(--gray);
+  text-transform: uppercase; text-align: center;
+  margin: 56px 0 32px;
+}
+.section-label span {
+  border-bottom: 2px solid var(--amber);
+  padding-bottom: 4px;
+}
+
+/* STEPS */
+.steps { display: flex; flex-direction: column; gap: 4px; }
+.step-row {
+  display: grid; grid-template-columns: 220px 1fr;
+  background: var(--white);
+  border: 1px solid var(--border-md);
+  border-radius: 16px; overflow: hidden;
+  opacity: 0; transform: translateY(20px);
+  animation: rise 0.5s forwards;
+}
+.step-row:nth-child(1){animation-delay:.05s}
+.step-row:nth-child(2){animation-delay:.15s}
+.step-row:nth-child(3){animation-delay:.25s}
+.step-row:nth-child(4){animation-delay:.35s}
+.step-row:nth-child(5){animation-delay:.45s}
+@keyframes rise { to { opacity: 1; transform: translateY(0); } }
+.step-row.rev { grid-template-columns: 1fr 220px; }
+.step-row.rev .step-illust { order: 2; }
+.step-row.rev .step-info { order: 1; }
+.step-illust {
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 16px; min-height: 180px;
+  border-right: 1px solid var(--border);
+}
+.step-row.rev .step-illust { border-right: none; border-left: 1px solid var(--border); }
+.step-info { padding: 24px 28px; display: flex; flex-direction: column; justify-content: center; }
+.step-num {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px;
+  color: var(--amber-dk); margin-bottom: 8px;
+}
+.step-title { font-size: 17px; font-weight: 700; line-height: 1.4; margin-bottom: 10px; }
+.step-title em { font-style: normal; color: var(--amber-dk); }
+.step-body { font-size: 12px; color: var(--gray); line-height: 1.9; }
+.step-body strong { color: var(--black); }
+.step-tag {
+  display: inline-block; margin-top: 10px;
+  font-size: 10px;
+  background: rgba(59,130,246,0.08);
+  border: 1px solid rgba(59,130,246,0.2);
+  color: var(--blue);
+  padding: 3px 10px; border-radius: 8px;
+}
+.step-tag.warn {
+  background: var(--amber-lt);
+  border-color: rgba(245,166,35,0.3);
+  color: var(--amber-dk);
+}
+
+/* CONNECTOR */
+.connector { display: flex; justify-content: center; padding: 6px 0; }
+.connector-line { width: 2px; height: 28px; background: linear-gradient(to bottom, rgba(245,166,35,0.4), rgba(245,166,35,0.1)); }
+
+/* FORMULA SECTION */
+.formula-section { margin-top: 8px; }
+.formula-card {
+  background: var(--white);
+  border: 1px solid var(--border-md);
+  border-radius: 16px; padding: 28px 32px;
+  margin-bottom: 16px;
+}
+.formula-card h3 {
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 16px; color: var(--black);
+  display: flex; align-items: center; gap: 8px;
+}
+.formula-card h3::before {
+  content: '';
+  display: inline-block; width: 4px; height: 18px;
+  background: var(--amber); border-radius: 2px;
+}
+.formula-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px; line-height: 2;
+  margin-bottom: 12px; overflow-x: auto;
+}
+.formula-block .highlight { color: var(--amber-dk); font-weight: 500; }
+.formula-block .comment { color: var(--gray); font-size: 11px; }
+.formula-desc { font-size: 12px; color: var(--gray); line-height: 1.9; }
+.formula-desc strong { color: var(--black); }
+
+/* DATA TABLE */
+.data-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px; margin-top: 12px;
+}
+.data-table th {
+  background: var(--bg);
+  border-bottom: 2px solid var(--amber);
+  padding: 10px 14px; text-align: left;
+  font-weight: 700; font-size: 11px;
+  color: var(--black);
+}
+.data-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px; color: var(--gray);
+  vertical-align: top; line-height: 1.7;
+}
+.data-table td strong { color: var(--black); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .tag {
+  display: inline-block;
+  background: var(--amber-lt);
+  border: 1px solid rgba(245,166,35,0.25);
+  color: var(--amber-dk);
+  font-size: 10px; padding: 2px 8px; border-radius: 6px;
+  font-family: 'DM Mono', monospace; white-space: nowrap;
+}
+
+/* ACCURACY */
+.accuracy-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-top: 12px;
+}
+.accuracy-block {
+  background: var(--white);
+  border: 1px solid var(--border-md);
+  border-radius: 12px; padding: 18px 20px;
+}
+.accuracy-block.ok { border-top: 3px solid var(--green); }
+.accuracy-block.warn { border-top: 3px solid var(--amber); }
+.accuracy-block.bad { border-top: 3px solid var(--red); }
+.acc-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.acc-list { font-size: 11px; color: var(--gray); line-height: 2.1; }
+
+/* REFS */
+.refs-list { list-style: none; }
+.refs-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--gray); line-height: 1.8;
+}
+.refs-list li:last-child { border-bottom: none; }
+.refs-list li::before {
+  content: '—';
+  color: var(--amber); font-weight: 700; flex-shrink: 0;
+  margin-top: 1px;
+}
+.refs-list strong { color: var(--black); }
+
+/* DISCLAIMER */
+.disclaimer {
+  max-width: 900px; margin: 40px auto 0; padding: 0 20px;
+}
+.disclaimer-inner {
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 14px; padding: 16px 20px;
+  font-size: 12px; color: var(--gray);
+  line-height: 1.9; text-align: center;
+}
+.disclaimer-inner strong { color: var(--red); }
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .step-row, .step-row.rev { grid-template-columns: 1fr; }
+  .step-row.rev .step-illust, .step-row.rev .step-info { order: unset; }
+  .step-illust { border-right: none !important; border-left: none !important; border-bottom: 1px solid var(--border); }
+  .formula-banner { gap: 6px; }
+  .accuracy-grid { grid-template-columns: 1fr; }
+  .formula-card { padding: 20px 16px; }
+}
+.accordion { display: flex; flex-direction: column; gap: 8px; }
+.accordion-item { border: 1px solid var(--border-md); border-radius: 12px; overflow: hidden; background: var(--white); }
+.accordion-item.open { border-color: var(--amber); }
+.accordion-hd { display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; user-select: none; }
+.accordion-hd:hover { background: var(--bg); }
+.accordion-icon { font-size: 22px; width: 32px; text-align: center; flex-shrink: 0; }
+.accordion-name { flex: 1; font-size: 15px; font-weight: 700; color: var(--black); }
+.accordion-arr { font-size: 16px; color: #9CA3AF; transition: transform 0.2s; }
+.accordion-item.open .accordion-arr { transform: rotate(90deg); color: var(--amber); }
+.accordion-body { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
+.accordion-item.open .accordion-body { display: block; }
+.uc-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; margin-top: 14px; }
+.uc-chip { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--amber-lt); color: var(--amber-dk); border: 1px solid rgba(245,166,35,0.3); }
+.uc-chip.special { background: #F0FDF4; color: #15803D; border-color: #86EFAC; }
+.uc-desc { font-size: 13px; color: var(--gray); line-height: 1.8; }
+.uc-feature { background: var(--bg); border-left: 3px solid var(--amber); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-top: 12px; font-size: 12px; color: var(--black); line-height: 1.7; }
+.uc-feature strong { color: var(--amber-dk); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">HOW IT WORKS</div>
+  <h1>なぜ<em>日照率</em>が<br>算出できるのか</h1>
+  <p class="hero-sub">場所・建物・写真・周辺環境の情報から、1年間の日当たりを数値で推定します。それぞれが「なぜ必要か」を図解で説明します。</p>
+  <div class="formula-banner">
+    <div class="fb-pill">📍 場所</div>
+    <div class="fb-op">×</div>
+    <div class="fb-pill">🏢 建物</div>
+    <div class="fb-op">×</div>
+    <div class="fb-pill">📷 窓の写真</div>
+    <div class="fb-op">×</div>
+    <div class="fb-pill">🌿 環境</div>
+    <div class="fb-op">=</div>
+    <div class="fb-result">📊 日照率</div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="section">
+  <div class="section-label"><span>計算の5ステップ</span></div>
+
+  <div class="steps">
+
+    <!-- STEP 1 -->
+    <div class="step-row">
+      <div class="step-illust">
+        <svg width="180" height="140" viewBox="0 0 180 140">
+          <path d="M10 130 Q90 15 170 130" stroke="rgba(245,166,35,0.35)" stroke-width="1.5" fill="none" stroke-dasharray="5,4"/>
+          <path d="M25 130 Q90 40 155 130" stroke="rgba(245,166,35,0.2)" fill="none"/>
+          <path d="M45 130 Q90 70 135 130" stroke="rgba(212,136,15,0.18)" fill="none"/>
+          <line x1="5" y1="130" x2="175" y2="130" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/>
+          <circle cx="90" cy="28" r="13" fill="#F5A623">
+            <animateMotion dur="5s" repeatCount="indefinite" path="M-80,102 Q0,-12 80,102"/>
+          </circle>
+          <circle cx="90" cy="28" r="22" fill="rgba(245,166,35,0.1)">
+            <animateMotion dur="5s" repeatCount="indefinite" path="M-80,102 Q0,-12 80,102"/>
+          </circle>
+          <text x="8" y="125" fill="rgba(0,0,0,0.35)" font-size="8" font-family="monospace">東</text>
+          <text x="78" y="125" fill="rgba(0,0,0,0.35)" font-size="8" font-family="monospace">南中</text>
+          <text x="158" y="125" fill="rgba(0,0,0,0.35)" font-size="8" font-family="monospace">西</text>
+          <text x="46" y="30" fill="rgba(245,166,35,0.7)" font-size="8" font-family="monospace">夏至</text>
+          <text x="54" y="55" fill="rgba(212,136,15,0.55)" font-size="8" font-family="monospace">冬至</text>
+          <circle cx="90" cy="130" r="5" fill="#10B981"/>
+          <circle cx="90" cy="130" r="11" fill="rgba(16,185,129,0.12)">
+            <animate attributeName="r" values="5;14;5" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <text x="98" y="140" fill="#10B981" font-size="8" font-family="monospace">あなたの場所</text>
+        </svg>
+      </div>
+      <div class="step-info">
+        <div class="step-num">STEP 01 · 地点</div>
+        <div class="step-title">📍 緯度・経度で<br><em>太陽の1年間の動きが決まる</em></div>
+        <div class="step-body">緯度・経度を入力するだけで、<strong>365日・24時間すべての太陽の位置（方位角・仰角）</strong>が天文学の数式で計算できます。夏は高く、冬は低い軌道を描きます。</div>
+        <div class="step-tag">必須入力</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <!-- STEP 2 -->
+    <div class="step-row rev">
+      <div class="step-illust">
+        <svg width="200" height="145" viewBox="0 0 200 145">
+          <rect x="0" y="130" width="200" height="15" fill="#EFEFEC" rx="2"/>
+          <rect x="10" y="45" width="52" height="85" fill="#E8E6E0" rx="3" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+          <rect x="18" y="53" width="13" height="11" fill="rgba(245,166,35,0.4)" rx="1"/>
+          <rect x="35" y="53" width="13" height="11" fill="rgba(245,166,35,0.15)" rx="1"/>
+          <rect x="18" y="70" width="13" height="11" fill="rgba(245,166,35,0.15)" rx="1"/>
+          <rect x="35" y="70" width="13" height="11" fill="rgba(245,166,35,0.4)" rx="1"/>
+          <rect x="18" y="87" width="13" height="11" fill="rgba(245,166,35,0.4)" rx="1"/>
+          <rect x="35" y="87" width="13" height="11" fill="rgba(245,166,35,0.15)" rx="1"/>
+          <rect x="18" y="104" width="13" height="11" fill="rgba(245,166,35,0.15)" rx="1"/>
+          <rect x="35" y="104" width="13" height="11" fill="rgba(245,166,35,0.4)" rx="1"/>
+          <line x1="68" y1="45" x2="68" y2="130" stroke="rgba(59,130,246,0.35)" stroke-width="1" stroke-dasharray="3,3"/>
+          <text x="71" y="90" fill="rgba(59,130,246,0.7)" font-size="8" font-family="monospace">高さ</text>
+          <text x="71" y="102" fill="#3B82F6" font-size="10" font-family="monospace" font-weight="bold">30m</text>
+          <line x1="62" y1="138" x2="162" y2="138" stroke="rgba(245,166,35,0.5)" stroke-width="1"/>
+          <polygon points="62,135 62,141 55,138" fill="rgba(245,166,35,0.6)"/>
+          <polygon points="162,135 162,141 169,138" fill="rgba(245,166,35,0.6)"/>
+          <text x="112" y="130" fill="rgba(212,136,15,0.8)" font-size="8" font-family="monospace" text-anchor="middle">20m</text>
+          <line x1="172" y1="130" x2="62" y2="45" stroke="rgba(239,68,68,0.55)" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="183" y="122" fill="#EF4444" font-size="9" font-family="monospace">56°</text>
+          <circle cx="172" cy="130" r="5" fill="#10B981"/>
+          <text x="158" y="125" fill="#10B981" font-size="8" font-family="monospace">部屋</text>
+        </svg>
+      </div>
+      <div class="step-info">
+        <div class="step-num">STEP 02 · 建物情報</div>
+        <div class="step-title">🏢 建物の<em>高さ×距離</em>で<br>影の届く角度がわかる</div>
+        <div class="step-body">南側の建物が<strong>高いほど・近いほど</strong>「遮蔽仰角」が大きくなり、太陽が隠れる時間が増えます。特に冬は太陽が低いため、この影響が最大になります。</div>
+        <div class="step-tag warn">精度に最も影響</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <!-- STEP 3 -->
+    <div class="step-row">
+      <div class="step-illust">
+        <div style="position:relative;width:170px;height:170px;">
+          <svg width="170" height="170" viewBox="0 0 170 170" style="position:absolute;top:0;left:0;">
+            <circle cx="85" cy="85" r="78" stroke="rgba(0,0,0,0.1)" stroke-width="1.5" fill="rgba(0,0,0,0.02)"/>
+            <line x1="7" y1="85" x2="163" y2="85" stroke="rgba(0,0,0,0.07)" stroke-width="1"/>
+            <line x1="85" y1="7" x2="85" y2="163" stroke="rgba(0,0,0,0.07)" stroke-width="1"/>
+          </svg>
+          <!-- 中央（メイン方向） -->
+          <div style="position:absolute;left:50%;top:78%;transform:translate(-50%,-50%);">
+            <div style="width:52px;height:52px;border-radius:11px;border:2px solid var(--amber);background:rgba(245,166,35,0.08);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;">📷<div style="font-size:8px;color:var(--amber-dk);font-weight:700;margin-top:1px;">南 ★</div></div>
+          </div>
+          <!-- 左タブ -->
+          <div style="position:absolute;left:22%;top:60%;transform:translate(-50%,-50%);">
+            <div style="width:38px;height:38px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.1);background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;">📷<div style="font-size:7px;color:var(--gray);">南東</div></div>
+          </div>
+          <!-- 右タブ -->
+          <div style="position:absolute;left:78%;top:60%;transform:translate(-50%,-50%);">
+            <div style="width:38px;height:38px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.1);background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;">📷<div style="font-size:7px;color:var(--gray);">南西</div></div>
+          </div>
+          <!-- 上 -->
+          <div style="position:absolute;left:50%;top:22%;transform:translate(-50%,-50%);">
+            <div style="width:38px;height:38px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.1);background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;">📷<div style="font-size:7px;color:var(--gray);">北</div></div>
+          </div>
+          <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:#10B981;box-shadow:0 0 8px rgba(16,185,129,0.4);"></div>
+        </div>
+      </div>
+      <div class="step-info">
+        <div class="step-num">STEP 03 · 窓の写真（3方向）</div>
+        <div class="step-title">📷 写真から<em>遮蔽物マップ</em>を<br>自動生成する</div>
+        <div class="step-body">窓の向きに合わせて左・中央・右の3方向を撮影すると、<strong>どの方角・どの高さに建物や木があるか</strong>を画像解析で検出します。写真中の空の割合（Sky View Factor）が高いほど日照率も高くなります。</div>
+        <div class="step-tag warn">中央のみ必須 / 左右は任意</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <!-- STEP 4 -->
+    <div class="step-row rev">
+      <div class="step-illust">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- 開けた（左） -->
+          <circle cx="55" cy="62" r="44" fill="rgba(135,206,235,0.25)"/>
+          <circle cx="55" cy="62" r="44" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="1.5"/>
+          <text x="55" y="118" text-anchor="middle" fill="#D4880F" font-size="13" font-family="monospace" font-weight="bold">80%</text>
+          <text x="55" y="130" text-anchor="middle" fill="rgba(0,0,0,0.35)" font-size="8" font-family="monospace">開けた場所</text>
+          <!-- 樹木あり（右） -->
+          <circle cx="148" cy="62" r="44" fill="rgba(135,206,235,0.12)"/>
+          <ellipse cx="120" cy="80" rx="16" ry="20" fill="rgba(0,80,50,0.18)"/>
+          <ellipse cx="120" cy="62" rx="13" ry="16" fill="rgba(0,80,50,0.15)"/>
+          <ellipse cx="175" cy="72" rx="18" ry="22" fill="rgba(0,80,50,0.18)"/>
+          <ellipse cx="175" cy="52" rx="14" ry="17" fill="rgba(0,80,50,0.15)"/>
+          <circle cx="148" cy="62" r="44" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="1.5"/>
+          <text x="148" y="118" text-anchor="middle" fill="rgba(0,0,0,0.35)" font-size="13" font-family="monospace" font-weight="bold">35%</text>
+          <text x="148" y="130" text-anchor="middle" fill="rgba(0,0,0,0.35)" font-size="8" font-family="monospace">樹木がある場所</text>
+          <text x="105" y="66" fill="rgba(0,0,0,0.25)" font-size="16">→</text>
+        </svg>
+      </div>
+      <div class="step-info">
+        <div class="step-num">STEP 04 · 周辺環境</div>
+        <div class="step-title">🌿 写真で<em>検出できない情報</em>を<br>補足する</div>
+        <div class="step-body">落葉樹は<strong>季節によって遮蔽率が変わる</strong>ため、写真だけでは判定が困難です。「南側に落葉樹がある」と入力すると、冬季（11〜3月）に+15%の透過補正が適用されます。</div>
+        <div class="step-tag">任意・精度向上に有効</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <!-- STEP 5 -->
+    <div class="step-row">
+      <div class="step-illust">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- ヒートマップmini -->
+          <rect x="10" y="10" width="85" height="120" rx="10" fill="var(--bg)" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+          <text x="52" y="26" text-anchor="middle" fill="rgba(0,0,0,0.5)" font-size="9" font-family="monospace">月別×時間帯</text>
+          <rect x="18" y="34" width="11" height="8" rx="1" fill="#F5A623" opacity="0.9"/>
+          <rect x="31" y="34" width="11" height="8" rx="1" fill="#F5A623" opacity="0.6"/>
+          <rect x="44" y="34" width="11" height="8" rx="1" fill="#F5A623" opacity="0.9"/>
+          <rect x="57" y="34" width="11" height="8" rx="1" fill="#EFEFEC"/>
+          <rect x="70" y="34" width="11" height="8" rx="1" fill="#EFEFEC"/>
+          <rect x="18" y="44" width="11" height="8" rx="1" fill="#F5A623" opacity="0.5"/>
+          <rect x="31" y="44" width="11" height="8" rx="1" fill="#F5A623" opacity="0.9"/>
+          <rect x="44" y="44" width="11" height="8" rx="1" fill="#F5A623" opacity="0.9"/>
+          <rect x="57" y="44" width="11" height="8" rx="1" fill="#F5A623" opacity="0.5"/>
+          <rect x="70" y="44" width="11" height="8" rx="1" fill="#EFEFEC"/>
+          <rect x="18" y="54" width="11" height="8" rx="1" fill="#EFEFEC"/>
+          <rect x="31" y="54" width="11" height="8" rx="1" fill="#F5A623" opacity="0.5"/>
+          <rect x="44" y="54" width="11" height="8" rx="1" fill="#F5A623" opacity="0.9"/>
+          <rect x="57" y="54" width="11" height="8" rx="1" fill="#F5A623" opacity="0.9"/>
+          <rect x="70" y="54" width="11" height="8" rx="1" fill="#EFEFEC"/>
+          <rect x="18" y="64" width="11" height="8" rx="1" fill="#EFEFEC"/>
+          <rect x="31" y="64" width="11" height="8" rx="1" fill="#F5A623" opacity="0.3"/>
+          <rect x="44" y="64" width="11" height="8" rx="1" fill="#F5A623" opacity="0.5"/>
+          <rect x="57" y="64" width="11" height="8" rx="1" fill="#F5A623" opacity="0.3"/>
+          <rect x="70" y="64" width="11" height="8" rx="1" fill="#EFEFEC"/>
+          <text x="52" y="88" text-anchor="middle" fill="rgba(0,0,0,0.3)" font-size="8" font-family="monospace">12ヶ月 × 6時間帯</text>
+          <!-- スコア表示 -->
+          <rect x="115" y="10" width="78" height="78" rx="39" fill="rgba(245,166,35,0.08)" stroke="rgba(245,166,35,0.3)" stroke-width="1.5"/>
+          <text x="154" y="52" text-anchor="middle" fill="#D4880F" font-size="26" font-family="monospace" font-weight="bold">82</text>
+          <text x="154" y="68" text-anchor="middle" fill="rgba(0,0,0,0.4)" font-size="9" font-family="monospace">日照スコア</text>
+          <text x="154" y="110" text-anchor="middle" fill="rgba(0,0,0,0.4)" font-size="8" font-family="monospace">窓別バー</text>
+          <rect x="122" y="116" width="64" height="7" rx="3" fill="#EFEFEC"/>
+          <rect x="122" y="116" width="52" height="7" rx="3" fill="rgba(245,166,35,0.4)"/>
+          <rect x="122" y="126" width="64" height="7" rx="3" fill="#EFEFEC"/>
+          <rect x="122" y="126" width="38" height="7" rx="3" fill="rgba(245,166,35,0.25)"/>
+        </svg>
+      </div>
+      <div class="step-info">
+        <div class="step-num">STEP 05 · 計算・出力</div>
+        <div class="step-title">🎯 年間の日照を<br><em>ヒートマップとスコアで表示</em></div>
+        <div class="step-body">
+          12ヶ月×6時間帯（7〜18時）のマトリクスで<strong>晴天時の太陽が入る時間帯</strong>を算出。窓ごとのスコアを単純平均して物件全体の日照スコアを表示します。
+        </div>
+        <div class="step-tag">計算ボタン押下で即時表示</div>
+      </div>
+    </div>
+
+  </div><!-- /steps -->
+
+
+  <!-- ===== 計算式の開示 ===== -->
+  <div class="section-label" style="margin-top:64px;"><span>計算式の開示</span></div>
+
+  <div class="formula-section">
+
+    <div class="formula-card">
+      <h3>① 遮蔽仰角の計算</h3>
+      <div class="formula-block">
+θ_obs = <span class="highlight">arctan</span>( (建物高さ − 自分の高さ) / 距離 )
+<span class="comment">  // 単位: ラジアン → 度に変換</span>
+
+自分の高さ = <span class="highlight">3.0 × (階数 − 1) + 1.5</span>  m
+<span class="comment">  // 1階あたり3m、床から目線まで1.5m</span>
+      </div>
+      <div class="formula-desc">
+        南側建物の場合は方位角 135°〜225° の遮蔽マップに反映。窓方向の建物は窓方向 ±60° のアークに反映します。<br>
+        <strong>写真のSVF（Sky View Factor）</strong>からも遮蔽仰角を推定します：θ_svf = (1 − SVF) × 30°
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <h3>② 日照判定（時間スロットごと）</h3>
+      <div class="formula-block">
+<span class="comment">// SAMPLE_DAYS = [1, 8, 15, 22]（月内4日をサンプリング）</span>
+sunlit = 0
+for each sampleDay in [1, 8, 15, 22]:
+  pos = <span class="highlight">SunCalc.getPosition</span>(date, lat, lng)
+  <span class="comment">  // → { altitude: rad, azimuth: rad }</span>
+  az_deg = pos.azimuth × (180/π) + 180  <span class="comment">// 0=北, 180=南</span>
+  alt_deg = pos.altitude × (180/π)
+
+  if alt_deg &gt; 0:  <span class="comment">// 地平線より上</span>
+    obstruction = obstMap[round(az_deg)]
+    if alt_deg &gt; obstruction:
+      sunlit += 1
+
+sunlit_ratio = sunlit / 4  <span class="comment">// 4サンプルの平均</span>
+      </div>
+      <div class="formula-desc">
+        月ごとに4日分をサンプリングし、各時間スロットの日照ありの日数を集計。<br>
+        <strong>落葉樹補正</strong>：11〜3月（冬季）に sunlit_ratio += <span style="color:var(--amber-dk);font-weight:700;">0.15</span>（最大1.0にクランプ）
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <h3>③ 窓スコアと物件全体スコア</h3>
+      <div class="formula-block">
+<span class="comment">// 窓スコア（0〜100）</span>
+windowScore = mean(heatmap[month][slot] for all months, slots) × 100
+             × <span class="highlight">SIZE_MULT</span>[窓サイズ]
+<span class="comment">  // SIZE_MULT: 小=0.85, 中=1.0, 大=1.1</span>
+
+<span class="comment">// 物件全体スコア（窓の単純平均）</span>
+totalScore = <span class="highlight">mean</span>(windowScore for all windows)
+      </div>
+      <div class="formula-desc">
+        窓の向きや数によって物件スコアは変動します。南向きの大きな窓が多いほどスコアは高くなります。
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ===== 使用データ・ライブラリ ===== -->
+  <div class="section-label" style="margin-top:64px;"><span>使用データ・ライブラリ</span></div>
+
+  <div class="formula-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>用途</th>
+          <th>ライセンス / 出典</th>
+          <th>種別</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <strong>SunCalc.js v1.9.0</strong><br>
+            <small style="color:#666">作者: Vladimir Agafonkin<br>github.com/mourner/suncalc</small>
+          </td>
+          <td>緯度・経度・日時から太陽の方位角・仰角を計算。Meeus天文アルゴリズム（1998）準拠。本アプリの日照推定の中核。</td>
+          <td><a href="https://opensource.org/licenses/BSD-2-Clause" style="color:var(--amber-dk)">BSD 2-Clause</a><br><small>商用利用可・無償</small></td>
+          <td><span class="tag">OSS</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>NOAA Solar Calculator</strong><br>
+            <small style="color:#666">NOAA地球システム研究所<br>gml.noaa.gov/grad/solcalc/</small>
+          </td>
+          <td>SunCalcの計算式の参照元となる天文計算式。グリニッジ恒星時・均時差・赤緯の算出に使用。</td>
+          <td>Public Domain<br><small>商用利用可・無償</small></td>
+          <td><span class="tag">参考文献</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>気象庁 日照時間データ</strong><br>
+            <small style="color:#666">data.jma.go.jp</small>
+          </td>
+          <td>（Phase 2以降）実際の天気データによる補正に使用予定。現フェーズでは晴天理論値のみ算出。</td>
+          <td>政府標準利用規約<br><small>商用利用可・無償</small></td>
+          <td><span class="tag">予定</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Oke (1981) SVF理論</strong><br>
+            <small style="color:#666">T.R. Oke, "Canyon geometry and<br>the nocturnal urban heat island"</small>
+          </td>
+          <td>Sky View Factor（天空率）を写真の青空ピクセル比率から推定する手法の理論的根拠。</td>
+          <td>学術論文<br><small>参照・実装は自由</small></td>
+          <td><span class="tag">学術</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Canvas API</strong><br>
+            <small style="color:#666">W3C / ブラウザ標準</small>
+          </td>
+          <td>アップロード写真を64×64pxに縮小し、青色・明輝度ピクセルの割合からSVFを推定。クライアントサイドのみで完結（サーバー送信なし）。</td>
+          <td>標準API<br><small>制限なし</small></td>
+          <td><span class="tag">ブラウザ標準</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Google Fonts</strong><br>
+            <small style="color:#666">Noto Sans JP / DM Mono</small>
+          </td>
+          <td>日本語フォント（Noto Sans JP）および数値・コード表示用等幅フォント（DM Mono）。</td>
+          <td>SIL Open Font License<br><small>商用利用可・無償</small></td>
+          <td><span class="tag">フォント</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:#888;margin-top:12px;text-align:right;">※ 全て商用利用可能・無償のデータ/ライブラリです。</p>
+  </div>
+
+
+  <!-- ===== 精度と限界 ===== -->
+  <div class="section-label" style="margin-top:64px;"><span>精度と限界</span></div>
+
+  <div class="formula-card" style="margin-bottom:16px;">
+    <h3>推定誤差の目安</h3>
+    <div class="formula-desc" style="margin-bottom:16px;">
+      入力情報がそろっている場合の誤差は <strong>±20〜30%</strong> が目安です。以下の要因により誤差は大きくなります。
+    </div>
+    <div class="accuracy-grid">
+      <div class="accuracy-block ok">
+        <div class="acc-title" style="color:var(--green);">✅ 精度が高い条件</div>
+        <div class="acc-list">
+          ・緯度・経度が正確に入力されている<br>
+          ・南側建物の高さ・距離を計測済み<br>
+          ・窓ごとに3方向の写真をアップロード<br>
+          ・写真が晴天時・空が広く映っている<br>
+          ・高層階（遮蔽物が少ない）
+        </div>
+      </div>
+      <div class="accuracy-block warn">
+        <div class="acc-title" style="color:var(--amber-dk);">⚠️ 誤差が大きくなる条件</div>
+        <div class="acc-list">
+          ・建物情報を「わからない」で入力<br>
+          ・写真なし（推定のみで計算）<br>
+          ・複数の建物・不規則な地形<br>
+          ・大きな落葉樹が隣接している<br>
+          ・写真が曇天・逆光・室内から撮影
+        </div>
+      </div>
+      <div class="accuracy-block bad">
+        <div class="acc-title" style="color:var(--red);">❌ 考慮できないもの</div>
+        <div class="acc-list">
+          ・窓ガラスの透過率・コーティング<br>
+          ・局所的な霧・雲・PM2.5<br>
+          ・落葉樹の葉の量（季節内変動）<br>
+          ・反射光・地面からの散乱光<br>
+          ・隣接建物の将来的な変化
+        </div>
+      </div>
+    </div>
+  <div style="margin-top:14px;padding:14px;background:#FFF8E8;border-radius:10px;border:1px solid rgba(245,166,35,0.2);">
+    <div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:8px;">🏗 建築前リサーチご利用の場合</div>
+    <ul style="font-size:11px;color:#888;line-height:2;padding-left:16px;">
+      <li>更地の中央から撮影するため、実際の窓位置（角部屋・南寄り等）によって誤差が生じます</li>
+      <li>撮影者の身長・カメラ位置による誤差は計算上無視しています</li>
+      <li>階数が高くなるほど周辺建物の影響は小さくなりますが、完全な遮蔽計算ではありません</li>
+      <li>本ツールは土地選定の参考値です。正確なシミュレーションは建築士にご相談ください</li>
+    </ul>
+  </div>
+
+  </div>
+
+
+  <!-- ===== 参考文献・出典 ===== -->
+  <div class="section-label" style="margin-top:64px;"><span>参考文献・出典</span></div>
+
+  <div class="formula-card">
+    <ul class="refs-list">
+      <li>
+        <div><strong>Mourner, V. (2011). SunCalc.js</strong><br>
+        JavaScriptによる太陽位置計算ライブラリ。Jean Meeus「Astronomical Algorithms」準拠のアルゴリズムを実装。
+        <br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);">github.com/mourner/suncalc</span></div>
+      </li>
+      <li>
+        <div><strong>Meeus, J. (1998). Astronomical Algorithms, 2nd ed.</strong><br>
+        太陽の方位角・仰角計算の基礎となる天文アルゴリズム集。Willmann-Bell, Inc.</div>
+      </li>
+      <li>
+        <div><strong>NOAA Earth System Research Laboratories. Solar Calculator</strong><br>
+        NOAAが公開する太陽位置計算ツール。計算式の検証に使用。
+        <br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);">esrl.noaa.gov/gmd/grad/solcalc/</span></div>
+      </li>
+      <li>
+        <div><strong>Oke, T.R. (1981). Canyon geometry and the nocturnal urban heat island</strong><br>
+        Street canyon の Sky View Factor（SVF）に関する研究。Journal of Climatology, 1(3), 237–254.</div>
+      </li>
+      <li>
+        <div><strong>気象庁. 日照時間の統計データ</strong><br>
+        都市別の平均日照時間データ。将来的な天気補正への活用を予定。
+        <br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);">data.jma.go.jp</span></div>
+      </li>
+    </ul>
+  </div>
+
+</div><!-- /section -->
+
+<!-- ===== 用途別の違い ===== -->
+  <div class="section-label" style="margin-top:64px;"><span>用途によって何が変わるのか</span></div>
+
+  <div class="formula-card">
+    <div class="accordion" id="ucAccordion">
+
+      <div class="accordion-item open" onclick="toggleAccordion(this)">
+        <div class="accordion-hd">
+          <span class="accordion-icon">🏠</span>
+          <span class="accordion-name">居住・不動産</span>
+          <span class="accordion-arr">›</span>
+        </div>
+        <div class="accordion-body">
+          <div class="uc-row">
+            <span class="uc-chip">計算：晴天理論値</span>
+            <span class="uc-chip">重視：冬</span>
+            <span class="uc-chip">出力：月別×時間帯ヒートマップ</span>
+          </div>
+          <p class="uc-desc">「晴れた日にどれだけ日が入るか」が居住判断の基準になるため、気象補正なしの晴天理論値を使用。冬の日照が最も生活快適性に影響するため、冬を重視した評価を行います。電気代・家具の日焼け・リビングの明るさへの影響をヒートマップで可視化します。</p>
+        </div>
+      </div>
+
+      <div class="accordion-item" onclick="toggleAccordion(this)">
+        <div class="accordion-hd">
+          <span class="accordion-icon">🏗</span>
+          <span class="accordion-name">建築前リサーチ</span>
+          <span class="accordion-arr">›</span>
+        </div>
+        <div class="accordion-body">
+          <div class="uc-row">
+            <span class="uc-chip">計算：晴天理論値</span>
+            <span class="uc-chip">重視：冬</span>
+            <span class="uc-chip">出力：ヒートマップ＋階数シミュレーター</span>
+          </div>
+          <p class="uc-desc">更地や設計前の段階で、階数ごとの日照率を比較できます。周囲の建物による遮蔽角度を計算し、「日照率60%以上には○階以上が必要」という設計判断をサポートします。</p>
+          <div class="uc-feature"><strong>追加機能：階数シミュレーター</strong><br>1階〜予定最上階までの日照率を一覧表示。最適な階数の目安を設計段階から把握できます。</div>
+        </div>
+      </div>
+
+      <div class="accordion-item" onclick="toggleAccordion(this)">
+        <div class="accordion-hd">
+          <span class="accordion-icon">🌱</span>
+          <span class="accordion-name">農業・園芸</span>
+          <span class="accordion-arr">›</span>
+        </div>
+        <div class="accordion-body">
+          <div class="uc-row">
+            <span class="uc-chip special">計算：気象補正あり</span>
+            <span class="uc-chip">重視：春〜秋（生育期間）</span>
+            <span class="uc-chip">出力：月別積算日射量グラフ</span>
+          </div>
+          <p class="uc-desc">実際の栽培環境では雨・曇りの日も影響するため、気象補正を適用した実効日射量を使用。春〜秋の生育期間に注目し、作物・植物の種類ごとの最低日照要件と照合して適性を評価します。</p>
+        </div>
+      </div>
+
+      <div class="accordion-item" onclick="toggleAccordion(this)">
+        <div class="accordion-hd">
+          <span class="accordion-icon">☀️</span>
+          <span class="accordion-name">ソーラー・エネルギー</span>
+          <span class="accordion-arr">›</span>
+        </div>
+        <div class="accordion-body">
+          <div class="uc-row">
+            <span class="uc-chip special">計算：気象補正あり（年間積算）</span>
+            <span class="uc-chip">重視：年間トータル</span>
+            <span class="uc-chip">出力：積算日射量＋最適設置角度</span>
+          </div>
+          <p class="uc-desc">発電量は年間の実際の日射量で決まるため、気象補正を適用した年間積算値を使用。最適な設置角度（傾斜角・方位角）の提案と、発電効率の目安を算出します。</p>
+        </div>
+      </div>
+
+      <div class="accordion-item" onclick="toggleAccordion(this)">
+        <div class="accordion-hd">
+          <span class="accordion-icon">🏪</span>
+          <span class="accordion-name">商業・施設</span>
+          <span class="accordion-arr">›</span>
+        </div>
+        <div class="accordion-body">
+          <div class="uc-row">
+            <span class="uc-chip">計算：晴天理論値</span>
+            <span class="uc-chip">重視：営業時間帯</span>
+            <span class="uc-chip">出力：時間帯別ヒートマップ</span>
+          </div>
+          <p class="uc-desc">店舗・カフェのテラス席や保育園の園庭など、営業・利用時間帯に絞った日照評価を行います。「ランチタイムに日が当たるか」「夕方の西日が強すぎないか」など、商業利用に特有の観点で分析します。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <div class="disclaimer-inner">
+    ⚠️ <strong>免責事項</strong>：この計算は天文学データと入力情報をもとにした推定値です。樹木の季節変動・局所的な天候・地形の微細な差異により実際の日照は異なります。誤差の目安は <strong>±20〜30%</strong> です。不動産・建築の意思決定には専門家の調査を併用してください。
+  </div>
+</div>
+
+<script>
+function toggleAccordion(item) {
+  item.classList.toggle('open');
+}
+</script>
+</body>
+</html>

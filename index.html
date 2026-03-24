@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunny — 日照率チェッカー</title>
+<script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #07111f;
+  --panel: #0c1d30;
+  --card: #0f2440;
+  --border: rgba(80,180,240,0.14);
+  --sun: #FFB800;
+  --sky: #5BC8F5;
+  --green: #34D399;
+  --red: #FF6B6B;
+  --white: #e8f2ff;
+  --muted: #4a6a8a;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--white); font-family:'Noto Sans JP',sans-serif; min-height:100vh; line-height:1.6; }
+
+/* ── TOP BAR ── */
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; background:var(--bg); backdrop-filter:blur(8px); }
+.logo { font-family:'DM Mono',monospace; font-size:18px; font-weight:500; color:var(--sun); letter-spacing:2px; }
+.logo-sub { font-size:11px; color:var(--muted); margin-left:4px; }
+.header-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:transparent; border:1px solid rgba(91,200,245,0.3); border-radius:20px; color:var(--sky); font-size:12px; font-weight:600; cursor:pointer; transition:background 0.2s; }
+.header-btn:hover { background:rgba(91,200,245,0.08); border-color:var(--sky); }
+
+/* ── MODAL ── */
+.modal-overlay { position:fixed; inset:0; z-index:10000; background:rgba(7,17,31,0.88); display:none; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal-box { position:relative; width:100%; max-width:900px; height:90vh; background:#07111f; border:1px solid rgba(80,180,240,0.18); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 80px rgba(0,0,0,0.7); animation:modalIn 0.25s ease; }
+@keyframes modalIn { from { opacity:0; transform:translateY(16px) scale(0.98); } to { opacity:1; transform:none; } }
+.modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid rgba(80,180,240,0.12); flex-shrink:0; }
+.modal-header-title { font-size:14px; font-weight:700; color:var(--sky); }
+.modal-close { width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--muted); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.modal-close:hover { background:rgba(255,255,255,0.08); color:var(--white); }
+.modal-iframe { flex:1; border:none; width:100%; }
+
+/* ── CONTAINER ── */
+.container { max-width:760px; margin:0 auto; padding:28px 20px 60px; }
+
+/* ── PRECISION BAR ── */
+.accuracy-bar { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:24px; }
+.accuracy-label { font-size:11px; color:var(--muted); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+.accuracy-track { background:rgba(255,255,255,0.05); border-radius:6px; height:7px; overflow:hidden; }
+.accuracy-fill { height:100%; border-radius:6px; background:linear-gradient(to right, var(--sky), var(--green)); transition:width 0.4s; }
+
+/* ── SECTION CARD ── */
+.sec { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:20px; }
+.sec-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.sec-num { font-family:'DM Mono',monospace; font-size:11px; font-weight:500; color:var(--sky); background:rgba(91,200,245,0.1); border:1px solid rgba(91,200,245,0.2); border-radius:20px; padding:2px 10px; flex-shrink:0; }
+.sec-title { font-size:16px; font-weight:900; }
+.sec-title em { color:var(--sky); font-style:normal; }
+.sec-sub { font-size:12px; color:var(--muted); margin-bottom:18px; line-height:1.7; }
+
+/* ── FORM ELEMENTS ── */
+label { display:block; font-size:11px; color:var(--muted); margin-bottom:5px; letter-spacing:0.5px; }
+.req { color:var(--sky); margin-left:3px; font-size:10px; }
+.opt { color:var(--muted); font-size:10px; margin-left:3px; }
+input[type=text], input[type=number], input[type=password], select {
+  width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:11px 14px; color:var(--white); font-family:'DM Mono',monospace; font-size:13px;
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s; margin-bottom:14px; appearance:none;
+}
+input:focus, select:focus { border-color:var(--sky); box-shadow:0 0 0 3px rgba(91,200,245,0.1); }
+select option { background:var(--card); }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* ── SLIDER ── */
+.slider-wrap { margin-bottom:14px; }
+.slider-val { font-family:'DM Mono',monospace; font-size:22px; color:var(--sun); margin-bottom:6px; }
+.slider-unit { font-size:12px; color:var(--muted); }
+.slider-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-top:4px; }
+input[type=range] { width:100%; appearance:none; height:4px; background:rgba(80,180,240,0.15); border-radius:4px; outline:none; margin:0; padding:0; border:none; box-shadow:none; margin-bottom:0; }
+input[type=range]::-webkit-slider-thumb { appearance:none; width:18px; height:18px; border-radius:50%; background:var(--sky); box-shadow:0 0 8px rgba(91,200,245,0.5); cursor:pointer; }
+
+/* ── CARD SELECT ── */
+.card-select { display:grid; gap:8px; margin-bottom:14px; }
+.card-select.c2 { grid-template-columns:1fr 1fr; }
+.card-select.c3 { grid-template-columns:1fr 1fr 1fr; }
+.sel-card { background:var(--card); border:1.5px solid var(--border); border-radius:10px; padding:12px 10px; text-align:center; cursor:pointer; transition:all 0.2s; }
+.sel-card:hover { border-color:rgba(91,200,245,0.3); }
+.sel-card.selected { border-color:var(--sky); background:rgba(91,200,245,0.08); }
+.sel-icon { font-size:20px; margin-bottom:4px; }
+.sel-label { font-size:11px; color:var(--muted); }
+.sel-card.selected .sel-label { color:var(--sky); }
+
+/* ── PHOTO GRID ── */
+.photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.photo-slot { background:var(--card); border:1.5px dashed var(--border); border-radius:12px; padding:16px 10px; text-align:center; cursor:pointer; transition:all 0.2s; }
+.photo-slot:hover { border-color:rgba(91,200,245,0.4); }
+.photo-slot.key { border-color:rgba(255,184,0,0.3); }
+.photo-slot.key:hover { border-color:var(--sun); }
+.photo-slot.uploaded { border-style:solid; border-color:var(--green); }
+.slot-icon { font-size:22px; margin-bottom:5px; }
+.slot-dir { font-size:13px; font-weight:700; }
+.slot-key-badge { display:inline-block; font-size:9px; background:rgba(255,184,0,0.12); color:var(--sun); padding:2px 7px; border-radius:8px; margin-top:4px; }
+.slot-optional { font-size:9px; color:var(--muted); margin-top:4px; }
+.analysis-badge { font-size:11px; color:var(--green); }
+.rm-btn { width:100%; margin-top:6px; padding:4px; font-size:11px; background:transparent; border:1px solid var(--red); color:var(--red); border-radius:6px; cursor:pointer; }
+
+/* ── CHECK ITEMS ── */
+.check-group { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.check-item { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 13px; cursor:pointer; transition:border-color 0.2s; }
+.check-item:hover { border-color:rgba(91,200,245,0.3); }
+.check-item.checked { border-color:rgba(91,200,245,0.4); background:rgba(91,200,245,0.05); }
+.check-box { width:18px; height:18px; border-radius:5px; border:1.5px solid var(--muted); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; font-size:11px; }
+.check-item.checked .check-box { background:var(--sky); border-color:var(--sky); color:#000; }
+.check-text { font-size:13px; }
+.check-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+
+/* ── MODE CARDS ── */
+.mode-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+.mode-card { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:18px 14px; text-align:center; cursor:pointer; transition:all 0.25s; }
+.mode-card:hover { border-color:rgba(91,200,245,0.3); transform:translateY(-2px); }
+.mode-card.selected { border-color:var(--sky); background:rgba(91,200,245,0.07); }
+.mode-icon { font-size:28px; margin-bottom:7px; }
+.mode-name { font-size:13px; font-weight:700; margin-bottom:4px; }
+.mode-desc { font-size:11px; color:var(--muted); line-height:1.6; }
+.mode-card.selected .mode-name { color:var(--sky); }
+
+/* ── MODE EXPLAIN ── */
+.mode-explain-box { background:rgba(91,200,245,0.05); border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:12px; color:var(--muted); line-height:1.8; margin-bottom:18px; }
+
+/* ── CALC BUTTON ── */
+.btn-calc { width:100%; padding:16px; border-radius:12px; border:none; background:linear-gradient(135deg, var(--sun), #e09000); color:#000; font-family:'Noto Sans JP',sans-serif; font-size:15px; font-weight:900; cursor:pointer; transition:all 0.2s; }
+.btn-calc:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,184,0,0.4); }
+.btn-calc:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+.btn-sec { padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:'Noto Sans JP',sans-serif; font-size:13px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+.btn-sec:hover { border-color:var(--sky); color:var(--sky); }
+.btn-sky { padding:9px 18px; border-radius:10px; border:none; background:linear-gradient(135deg,var(--sky),#3a9fd0); color:#000; font-family:'Noto Sans JP',sans-serif; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+/* ── API / MAP ── */
+.api-row { display:flex; gap:8px; margin-bottom:10px; }
+.api-row input { margin-bottom:0; flex:1; }
+#map { width:100%; height:200px; border-radius:10px; border:1px solid var(--border); margin-bottom:12px; background:var(--card); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+
+/* ── GUIDE TOGGLE ── */
+.guide-toggle-btn { background:var(--card); color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:7px 14px; font-size:12px; cursor:pointer; margin-bottom:12px; transition:all 0.2s; }
+.guide-toggle-btn:hover { border-color:var(--sky); color:var(--sky); }
+
+/* ── SUB SECTION ── */
+.sub-sec { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px; }
+.sub-sec-title { font-size:11px; font-weight:700; color:var(--sky); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+
+/* ── ERROR ── */
+.error-msg { background:rgba(127,29,29,0.4); border:1px solid rgba(239,68,68,0.4); border-radius:8px; padding:8px 12px; font-size:12px; color:#fca5a5; margin-bottom:10px; display:none; }
+
+/* ── DISCLAIMER ── */
+.disclaimer { background:rgba(127,29,29,0.15); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:11px 15px; font-size:12px; color:#fca5a5; margin-bottom:20px; overflow-wrap:break-word; word-break:break-word; }
+
+/* ── RESULTS ── */
+#results { display:none; }
+.res-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:20px; }
+.res-card h2 { font-size:15px; font-weight:700; color:var(--sun); margin-bottom:14px; }
+
+/* heatmap */
+.heatmap-a-wrap { overflow-x:auto; margin-bottom:16px; }
+.heatmap-a-table { border-collapse:collapse; min-width:460px; width:100%; }
+.heatmap-a-table th { font-size:11px; color:var(--muted); padding:5px 4px; text-align:center; background:rgba(15,36,64,0.9); white-space:nowrap; border:1px solid rgba(80,180,240,0.1); }
+.heatmap-a-table td.month-label { font-size:12px; color:var(--muted); padding:4px 10px; background:rgba(15,36,64,0.9); border:1px solid rgba(80,180,240,0.1); font-weight:600; white-space:nowrap; }
+.heatmap-a-table td.hm-cell { height:36px; text-align:center; vertical-align:middle; font-size:1rem; cursor:default; border:1px solid rgba(0,0,0,0.2); transition:filter 0.15s; }
+.heatmap-a-table td.hm-cell:hover { filter:brightness(1.35); outline:2px solid var(--sun); z-index:1; position:relative; }
+.hm-tooltip { position:fixed; background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12px; color:var(--white); pointer-events:none; z-index:9999; display:none; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+.legend-row { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; font-size:12px; color:var(--muted); }
+.legend-dot { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:middle; margin-right:4px; }
+
+/* mode A summary */
+.mode-a-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:14px; }
+.summary-info-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.s-title { font-size:11px; color:var(--muted); margin-bottom:6px; font-weight:600; }
+.s-val { font-size:13px; font-weight:700; color:var(--white); line-height:1.7; }
+.s-score { font-size:2.4rem; font-weight:700; color:var(--sun); }
+
+/* mode B */
+.summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:18px; }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+.kpi-card .val { font-size:2.1rem; font-weight:700; color:var(--sun); }
+.kpi-card .unit { font-size:12px; color:var(--muted); }
+.kpi-card .lbl { font-size:11px; color:var(--muted); margin-top:3px; }
+.optimal-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px; }
+.oc-title { font-size:13px; font-weight:700; color:var(--sun); margin-bottom:10px; }
+.optimal-row { display:flex; gap:20px; flex-wrap:wrap; }
+.oi-label { font-size:11px; color:var(--muted); margin-bottom:2px; }
+.oi-val { font-size:1.4rem; font-weight:700; color:var(--sun); }
+.oi-unit { font-size:12px; color:var(--muted); }
+.oi-note { font-size:11px; color:var(--green); margin-top:2px; }
+.chart-wrap { position:relative; height:260px; margin-bottom:18px; }
+.caveat { font-size:12px; color:var(--muted); background:var(--card); border-radius:8px; padding:10px 13px; margin-bottom:14px; }
+.corr-badge { display:inline-block; background:var(--card); border:1px solid var(--border); border-radius:4px; padding:2px 7px; margin:2px 3px 2px 0; font-size:11px; color:#a5b4fc; }
+
+/* ── ILLUST BOX ── */
+.illust-box {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 16px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+.illust-box svg { display:block; max-width: 100%; height: auto; }
+.illust-box .i-title { font-size: 17px; font-weight: 900; line-height: 1.4; }
+.illust-box .i-title em { color: var(--sun); font-style: normal; }
+.illust-box .i-desc { font-size: 12px; color: var(--muted); line-height: 1.9; max-width: 100%; }
+.illust-box .i-desc strong { color: var(--white); }
+
+/* hidden */
+.hidden-input { display:none !important; }
+
+/* divider */
+.divider { height:1px; background:var(--border); margin:20px 0; }
+
+/* ── OVERFLOW CONTROL ── */
+html { overflow-x: hidden; }
+body {
+  overflow-x: hidden;
+  position: relative;
+  -webkit-touch-callout: none;
+  touch-action: pan-y;
+}
+
+@media (max-width:600px) {
+  .row2 { grid-template-columns:1fr; }
+  .mode-cards { grid-template-columns:1fr; }
+  .card-select.c3 { grid-template-columns:1fr 1fr; }
+  .topbar { padding:12px 16px; }
+  .container { padding:16px 12px 40px; }
+  .sec { padding:18px 14px; }
+  .illust-box { padding:16px 10px 14px; }
+  .illust-box .i-desc { max-width: 100%; }
+  .illust-box .i-title { font-size:14px; }
+}
+
+@media (max-width:400px) {
+  .card-select.c3 { grid-template-columns:1fr 1fr; }
+  .sel-card { padding:10px 6px; }
+  .sel-icon { font-size:16px; }
+  .topbar { padding:10px 12px; }
+  .logo { font-size:15px; }
+  .logo-sub { display:none; }
+  .header-btn { padding:6px 12px; font-size:11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">SUNNY<span class="logo-sub">日照率チェッカー</span></div>
+  <button class="header-btn" onclick="openHowItWorks()">📖 しくみを見る</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="howModal" onclick="closeHowItWorks(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-header-title">📖 なぜ日照率が算出できるのか</span>
+      <button class="modal-close" onclick="closeHowItWorks(null)">✕</button>
+    </div>
+    <iframe class="modal-iframe" id="howIframe" src="" title="しくみの説明"></iframe>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 精度インジケーター -->
+  <div class="accuracy-bar">
+    <div class="accuracy-label">
+      <span>推定精度</span>
+      <span>
+        <span id="precisionScore" style="color:var(--muted);font-size:11px;margin-right:8px;">0 pt</span>
+        <span id="precisionLabel" style="color:var(--red);font-weight:700;font-size:13px;">低</span>
+      </span>
+    </div>
+    <div class="accuracy-track">
+      <div class="accuracy-fill" id="precisionFill" style="width:0%;"></div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ <strong>免責事項：</strong>この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。
+  </div>
+
+  <!-- ── STEP 1: 地点 ── -->
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-num">STEP 1</span>
+      <span class="sec-title">📍 <em>地点</em>を指定する</span>
+    </div>
+    <p class="sec-sub">緯度・経度を入力してください。住所検索はGoogle Maps APIキーが必要です（任意）。</p>
+
+    <div class="illust-box">
+      <svg width="320" height="160" viewBox="0 0 320 160">
+        <path d="M20 140 Q160 15 300 140" stroke="rgba(255,184,0,0.25)" stroke-width="1.5" fill="none" stroke-dasharray="5,4"/>
+        <path d="M55 140 Q160 55 265 140" stroke="rgba(255,184,0,0.15)" stroke-width="1" fill="none"/>
+        <path d="M90 140 Q160 85 230 140" stroke="rgba(251,146,60,0.15)" stroke-width="1" fill="none"/>
+        <line x1="10" y1="140" x2="310" y2="140" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
+        <circle cx="160" cy="30" r="14" fill="#FFB800">
+          <animateMotion dur="5s" repeatCount="indefinite" path="M-140,110 Q0,-20 140,110"/>
+        </circle>
+        <circle cx="160" cy="30" r="22" fill="rgba(255,184,0,0.1)">
+          <animateMotion dur="5s" repeatCount="indefinite" path="M-140,110 Q0,-20 140,110"/>
+        </circle>
+        <text x="18" y="134" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">東</text>
+        <text x="150" y="134" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">南中</text>
+        <text x="288" y="134" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">西</text>
+        <text x="75" y="26" fill="rgba(255,184,0,0.7)" font-size="9" font-family="sans-serif">夏至</text>
+        <text x="92" y="58" fill="rgba(251,146,60,0.6)" font-size="9" font-family="sans-serif">冬至</text>
+        <circle cx="160" cy="140" r="7" fill="#34D399"/>
+        <circle cx="160" cy="140" r="14" fill="rgba(52,211,153,0.2)">
+          <animate attributeName="r" values="7;18;7" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <text x="172" y="156" fill="#34D399" font-size="10" font-family="sans-serif">あなたの場所</text>
+      </svg>
+      <div class="i-title">場所がわかれば<em>太陽の動きが決まる</em></div>
+      <div class="i-desc">緯度・経度を入力するだけで<strong>365日・24時間の太陽位置</strong>が計算できます。夏は高く、冬は低い軌道を描きます。</div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>緯度<span class="req">★必須</span></label>
+        <input type="number" id="latInput" placeholder="例：35.6812" step="0.0001" min="-90" max="90">
+      </div>
+      <div>
+        <label>経度<span class="req">★必須</span></label>
+        <input type="number" id="lngInput" placeholder="例：139.7671" step="0.0001" min="-180" max="180">
+      </div>
+    </div>
+    <button class="btn-sky" onclick="applyManualCoords()" style="width:100%;margin-bottom:16px;">この座標を使用</button>
+    <div id="locationNote" style="font-size:12px;color:var(--sky);margin-bottom:10px;"></div>
+    <div class="error-msg" id="locationError"></div>
+
+    <details style="margin-top:4px;">
+      <summary style="font-size:12px;color:var(--muted);cursor:pointer;padding:6px 0;">🗺 Google Maps で住所検索・地図クリック（任意）</summary>
+      <div style="padding:12px 0 4px;">
+        <div class="api-row">
+          <input type="password" id="apiKeyInput" placeholder="APIキー（AIza...）">
+          <button class="btn-sec" onclick="loadGoogleMaps()">地図を読み込む</button>
+        </div>
+        <div class="api-row">
+          <input type="text" id="addressInput" placeholder="住所で検索" onkeydown="if(event.key==='Enter') geocodeAddress()">
+          <button class="btn-sec" onclick="geocodeAddress()">検索</button>
+        </div>
+        <div class="error-msg" id="mapError"></div>
+        <div id="map">地図を表示するにはAPIキーを入力してください</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ── STEP 2: モード選択 ── -->
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-num">STEP 2</span>
+      <span class="sec-title">🎯 <em>用途</em>を選ぶ</span>
+    </div>
+    <p class="sec-sub">用途によって入力項目と計算方法が変わります。</p>
+
+    <div class="illust-box">
+      <svg width="320" height="150" viewBox="0 0 320 150">
+        <rect x="10" y="15" width="140" height="125" rx="12" fill="rgba(91,200,245,0.06)" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
+        <text x="80" y="42" text-anchor="middle" font-size="26" font-family="sans-serif">🏠</text>
+        <text x="80" y="62" text-anchor="middle" fill="#e8f2ff" font-size="11" font-weight="bold" font-family="sans-serif">不動産・居住</text>
+        <rect x="20" y="72" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="36" y="72" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="52" y="72" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="68" y="72" width="14" height="9" rx="1" fill="#263348"/>
+        <rect x="84" y="72" width="14" height="9" rx="1" fill="#263348"/>
+        <rect x="100" y="72" width="14" height="9" rx="1" fill="#151f2e"/>
+        <rect x="20" y="83" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="36" y="83" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="52" y="83" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="68" y="83" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="84" y="83" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="100" y="83" width="14" height="9" rx="1" fill="#263348"/>
+        <text x="80" y="108" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8" font-family="sans-serif">月別ヒートマップ</text>
+        <text x="80" y="120" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8" font-family="sans-serif">四季すべてを判定</text>
+        <rect x="170" y="15" width="140" height="125" rx="12" fill="rgba(255,184,0,0.06)" stroke="rgba(255,184,0,0.2)" stroke-width="1.5"/>
+        <text x="240" y="42" text-anchor="middle" font-size="26" font-family="sans-serif">☀️</text>
+        <text x="240" y="62" text-anchor="middle" fill="#e8f2ff" font-size="11" font-weight="bold" font-family="sans-serif">ソーラー・農業</text>
+        <rect x="183" y="110" width="9" height="22" rx="1" fill="#4AB8F5" opacity="0.7"/>
+        <rect x="194" y="104" width="9" height="28" rx="1" fill="#4AB8F5" opacity="0.8"/>
+        <rect x="205" y="96" width="9" height="36" rx="1" fill="#FFB800" opacity="0.8"/>
+        <rect x="216" y="88" width="9" height="44" rx="1" fill="#FFB800" opacity="0.95"/>
+        <rect x="227" y="93" width="9" height="39" rx="1" fill="#FFB800" opacity="0.8"/>
+        <rect x="238" y="100" width="9" height="32" rx="1" fill="#4AB8F5" opacity="0.7"/>
+        <rect x="249" y="106" width="9" height="26" rx="1" fill="#4AB8F5" opacity="0.6"/>
+        <line x1="181" y1="132" x2="261" y2="132" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="240" y="145" text-anchor="middle" fill="rgba(255,184,0,0.5)" font-size="8" font-family="sans-serif">月別積算日射量</text>
+      </svg>
+      <div class="i-title">用途によって<em>計算方法が変わる</em></div>
+      <div class="i-desc"><strong>不動産用</strong>は晴天前提の理論値で四季を判定。<strong>ソーラー・農業用</strong>は気象データを加えた積算日射量を算出します。</div>
+    </div>
+
+    <div class="mode-cards">
+      <div class="mode-card selected" id="modeCardA" onclick="switchMode('A')">
+        <div class="mode-icon">🏠</div>
+        <div class="mode-name">不動産・居住用</div>
+        <div class="mode-desc">月別×時間帯ヒートマップで<br>日照を可視化</div>
+      </div>
+      <div class="mode-card" id="modeCardB" onclick="switchMode('B')">
+        <div class="mode-icon">☀️</div>
+        <div class="mode-name">ソーラー・農業用</div>
+        <div class="mode-desc">年間日照時間・最適設置角度<br>を算出</div>
+      </div>
+    </div>
+    <div class="mode-explain-box" id="mode-explain">
+      🏠 <strong style="color:var(--white);">不動産モード</strong>：曇りや雨を除いた「晴れた日に何時間日が入るか」を計算。部屋選びの参考値に最適です。
+    </div>
+  </div>
+
+  <!-- ── STEP 3A: 建物・部屋情報（モードA） ── -->
+  <div class="sec" id="step2ACard">
+    <div class="sec-head">
+      <span class="sec-num">STEP 3</span>
+      <span class="sec-title">🏢 <em>建物・部屋</em>の情報</span>
+    </div>
+    <p class="sec-sub">階数・向き・南側の建物が日照計算に最も影響します。</p>
+
+    <div class="illust-box">
+      <svg width="320" height="155" viewBox="0 0 340 160">
+        <rect x="0" y="145" width="340" height="15" fill="#1a3a5a" rx="3"/>
+        <!-- 南側の建物 -->
+        <rect x="18" y="45" width="70" height="100" fill="#1e3a5f" rx="3" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <rect x="28" y="56" width="18" height="14" fill="rgba(255,220,100,0.4)" rx="2"/>
+        <rect x="52" y="56" width="18" height="14" fill="rgba(255,220,100,0.15)" rx="2"/>
+        <rect x="28" y="77" width="18" height="14" fill="rgba(255,220,100,0.15)" rx="2"/>
+        <rect x="52" y="77" width="18" height="14" fill="rgba(255,220,100,0.4)" rx="2"/>
+        <rect x="28" y="98" width="18" height="14" fill="rgba(255,220,100,0.4)" rx="2"/>
+        <rect x="52" y="98" width="18" height="14" fill="rgba(255,220,100,0.15)" rx="2"/>
+        <!-- 高さ矢印 -->
+        <line x1="100" y1="45" x2="100" y2="145" stroke="rgba(91,200,245,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="104" y="97" fill="rgba(91,200,245,0.6)" font-size="10" font-family="sans-serif">高さ</text>
+        <text x="104" y="112" fill="#5BC8F5" font-size="12" font-weight="bold" font-family="sans-serif">30m</text>
+        <!-- 遮蔽ライン -->
+        <line x1="280" y1="145" x2="88" y2="45" stroke="rgba(255,107,107,0.65)" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <!-- 距離矢印 -->
+        <line x1="100" y1="155" x2="280" y2="155" stroke="rgba(255,184,0,0.4)" stroke-width="1"/>
+        <polygon points="100,152 100,158 93,155" fill="rgba(255,184,0,0.5)"/>
+        <polygon points="280,152 280,158 287,155" fill="rgba(255,184,0,0.5)"/>
+        <text x="185" y="160" text-anchor="middle" fill="rgba(255,184,0,0.7)" font-size="9" font-family="sans-serif">距離 20m</text>
+        <!-- 角度表示 -->
+        <path d="M280,145 L310,145 L295,117" stroke="rgba(255,107,107,0.5)" stroke-width="1" fill="none"/>
+        <text x="305" y="138" fill="#FF6B6B" font-size="10" font-family="sans-serif">56°</text>
+        <!-- 部屋 -->
+        <circle cx="280" cy="145" r="6" fill="#34D399"/>
+        <text x="265" y="140" fill="#34D399" font-size="9" font-family="sans-serif">部屋</text>
+        <!-- 冬の太陽（低い） -->
+        <circle cx="178" cy="90" r="11" fill="rgba(255,184,0,0.25)"/>
+        <text x="192" y="87" fill="rgba(255,184,0,0.6)" font-size="9" font-family="sans-serif">冬の太陽</text>
+        <line x1="174" y1="86" x2="182" y2="94" stroke="rgba(255,107,107,0.8)" stroke-width="2"/>
+        <line x1="182" y1="86" x2="174" y2="94" stroke="rgba(255,107,107,0.8)" stroke-width="2"/>
+      </svg>
+      <div class="i-title">建物の<em>高さ×距離</em>で影の届く角度がわかる</div>
+      <div class="i-desc">南側の建物が<strong>高いほど・近いほど</strong>遮蔽仰角が大きくなり、太陽が遮られる時間が増えます。特に冬の低い太陽に影響大。</div>
+    </div>
+
+    <div class="sub-sec">
+      <div class="sub-sec-title">部屋の向き<span class="req">★必須</span></div>
+      <select id="roomDir" class="hidden-input" onchange="updatePrecision()">
+        <option value="S">南</option><option value="SE">南東</option><option value="SW">南西</option>
+        <option value="E">東</option><option value="W">西</option>
+      </select>
+      <div class="card-select c3">
+        <div class="sel-card selected" onclick="selRoomDir(this,'S')"><div class="sel-icon">⬆️</div><div class="sel-label">南向き</div></div>
+        <div class="sel-card" onclick="selRoomDir(this,'SE')"><div class="sel-icon">↗️</div><div class="sel-label">南東向き</div></div>
+        <div class="sel-card" onclick="selRoomDir(this,'SW')"><div class="sel-icon">↖️</div><div class="sel-label">南西向き</div></div>
+        <div class="sel-card" onclick="selRoomDir(this,'E')"><div class="sel-icon">➡️</div><div class="sel-label">東向き</div></div>
+        <div class="sel-card" onclick="selRoomDir(this,'W')"><div class="sel-icon">⬅️</div><div class="sel-label">西向き</div></div>
+      </div>
+
+      <label>窓の大きさ<span class="opt">任意</span></label>
+      <select id="windowSize" class="hidden-input" onchange="updatePrecision()">
+        <option value="large">大</option><option value="medium" selected>中</option><option value="small">小</option>
+      </select>
+      <div class="card-select c3">
+        <div class="sel-card" onclick="selWindowSize(this,'large')"><div class="sel-icon">🪟</div><div class="sel-label">大きい</div></div>
+        <div class="sel-card selected" onclick="selWindowSize(this,'medium')"><div class="sel-icon">▪️</div><div class="sel-label">普通</div></div>
+        <div class="sel-card" onclick="selWindowSize(this,'small')"><div class="sel-icon">◾</div><div class="sel-label">小さい</div></div>
+      </div>
+    </div>
+
+    <div class="sub-sec">
+      <div class="sub-sec-title">階数</div>
+      <div class="slider-wrap">
+        <div class="slider-val"><span id="floor-val">1</span><span class="slider-unit"> 階</span></div>
+        <input type="range" min="1" max="50" value="1" oninput="onFloorSlide(this.value)">
+        <div class="slider-labels"><span>1階</span><span>25階</span><span>50階</span></div>
+      </div>
+      <input type="number" id="floorInput" value="1" class="hidden-input">
+      <input type="number" id="heightInput" value="3" class="hidden-input">
+    </div>
+
+    <!-- 向きに連動する建物（南以外の時に表示） -->
+    <div class="sub-sec" id="facingBuildingSection" style="display:none;">
+      <div class="sub-sec-title" id="facingBuildingTitle">方角側の建物<span class="opt">任意</span></div>
+      <label id="facingBuildingHeightLabel">方角側にある建物の高さ</label>
+      <select id="facingBuildingHeight" onchange="onFacingBuildingChange()">
+        <option value="0">なし</option>
+        <option value="7">低い（1〜2階 / 〜7m）</option>
+        <option value="15">中程度（3〜5階 / 〜15m）</option>
+        <option value="30">高い（6〜10階 / 〜30m）</option>
+        <option value="40">とても高い（11階以上 / 30m〜）</option>
+      </select>
+      <div id="facingDistRow">
+        <label id="facingBuildingDistLabel">方角側の建物までの距離</label>
+        <select id="facingBuildingDist" onchange="updatePrecision()">
+          <option value="3">接近（〜5m）</option>
+          <option value="10">近い（5〜15m）</option>
+          <option value="22" selected>普通（15〜30m）</option>
+          <option value="40">遠い（30m〜）</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sub-sec">
+      <div class="sub-sec-title">南側の建物<span class="opt">任意</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.7;background:rgba(91,200,245,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+        ☀️ 太陽は常に<strong style="color:var(--white);">南の空</strong>を通ります。そのため、<strong style="color:var(--white);">部屋の向きに関わらず</strong>南側の建物が日照に最も影響します。北向きの部屋でも南側の建物は重要です。
+      </div>
+      <label>南側にある建物の高さ</label>
+      <select id="southBuildingHeight" onchange="onSouthBuildingChange()">
+        <option value="0">なし</option>
+        <option value="7">低い（1〜2階 / 〜7m）</option>
+        <option value="15">中程度（3〜5階 / 〜15m）</option>
+        <option value="30">高い（6〜10階 / 〜30m）</option>
+        <option value="40">とても高い（11階以上 / 30m〜）</option>
+      </select>
+      <div id="southDistRow">
+        <label>南側建物までの距離</label>
+        <select id="southBuildingDist" onchange="updatePrecision()">
+          <option value="3">接近（〜5m）</option>
+          <option value="10">近い（5〜15m）</option>
+          <option value="22" selected>普通（15〜30m）</option>
+          <option value="40">遠い（30m〜）</option>
+        </select>
+      </div>
+      <div class="error-msg" id="buildingError"></div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3B: 設置面情報（モードB） ── -->
+  <div class="sec" id="step2BCard" style="display:none;">
+    <div class="sec-head">
+      <span class="sec-num">STEP 3</span>
+      <span class="sec-title">⚙️ <em>設置面</em>の情報</span>
+    </div>
+    <p class="sec-sub">設置角度と向きで発電量・日射量が大きく変わります。</p>
+
+    <div class="illust-box">
+      <svg width="320" height="150" viewBox="0 0 320 150">
+        <!-- 地面 -->
+        <rect x="0" y="130" width="320" height="20" fill="#1a3a5a" rx="2"/>
+        <!-- パネル（傾き30°） -->
+        <polygon points="80,130 160,130 200,65 120,65" fill="rgba(91,200,245,0.15)" stroke="rgba(91,200,245,0.5)" stroke-width="1.5"/>
+        <!-- パネルセル -->
+        <line x1="133" y1="65" x2="93" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <line x1="147" y1="65" x2="107" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <line x1="161" y1="65" x2="121" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <line x1="175" y1="65" x2="135" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <line x1="120" y1="81" x2="200" y2="81" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <line x1="110" y1="98" x2="190" y2="98" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <line x1="100" y1="115" x2="180" y2="115" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <!-- 太陽 -->
+        <circle cx="265" cy="35" r="22" fill="rgba(255,184,0,0.12)"/>
+        <circle cx="265" cy="35" r="14" fill="#FFB800"/>
+        <!-- 光線 -->
+        <line x1="250" y1="48" x2="175" y2="82" stroke="rgba(255,184,0,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <!-- 傾き角度弧 -->
+        <path d="M160,130 L195,130" stroke="rgba(255,184,0,0.5)" stroke-width="1" fill="none"/>
+        <path d="M185,130 Q183,112 175,100" stroke="rgba(255,184,0,0.5)" stroke-width="1" fill="none"/>
+        <text x="192" y="122" fill="#FFB800" font-size="11" font-family="sans-serif">30°</text>
+        <!-- コンパス -->
+        <circle cx="270" cy="115" r="25" fill="rgba(91,200,245,0.05)" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <text x="270" y="97" text-anchor="middle" fill="rgba(91,200,245,0.6)" font-size="9" font-family="sans-serif">N</text>
+        <text x="288" y="119" text-anchor="middle" fill="rgba(91,200,245,0.6)" font-size="9" font-family="sans-serif">E</text>
+        <text x="270" y="143" text-anchor="middle" fill="#FFB800" font-size="9" font-weight="bold" font-family="sans-serif">S</text>
+        <text x="252" y="119" text-anchor="middle" fill="rgba(91,200,245,0.6)" font-size="9" font-family="sans-serif">W</text>
+        <line x1="270" y1="100" x2="270" y2="138" stroke="rgba(255,184,0,0.4)" stroke-width="1.5"/>
+        <polygon points="270,100 267,108 273,108" fill="rgba(255,184,0,0.6)"/>
+      </svg>
+      <div class="i-title">パネルの<em>角度と向き</em>で日射量が最大化できる</div>
+      <div class="i-desc">真南（方位角180°）・緯度に近い傾き角が最適です。<strong>最適角度は自動で計算・提案</strong>されます。</div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>設置面の傾き（0°=水平 / 90°=垂直）<span class="req">★必須</span></label>
+        <input type="number" id="tiltAngle" min="0" max="90" value="30" onchange="updatePrecision()">
+      </div>
+      <div>
+        <label>方位角（真南=180°）<span class="req">★必須</span></label>
+        <input type="number" id="facingAzimuth" min="0" max="360" value="180" onchange="updatePrecision()">
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">方位角: 0°=北 / 90°=東 / 180°=南 / 270°=西</p>
+    <label>地形<span class="opt">任意</span></label>
+    <select id="terrain" onchange="updatePrecision()" style="max-width:360px;">
+      <option value="flat">平地</option>
+      <option value="slope_s">南向き斜面（日当たり良好）</option>
+      <option value="slope_n">北向き斜面</option>
+      <option value="coastal">沿岸（雲少なめ補正）</option>
+      <option value="mountain">山間（雲多め補正）</option>
+    </select>
+  </div>
+
+  <!-- ── STEP 4: 写真 ── -->
+  <div class="sec">
+    <div class="sec-head">
+      <span class="sec-num">STEP 4</span>
+      <span class="sec-title">📷 <em>空の写真</em>をアップロード<span class="opt">任意</span></span>
+    </div>
+    <p class="sec-sub">各方向の空に向けて撮影した写真をアップロードすると精度が上がります。なくても計算できます。</p>
+
+    <div class="illust-box">
+      <div style="position:relative;width:200px;height:200px;max-width:calc(100vw - 80px);max-height:calc(100vw - 80px);">
+        <svg width="200" height="200" viewBox="0 0 200 200" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+          <circle cx="100" cy="100" r="90" stroke="rgba(91,200,245,0.15)" stroke-width="1.5" fill="rgba(0,0,0,0.2)"/>
+          <line x1="10" y1="100" x2="190" y2="100" stroke="rgba(91,200,245,0.08)" stroke-width="1"/>
+          <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(91,200,245,0.08)" stroke-width="1"/>
+          <line x1="100" y1="100" x2="100" y2="172" stroke="rgba(255,184,0,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="100" y="22" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">N</text>
+          <text x="178" y="104" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">E</text>
+          <text x="100" y="192" text-anchor="middle" fill="#FFB800" font-size="10" font-weight="bold" font-family="sans-serif">S ★</text>
+          <text x="10" y="104" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">W</text>
+          <circle cx="100" cy="100" r="5" fill="#34D399" opacity="0.8"/>
+        </svg>
+        <div style="position:absolute;left:50%;top:76%;transform:translate(-50%,-50%);">
+          <div style="width:52px;height:52px;border-radius:11px;border:2px solid #FFB800;background:rgba(255,184,0,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;animation:glow2 2s ease-in-out infinite;">📷<div style="font-size:9px;color:#FFB800;font-weight:700;">南 ★</div></div>
+        </div>
+        <div style="position:absolute;left:77%;top:50%;transform:translate(-50%,-50%);">
+          <div style="width:42px;height:42px;border-radius:9px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;">📷<div style="font-size:8px;color:#4a6a8a;">東</div></div>
+        </div>
+        <div style="position:absolute;left:23%;top:50%;transform:translate(-50%,-50%);">
+          <div style="width:42px;height:42px;border-radius:9px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;">📷<div style="font-size:8px;color:#4a6a8a;">西</div></div>
+        </div>
+        <div style="position:absolute;left:50%;top:23%;transform:translate(-50%,-50%);">
+          <div style="width:42px;height:42px;border-radius:9px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;">📷<div style="font-size:8px;color:#4a6a8a;">北</div></div>
+        </div>
+      </div>
+      <style>@keyframes glow2{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0.3);}50%{box-shadow:0 0 0 10px rgba(255,184,0,0);}}</style>
+      <div class="i-title">空の写真から<em>遮蔽物マップ</em>を作る</div>
+      <div class="i-desc">東西南北に向けて空を撮影すると<strong>どの方角・高さに障害物があるか</strong>が検出できます。特に南側が年間日照に最も影響します。</div>
+    </div>
+
+    <button class="guide-toggle-btn" onclick="togglePhotoGuide()" id="guideToggleBtn">📷 撮影ガイドを見る ▼</button>
+    <div id="photoGuide" style="display:none;margin-bottom:14px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;color:var(--muted);line-height:1.9;">
+        <strong style="color:var(--white);">撮影のコツ</strong><br>
+        ・スマホをやや上向き（45°）で方角に向けて撮影<br>
+        ・建物の上端と空が両方写るよう調整してください<br>
+        ・空が全体の30%以上写ること（室内からの撮影はNG）<br>
+        ・魚眼写真は南スロットにアップロード（全方位カバー）
+      </div>
+    </div>
+
+    <div class="photo-grid">
+      <!-- 南（2列幅） -->
+      <div class="photo-slot key" id="slotS" onclick="triggerDirUpload('S')" ondrop="handleDirDrop(event,'S')" ondragover="event.preventDefault()" style="grid-column:span 2;">
+        <div id="uploadAreaS">
+          <div class="slot-icon" id="slotIconS">📷</div>
+          <div class="slot-dir">南</div>
+          <div class="slot-key-badge">★ 最重要・必須</div>
+        </div>
+        <div id="previewS" style="display:none;">
+          <img id="previewImgS" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;">
+          <div class="analysis-badge" id="badgeS">未解析（計算時に自動解析）</div>
+          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('S')">削除</button>
+        </div>
+      </div>
+      <input type="file" id="fileS" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'S')">
+
+      <!-- 東 -->
+      <div class="photo-slot" id="slotE" onclick="triggerDirUpload('E')" ondrop="handleDirDrop(event,'E')" ondragover="event.preventDefault()">
+        <div id="uploadAreaE"><div class="slot-icon" id="slotIconE">📷</div><div class="slot-dir">東</div><div class="slot-optional">任意</div></div>
+        <div id="previewE" style="display:none;">
+          <img id="previewImgE" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:5px;">
+          <div class="analysis-badge" id="badgeE" style="font-size:10px;"></div>
+          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('E')">削除</button>
+        </div>
+      </div>
+      <input type="file" id="fileE" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'E')">
+
+      <!-- 西 -->
+      <div class="photo-slot" id="slotW" onclick="triggerDirUpload('W')" ondrop="handleDirDrop(event,'W')" ondragover="event.preventDefault()">
+        <div id="uploadAreaW"><div class="slot-icon" id="slotIconW">📷</div><div class="slot-dir">西</div><div class="slot-optional">任意</div></div>
+        <div id="previewW" style="display:none;">
+          <img id="previewImgW" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:5px;">
+          <div class="analysis-badge" id="badgeW" style="font-size:10px;"></div>
+          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('W')">削除</button>
+        </div>
+      </div>
+      <input type="file" id="fileW" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'W')">
+
+      <!-- 北 -->
+      <div class="photo-slot" id="slotN" onclick="triggerDirUpload('N')" ondrop="handleDirDrop(event,'N')" ondragover="event.preventDefault()">
+        <div id="uploadAreaN"><div class="slot-icon" id="slotIconN">📷</div><div class="slot-dir">北</div><div class="slot-optional">任意</div></div>
+        <div id="previewN" style="display:none;">
+          <img id="previewImgN" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:5px;">
+          <div class="analysis-badge" id="badgeN" style="font-size:10px;"></div>
+          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('N')">削除</button>
+        </div>
+      </div>
+      <input type="file" id="fileN" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'N')">
+    </div>
+  </div>
+
+  <!-- ── STEP 5: 周辺環境（モードA のみ） ── -->
+  <div class="sec" id="step4Card">
+    <div class="sec-head">
+      <span class="sec-num">STEP 5</span>
+      <span class="sec-title">🌿 <em>周辺環境</em>を教える<span class="opt">任意</span></span>
+    </div>
+    <p class="sec-sub">写真では検出しにくい情報を補足してください。精度がさらに上がります。</p>
+
+    <div class="illust-box">
+      <svg width="300" height="155" viewBox="0 0 300 155">
+        <defs>
+          <radialGradient id="sky-open2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#87CEEB" stop-opacity="0.9"/>
+            <stop offset="55%" stop-color="#4AB8F5" stop-opacity="0.7"/>
+            <stop offset="80%" stop-color="#1a3a5a" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#0a1e34" stop-opacity="1"/>
+          </radialGradient>
+          <radialGradient id="sky-closed3" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#5BC8F5" stop-opacity="0.6"/>
+            <stop offset="30%" stop-color="#3a8ab5" stop-opacity="0.4"/>
+            <stop offset="55%" stop-color="#1a3a5a" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#0a1e34" stop-opacity="1"/>
+          </radialGradient>
+        </defs>
+        <!-- 左：開けた場所 -->
+        <circle cx="75" cy="68" r="55" fill="#0a1e34" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
+        <circle cx="75" cy="68" r="55" fill="url(#sky-open2)" opacity="0.8"/>
+        <text x="75" y="136" text-anchor="middle" fill="#FFB800" font-size="15" font-weight="bold" font-family="sans-serif">80%</text>
+        <text x="75" y="148" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="9" font-family="sans-serif">開けた場所</text>
+        <!-- 矢印 -->
+        <text x="150" y="72" text-anchor="middle" fill="rgba(91,200,245,0.4)" font-size="22" font-family="sans-serif">→</text>
+        <!-- 右：囲まれた場所 -->
+        <circle cx="225" cy="68" r="55" fill="url(#sky-closed3)" opacity="0.9"/>
+        <rect x="170" y="48" width="28" height="75" fill="#1a2a3a" rx="2"/>
+        <rect x="252" y="30" width="28" height="93" fill="#1a2a3a" rx="2"/>
+        <circle cx="225" cy="68" r="55" fill="none" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
+        <text x="225" y="136" text-anchor="middle" fill="rgba(90,120,140,1)" font-size="15" font-weight="bold" font-family="sans-serif">20%</text>
+        <text x="225" y="148" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="9" font-family="sans-serif">囲まれた場所</text>
+      </svg>
+      <div class="i-title">空の<em>見え率</em>が日照率に直結する</div>
+      <div class="i-desc">写真から空が占める割合（Sky View Factor）を算出。<strong>樹木・地形</strong>の補足情報でさらに精度が上がります。</div>
+    </div>
+
+    <input type="checkbox" id="cbTrees" class="hidden-input" onchange="onTreesChange()">
+    <input type="checkbox" id="cbSlope" class="hidden-input" onchange="onSlopeChange()">
+    <input type="checkbox" id="cbOpen"  class="hidden-input" onchange="updatePrecision()">
+
+    <div class="check-group">
+      <div class="check-item" onclick="toggleCb(this,'cbTrees')">
+        <div class="check-box">✓</div>
+        <div><div class="check-text">🌳 南側に大きな樹木がある（高さ5m以上）</div><div class="check-sub">落葉樹は春〜秋に−15%の遮蔽補正が入ります</div></div>
+      </div>
+      <div class="check-item" onclick="toggleCb(this,'cbSlope')">
+        <div class="check-box">✓</div>
+        <div><div class="check-text">⛰️ 斜面・傾斜地に建っている</div><div class="check-sub">山の中腹など地形が遮蔽物になるケース</div></div>
+      </div>
+      <div class="check-item" onclick="toggleCb(this,'cbOpen')">
+        <div class="check-box">✓</div>
+        <div><div class="check-text">🌊 周囲が開けている（田畑・海沿いなど）</div><div class="check-sub">遮蔽物が少ないため日照率が高めに算出されます</div></div>
+      </div>
+    </div>
+
+    <div id="slopeDirRow" style="display:none;">
+      <label>斜面の向き</label>
+      <select id="slopeDir">
+        <option value="S">南向き斜面（日当たり良好）</option>
+        <option value="N">北向き斜面</option>
+        <option value="E">東向き斜面（朝に有利）</option>
+        <option value="W">西向き斜面（午後に有利）</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ── 計算ボタン ── -->
+  <div class="sec" style="text-align:center;">
+    <button class="btn-calc" id="calcBtn" onclick="runCalculation()">☀ 日照率を計算する</button>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div id="results">
+
+    <div id="resultsA">
+      <div class="res-card">
+        <h2>🗺 月別×時間帯 日照ヒートマップ</h2>
+        <div class="heatmap-a-wrap">
+          <table class="heatmap-a-table" id="heatmapATable"></table>
+        </div>
+        <div class="legend-row">
+          <span><span class="legend-dot" style="background:#FF8C00;"></span>◎ 日照あり（≥70%）</span>
+          <span><span class="legend-dot" style="background:#FFD580;"></span>○ 概ね日照（40〜70%）</span>
+          <span><span class="legend-dot" style="background:#C0C0C0;"></span>△ 日照少（15〜40%）</span>
+          <span><span class="legend-dot" style="background:#606060;"></span>✕ 日照なし（＜15%）</span>
+        </div>
+        <div class="mode-a-summary" id="modeASummary"></div>
+        <div id="correctionNotes" style="font-size:12px;color:var(--muted);margin-bottom:12px;"></div>
+        <div class="caveat">⚠️ この結果は参考値です。実際の日照は気象・樹木・地形により異なります（誤差±20〜30%）</div>
+      </div>
+    </div>
+
+    <div id="resultsB" style="display:none;">
+      <div class="res-card">
+        <h2>⚡ ソーラー・農業 日照解析結果</h2>
+        <div class="summary-grid">
+          <div class="kpi-card"><div class="val" id="kpiBHours">--</div><div class="unit">h/年</div><div class="lbl">年間推定日照時間</div></div>
+          <div class="kpi-card"><div class="val" id="kpiBestMonth">--</div><div class="unit">月</div><div class="lbl">最も日射量が多い月</div></div>
+          <div class="kpi-card"><div class="val" id="kpiBRad">--</div><div class="unit">kWh/m²/年 相当</div><div class="lbl">年間積算日射量（相対値）</div></div>
+        </div>
+        <div class="optimal-card">
+          <div class="oc-title">💡 最適設置角度の提案</div>
+          <div class="optimal-row" id="optimalRow"></div>
+        </div>
+        <h3 style="font-size:13px;color:var(--muted);margin-bottom:10px;">月別積算日射量（気象補正あり）</h3>
+        <div class="chart-wrap"><canvas id="modeBChart"></canvas></div>
+        <div id="correctionNotesB" style="font-size:12px;color:var(--muted);margin-bottom:12px;"></div>
+        <div class="caveat">⚠️ この結果は参考値です。実際の日照は気象・樹木・地形により異なります（誤差±20〜30%）</div>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+
+</div><!-- /container -->
+
+<div class="hm-tooltip" id="hmTooltip"></div>
+
+<script>
+"use strict";
+
+let currentLat  = null;
+let currentLng  = null;
+let googleMap   = null;
+let mapMarker   = null;
+let modeBChart  = null;
+let currentMode = 'A';
+
+const dirPhotos = { S: null, E: null, W: null, N: null };
+
+// ── モード切り替え ──
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeCardA').classList.toggle('selected', mode === 'A');
+  document.getElementById('modeCardB').classList.toggle('selected', mode === 'B');
+  document.getElementById('step2ACard').style.display = mode === 'A' ? '' : 'none';
+  document.getElementById('step2BCard').style.display = mode === 'B' ? '' : 'none';
+  document.getElementById('step4Card').style.display  = mode === 'A' ? '' : 'none';
+  document.getElementById('results').style.display = 'none';
+
+  const explain = document.getElementById('mode-explain');
+  if (mode === 'A') {
+    explain.innerHTML = '🏠 <strong style="color:var(--white);">不動産モード</strong>：曇りや雨を除いた「晴れた日に何時間日が入るか」を計算。部屋選びの参考値に最適です。';
+  } else {
+    explain.innerHTML = '☀️ <strong style="color:var(--white);">ソーラー・農業モード</strong>：気象庁データを加えた積算日射量を算出。年間・月別グラフと最適設置角度を提案します。';
+  }
+  updatePrecision();
+}
+
+const DIR_LABEL = { SE: '南東', SW: '南西', E: '東', W: '西' };
+
+function selRoomDir(el, val) {
+  el.closest('.card-select').querySelectorAll('.sel-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('roomDir').value = val;
+  updateFacingBuildingSection(val);
+  updatePrecision();
+}
+
+function updateFacingBuildingSection(dir) {
+  const section = document.getElementById('facingBuildingSection');
+  if (!DIR_LABEL[dir]) { section.style.display = 'none'; return; }
+  const d = DIR_LABEL[dir];
+  section.style.display = '';
+  document.getElementById('facingBuildingTitle').innerHTML = `${d}側の建物<span class="opt">任意</span>`;
+  document.getElementById('facingBuildingHeightLabel').textContent = `${d}側にある建物の高さ`;
+  document.getElementById('facingBuildingDistLabel').textContent = `${d}側の建物までの距離`;
+}
+
+function selWindowSize(el, val) {
+  el.closest('.card-select').querySelectorAll('.sel-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('windowSize').value = val;
+  updatePrecision();
+}
+
+function onFloorSlide(val) {
+  document.getElementById('floor-val').textContent = val;
+  document.getElementById('floorInput').value = val;
+  document.getElementById('heightInput').value = parseInt(val) * 3;
+  updatePrecision();
+}
+
+function toggleCb(el, cbId) {
+  el.classList.toggle('checked');
+  const cb = document.getElementById(cbId);
+  if (cb) {
+    cb.checked = el.classList.contains('checked');
+    if (cbId === 'cbTrees') onTreesChange();
+    else if (cbId === 'cbSlope') onSlopeChange();
+    else updatePrecision();
+  }
+}
+
+// ── Google Maps ──
+function loadGoogleMaps() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { showErr('mapError', 'APIキーを入力してください'); return; }
+  const old = document.getElementById('gmapsScript');
+  if (old) old.remove();
+  const s = document.createElement('script');
+  s.id = 'gmapsScript';
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=onGoogleMapsReady`;
+  s.async = true;
+  s.onerror = () => showErr('mapError', 'Google Maps APIの読み込みに失敗しました。');
+  hideErr('mapError');
+  document.head.appendChild(s);
+}
+
+window.onGoogleMapsReady = function () {
+  const mapDiv = document.getElementById('map');
+  mapDiv.innerHTML = '';
+  const center = currentLat != null ? { lat: currentLat, lng: currentLng } : { lat: 35.6762, lng: 139.6503 };
+  googleMap = new google.maps.Map(mapDiv, { center, zoom: 15, disableDefaultUI: true, zoomControl: true });
+  googleMap.addListener('click', e => setLocation(e.latLng.lat(), e.latLng.lng()));
+  if (currentLat != null) placeMarker(currentLat, currentLng);
+  const ac = new google.maps.places.Autocomplete(document.getElementById('addressInput'));
+  ac.addListener('place_changed', () => {
+    const place = ac.getPlace();
+    if (place.geometry) {
+      const lat = place.geometry.location.lat(), lng = place.geometry.location.lng();
+      setLocation(lat, lng); googleMap.panTo({ lat, lng });
+    }
+  });
+};
+
+function geocodeAddress() {
+  const address = document.getElementById('addressInput').value.trim();
+  if (!address) return;
+  if (typeof google === 'undefined') { showErr('locationError', 'Google Maps APIが読み込まれていません。'); return; }
+  new google.maps.Geocoder().geocode({ address }, (results, status) => {
+    if (status === 'OK') {
+      const loc = results[0].geometry.location;
+      setLocation(loc.lat(), loc.lng());
+      if (googleMap) googleMap.panTo({ lat: loc.lat(), lng: loc.lng() });
+    } else showErr('locationError', '住所が見つかりませんでした');
+  });
+}
+
+// ── 地点 ──
+function setLocation(lat, lng) {
+  currentLat = lat; currentLng = lng;
+  document.getElementById('latInput').value = lat.toFixed(6);
+  document.getElementById('lngInput').value = lng.toFixed(6);
+  document.getElementById('locationNote').textContent = `✓ 選択中: 緯度 ${lat.toFixed(5)}, 経度 ${lng.toFixed(5)}`;
+  hideErr('locationError');
+  if (googleMap) placeMarker(lat, lng);
+  updatePrecision();
+}
+
+function placeMarker(lat, lng) {
+  if (mapMarker) mapMarker.setMap(null);
+  mapMarker = new google.maps.Marker({ position: { lat, lng }, map: googleMap });
+}
+
+function applyManualCoords() {
+  const lat = parseFloat(document.getElementById('latInput').value);
+  const lng = parseFloat(document.getElementById('lngInput').value);
+  if (isNaN(lat) || isNaN(lng)) { showErr('locationError', '有効な緯度・経度を入力してください'); return; }
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) { showErr('locationError', '緯度は-90〜90、経度は-180〜180'); return; }
+  setLocation(lat, lng);
+}
+
+// ── 精度インジケーター ──
+function updatePrecision() {
+  let score = 0;
+  if (currentLat !== null && currentLng !== null) score += 25;
+
+  if (currentMode === 'A') {
+    const floor = parseInt(document.getElementById('floorInput').value);
+    if (!isNaN(floor) && floor >= 1) score += 15;
+    const southH = parseInt(document.getElementById('southBuildingHeight').value) || 0;
+    if (southH > 0) score += 10;
+    const roomDir = document.getElementById('roomDir').value;
+    if (roomDir) score += 10;
+    if (dirPhotos.S !== null) score += 20;
+    let extra = 0;
+    if (dirPhotos.E !== null) extra++;
+    if (dirPhotos.W !== null) extra++;
+    if (dirPhotos.N !== null) extra++;
+    score += Math.min(3, extra) * 4;
+    const cbTrees = document.getElementById('cbTrees');
+    const cbSlope = document.getElementById('cbSlope');
+    const cbOpen  = document.getElementById('cbOpen');
+    if ((cbTrees && cbTrees.checked)||(cbSlope && cbSlope.checked)||(cbOpen && cbOpen.checked)) score += 8;
+    const ws = document.getElementById('windowSize').value;
+    if (ws && ws !== 'medium') score += 4;
+  } else {
+    const tilt = parseFloat(document.getElementById('tiltAngle').value);
+    const az   = parseFloat(document.getElementById('facingAzimuth').value);
+    if (!isNaN(tilt)) score += 20;
+    if (!isNaN(az))   score += 15;
+    if (dirPhotos.S !== null) score += 15;
+    let extra = 0;
+    if (dirPhotos.E !== null) extra++;
+    if (dirPhotos.W !== null) extra++;
+    if (dirPhotos.N !== null) extra++;
+    score += Math.min(3, extra) * 5;
+    const terrain = document.getElementById('terrain').value;
+    if (terrain && terrain !== 'flat') score += 10;
+  }
+
+  const fill = document.getElementById('precisionFill');
+  const label = document.getElementById('precisionLabel');
+  const scoreEl = document.getElementById('precisionScore');
+  fill.style.width = Math.min(100, score) + '%';
+  scoreEl.textContent = score + ' pt';
+  if (score < 40) {
+    fill.style.background = '#ef4444'; label.style.color = '#ef4444'; label.textContent = '低';
+  } else if (score < 70) {
+    fill.style.background = '#f59e0b'; label.style.color = '#f59e0b'; label.textContent = '中';
+  } else {
+    fill.style.background = '#22c55e'; label.style.color = '#22c55e'; label.textContent = '高';
+  }
+}
+
+// ── 写真ガイド ──
+function togglePhotoGuide() {
+  const guide = document.getElementById('photoGuide');
+  const btn   = document.getElementById('guideToggleBtn');
+  if (guide.style.display === 'none') {
+    guide.style.display = 'block'; btn.textContent = '📷 撮影ガイドを閉じる ▲';
+  } else {
+    guide.style.display = 'none'; btn.textContent = '📷 撮影ガイドを見る ▼';
+  }
+}
+
+// ── 写真アップロード ──
+function triggerDirUpload(dir) { document.getElementById('file' + dir).click(); }
+function handleDirDrop(e, dir) {
+  e.preventDefault();
+  const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+  if (file) loadDirFile(file, dir);
+}
+function handleDirFile(e, dir) { if (e.target.files[0]) loadDirFile(e.target.files[0], dir); e.target.value = ''; }
+function loadDirFile(file, dir) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    dirPhotos[dir] = { dataUrl: ev.target.result, fov: 90, result: null };
+    renderDirSlot(dir); updatePrecision();
+  };
+  reader.readAsDataURL(file);
+}
+function removeDirPhoto(dir) { dirPhotos[dir] = null; renderDirSlot(dir); updatePrecision(); }
+
+function renderDirSlot(dir) {
+  const photo    = dirPhotos[dir];
+  const slotEl   = document.getElementById('slot' + dir);
+  const iconEl   = document.getElementById('slotIcon' + dir);
+  const uploadEl = document.getElementById('uploadArea' + dir);
+  const prevEl   = document.getElementById('preview' + dir);
+  if (photo) {
+    if (slotEl) slotEl.classList.add('uploaded');
+    if (iconEl) iconEl.textContent = '✅';
+    if (uploadEl) uploadEl.style.display = 'none';
+    if (prevEl) { prevEl.style.display = 'block'; document.getElementById('previewImg' + dir).src = photo.dataUrl; }
+    const badge = document.getElementById('badge' + dir);
+    if (badge) badge.textContent = photo.result ? `✓ 解析完了: 空可視率 ${photo.result.svf.toFixed(0)}%` : '未解析（計算時に自動解析）';
+  } else {
+    if (slotEl) slotEl.classList.remove('uploaded');
+    if (iconEl) iconEl.textContent = '📷';
+    if (uploadEl) uploadEl.style.display = '';
+    if (prevEl) prevEl.style.display = 'none';
+  }
+}
+
+function getDirPhotoList() {
+  const dirMapping = { S: 180, E: 90, W: 270, N: 0 };
+  return Object.entries(dirPhotos).filter(([, p]) => p !== null).map(([dir, p]) => ({ ...p, facingDeg: dirMapping[dir] }));
+}
+
+// ── 画像解析 ──
+function analyzePhoto(photo) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const MAXPX = 800;
+      const scale = Math.min(1, MAXPX / Math.max(img.naturalWidth, img.naturalHeight));
+      const W = Math.round(img.naturalWidth * scale), H = Math.round(img.naturalHeight * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, W, H);
+      const { data } = ctx.getImageData(0, 0, W, H);
+      const obstruction = new Float32Array(360).fill(0);
+      let skyPixels = 0;
+
+      function isSky(r, g, b) {
+        const lum = 0.299*r + 0.587*g + 0.114*b;
+        if (lum > 200) return true;
+        if (lum > 120 && b > r * 1.05 && b > g * 0.95) return true;
+        if (lum > 165 && Math.max(Math.abs(r-g), Math.abs(g-b), Math.abs(r-b)) < 35) return true;
+        return false;
+      }
+
+      const isFisheye = (photo.facingDeg === -1 || photo.fov >= 360);
+      if (isFisheye) {
+        const cx = W/2, cy = H/2, maxR = Math.min(W, H)/2;
+        for (let azDeg = 0; azDeg < 360; azDeg++) {
+          const azRad = azDeg * Math.PI / 180;
+          let obstElev = 0;
+          for (let rFrac = 0.98; rFrac >= 0.02; rFrac -= 0.02) {
+            const r = rFrac * maxR;
+            const px = Math.round(cx + r * Math.sin(azRad)), py = Math.round(cy - r * Math.cos(azRad));
+            if (px < 0 || px >= W || py < 0 || py >= H) continue;
+            const i = (py * W + px) * 4;
+            if (isSky(data[i], data[i+1], data[i+2])) { skyPixels++; obstElev = Math.max(0, 90 * (1 - rFrac) - 2); break; }
+          }
+          obstruction[azDeg] = obstElev;
+        }
+      } else {
+        const vFov = photo.fov * (H / W);
+        for (let x = 0; x < W; x++) {
+          const hAngle = ((x / (W - 1)) - 0.5) * photo.fov;
+          const azimuth = ((photo.facingDeg + hAngle) % 360 + 360) % 360;
+          const azSector = Math.round(azimuth) % 360;
+          let boundaryRow = H;
+          for (let y = H - 1; y >= 0; y--) {
+            const i = (y * W + x) * 4;
+            if (isSky(data[i], data[i+1], data[i+2])) { skyPixels++; boundaryRow = y; }
+          }
+          const boundaryElev = ((1 - boundaryRow / H) - 0.5) * vFov;
+          obstruction[azSector] = Math.max(obstruction[azSector], Math.max(0, boundaryElev));
+        }
+      }
+      const rawSvf = (skyPixels / (W * H)) * 100;
+      const svf = Math.min(100, isFisheye ? rawSvf : rawSvf * 1.8);
+      resolve({ obstruction, svf });
+    };
+    img.src = photo.dataUrl;
+  });
+}
+
+function mergeObstructions(analyzedPhotos) {
+  const merged = new Float32Array(360).fill(0);
+  for (const p of analyzedPhotos) {
+    if (!p.result) continue;
+    for (let az = 0; az < 360; az++) merged[az] = Math.max(merged[az], p.result.obstruction[az]);
+  }
+  return merged;
+}
+
+function obstructionAt(map, azimuthDeg) {
+  return map[Math.round(((azimuthDeg % 360) + 360) % 360)] || 0;
+}
+
+// ── 建物遮蔽・斜面補正 ──
+function applyBuildingObstruction(obstMap, measurementHeightM, southBuildingH, southBuildingDistM) {
+  if (southBuildingH <= 0) return obstMap;
+  const heightDiff = southBuildingH - measurementHeightM;
+  if (heightDiff <= 0) return obstMap;
+  const angle = Math.atan2(heightDiff, southBuildingDistM) * (180 / Math.PI);
+  const result = new Float32Array(obstMap);
+  // 太陽は常に南の空を通る → 南エリア（135°〜225°）に遮蔽を適用
+  for (let az = 135; az <= 225; az++) result[az] = Math.max(result[az], angle);
+  return result;
+}
+
+function applyFacingBuildingObstruction(obstMap, measurementHeightM, facingBuildingH, facingBuildingDistM, roomDir) {
+  if (facingBuildingH <= 0) return obstMap;
+  const heightDiff = facingBuildingH - measurementHeightM;
+  if (heightDiff <= 0) return obstMap;
+  const angle = Math.atan2(heightDiff, facingBuildingDistM) * (180 / Math.PI);
+  const dirAz = { SE: 135, SW: 225, E: 90, W: 270 };
+  const centerAz = dirAz[roomDir];
+  if (centerAz === undefined) return obstMap;
+  const result = new Float32Array(obstMap);
+  for (let daz = -60; daz <= 60; daz++) {
+    const az = ((centerAz + daz) % 360 + 360) % 360;
+    result[az] = Math.max(result[az], angle);
+  }
+  return result;
+}
+
+function applySlopeCorrection(obstMap, slopeDir) {
+  const result = new Float32Array(obstMap);
+  const ANGLE = 8;
+  const config = {
+    S: { boost: [[135,225]], reduce: [] },
+    N: { boost: [], reduce: [[135,225]] },
+    E: { boost: [[45,135]], reduce: [[225,315]] },
+    W: { boost: [[225,315]], reduce: [[45,135]] },
+  };
+  const cfg = config[slopeDir];
+  if (!cfg) return result;
+  for (const [from, to] of cfg.boost)  for (let az = from; az <= to; az++) result[az] = Math.max(0, result[az] - ANGLE);
+  for (const [from, to] of cfg.reduce) for (let az = from; az <= to; az++) result[az] = Math.min(89, result[az] + ANGLE);
+  return result;
+}
+
+// ── 太陽軌道計算 ──
+const SAMPLE_DAYS = [1, 8, 15, 22];
+const STEP_MIN    = 30;
+
+function calculateModeAHeatmap(lat, lng, obstMap, roomDir) {
+  const ROOM_AZ = { S: 180, SE: 135, SW: 225, E: 90, W: 270 };
+  const ARC = 80;
+  const centerAz = ROOM_AZ[roomDir] ?? 180;
+  const solarUtcOffset = lng / 15;
+  const slotDefs = [[6,8],[8,10],[10,12],[12,14],[14,16],[16,18]];
+  const result = Array.from({ length: 12 }, () =>
+    Array.from({ length: 6 }, () => ({ sunshine: 0, potential: 0, elevSum: 0, azSum: 0, azCount: 0 }))
+  );
+  for (let month = 0; month < 12; month++) {
+    for (const day of SAMPLE_DAYS) {
+      for (let localMin = 6*60; localMin < 18*60; localMin += STEP_MIN) {
+        const localHour = Math.floor(localMin / 60);
+        const slotIdx = slotDefs.findIndex(([s, e]) => localHour >= s && localHour < e);
+        if (slotIdx < 0) continue;
+        const utcTotalMin  = localMin - solarUtcOffset * 60;
+        const utcDayOffset = Math.floor(utcTotalMin / 1440);
+        const utcMinOfDay  = ((utcTotalMin % 1440) + 1440) % 1440;
+        const date = new Date(Date.UTC(2023, month, day + utcDayOffset, Math.floor(utcMinOfDay/60), utcMinOfDay%60));
+        const pos    = SunCalc.getPosition(date, lat, lng);
+        const altDeg = pos.altitude * (180 / Math.PI);
+        if (altDeg < 0.5) continue;
+        const azDeg = ((pos.azimuth * (180 / Math.PI)) + 180 + 360) % 360;
+        let angleDiff = Math.abs(azDeg - centerAz);
+        if (angleDiff > 180) angleDiff = 360 - angleDiff;
+        if (angleDiff > ARC) continue;
+        result[month][slotIdx].potential++;
+        result[month][slotIdx].elevSum += altDeg;
+        result[month][slotIdx].azSum   += azDeg;
+        result[month][slotIdx].azCount++;
+        if (altDeg > obstructionAt(obstMap, azDeg)) result[month][slotIdx].sunshine++;
+      }
+    }
+  }
+  return result;
+}
+
+function calculateModeBData(lat, lng, obstMap, tiltDeg, facingAzDeg) {
+  const solarUtcOffset = lng / 15;
+  const tiltRad = tiltDeg * Math.PI / 180;
+  const cosT = Math.cos(tiltRad), sinT = Math.sin(tiltRad);
+  const facingRad = facingAzDeg * Math.PI / 180;
+  const jmaSap = [0.36,0.41,0.47,0.52,0.55,0.47,0.43,0.50,0.40,0.38,0.31,0.32];
+  const jmaFuk = [0.53,0.50,0.53,0.57,0.56,0.35,0.47,0.54,0.42,0.55,0.57,0.54];
+  function weatherFactor(month, lat) {
+    const t = Math.max(0, Math.min(1, (lat - 33) / 10));
+    return jmaFuk[month] * (1 - t) + jmaSap[month] * t;
+  }
+  const monthlyRad = new Array(12).fill(0);
+  const monthlySunHr = new Array(12).fill(0);
+  for (let month = 0; month < 12; month++) {
+    let radSum = 0, sunCount = 0, potCount = 0;
+    for (const day of SAMPLE_DAYS) {
+      for (let localMin = 0; localMin < 1440; localMin += STEP_MIN) {
+        const utcTotalMin  = localMin - solarUtcOffset * 60;
+        const utcDayOffset = Math.floor(utcTotalMin / 1440);
+        const utcMinOfDay  = ((utcTotalMin % 1440) + 1440) % 1440;
+        const date = new Date(Date.UTC(2023, month, day + utcDayOffset, Math.floor(utcMinOfDay/60), utcMinOfDay%60));
+        const pos    = SunCalc.getPosition(date, lat, lng);
+        const altDeg = pos.altitude * (180 / Math.PI);
+        if (altDeg < 0.5) continue;
+        const azDeg  = ((pos.azimuth * (180 / Math.PI)) + 180 + 360) % 360;
+        const altRad = pos.altitude;
+        const azRad  = azDeg * Math.PI / 180;
+        const sx = Math.sin(azRad) * Math.cos(altRad);
+        const sy = Math.cos(azRad) * Math.cos(altRad);
+        const sz = Math.sin(altRad);
+        const nx = sinT * Math.sin(facingRad);
+        const ny = sinT * Math.cos(facingRad);
+        const nz = cosT;
+        const incFactor = Math.max(0, sx*nx + sy*ny + sz*nz);
+        if (incFactor <= 0) continue;
+        potCount++;
+        if (altDeg > obstructionAt(obstMap, azDeg)) { sunCount++; radSum += incFactor; }
+      }
+    }
+    const wf = weatherFactor(month, lat);
+    monthlyRad[month]   = radSum * wf * (STEP_MIN / 60);
+    monthlySunHr[month] = potCount > 0 ? (sunCount / potCount) * getDaylightHours(lat, month) * wf : 0;
+  }
+  return { monthlyRad, monthlySunHr };
+}
+
+function getDaylightHours(lat, month) {
+  const latRad = lat * Math.PI / 180;
+  const dayOfYear = [15,46,75,105,135,166,196,227,258,288,319,349][month];
+  const decl = -23.45 * Math.cos(2 * Math.PI * (dayOfYear + 10) / 365) * Math.PI / 180;
+  const cosHA = -Math.tan(latRad) * Math.tan(decl);
+  if (cosHA >= 1) return 0;
+  if (cosHA <= -1) return 24;
+  return 2 * Math.acos(cosHA) * (180 / Math.PI) / 15;
+}
+
+function findOptimalTilt(lat, lng, obstMap, facingAzDeg) {
+  let bestTilt = 0, bestRad = -1;
+  for (let t = 0; t <= 75; t += 5) {
+    const { monthlyRad } = calculateModeBData(lat, lng, obstMap, t, facingAzDeg);
+    const total = monthlyRad.reduce((a,b) => a+b, 0);
+    if (total > bestRad) { bestRad = total; bestTilt = t; }
+  }
+  return bestTilt;
+}
+
+// ── ヒートマップ描画 ──
+function hmCellStyle(rate) {
+  if (rate === null || rate === undefined) return { bg: '#263348', mark: '—' };
+  if (rate >= 70) return { bg: '#FF8C00', mark: '◎' };
+  if (rate >= 40) return { bg: '#FFD580', mark: '○' };
+  if (rate >= 15) return { bg: '#C0C0C0', mark: '△' };
+  return { bg: '#606060', mark: '✕' };
+}
+
+function renderModeAHeatmap(hmData, hasTrees) {
+  const months     = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const slotLabels = ['6-8時','8-10時','10-12時','12-14時','14-16時','16-18時'];
+  const table = document.getElementById('heatmapATable');
+  let html = '<thead><tr><th></th>';
+  for (const sl of slotLabels) html += `<th>${sl}</th>`;
+  html += '</tr></thead><tbody>';
+
+  const adjustedData = hmData.map((monthData, m) =>
+    monthData.map(cell => {
+      if (cell.potential === 0) return cell;
+      let rate = (cell.sunshine / cell.potential) * 100;
+      if (hasTrees && m >= 3 && m <= 9) rate *= 0.85;
+      return { ...cell, rate };
+    })
+  );
+
+  for (let m = 0; m < 12; m++) {
+    html += `<tr><td class="month-label">${months[m]}</td>`;
+    for (let s = 0; s < 6; s++) {
+      const cell = adjustedData[m][s];
+      const rate = cell.potential > 0 ? (cell.rate ?? (cell.sunshine / cell.potential * 100)) : null;
+      const { bg, mark } = hmCellStyle(rate);
+      const avgElev = cell.azCount > 0 ? (cell.elevSum / cell.azCount).toFixed(1) : '—';
+      const avgAz   = cell.azCount > 0 ? (cell.azSum   / cell.azCount).toFixed(1) : '—';
+      const rateStr = rate !== null ? rate.toFixed(0) + '%' : '—';
+      const tip = `data-tip="${months[m]} ${slotLabels[s]} | 日照率:${rateStr} | 仰角:${avgElev}° 方位:${avgAz}°"`;
+      html += `<td class="hm-cell" style="background:${bg};" ${tip}>${mark}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  const tooltip = document.getElementById('hmTooltip');
+  table.querySelectorAll('.hm-cell').forEach(td => {
+    td.addEventListener('mouseenter', () => { tooltip.textContent = td.dataset.tip; tooltip.style.display = 'block'; });
+    td.addEventListener('mousemove', e => { tooltip.style.left = (e.clientX + 14) + 'px'; tooltip.style.top = (e.clientY - 36) + 'px'; });
+    td.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+  });
+
+  return adjustedData;
+}
+
+function renderModeASummary(adjustedData) {
+  const slotLabels = ['6-8時','8-10時','10-12時','12-14時','14-16時','16-18時'];
+  const slotAnnual = Array.from({ length: 6 }, (_, s) => {
+    let sum = 0, cnt = 0;
+    for (let m = 0; m < 12; m++) {
+      const c = adjustedData[m][s];
+      if (c.potential > 0) { sum += c.rate ?? (c.sunshine / c.potential * 100); cnt++; }
+    }
+    return cnt > 0 ? sum / cnt : 0;
+  });
+  const ranked = slotAnnual.map((v,i) => ({ idx: i, val: v })).sort((a,b) => b.val - a.val);
+
+  function seasonMark(months_idx) {
+    let sum = 0, cnt = 0;
+    for (const m of months_idx) for (let s = 0; s < 6; s++) {
+      const c = adjustedData[m][s];
+      if (c.potential > 0) { sum += c.rate ?? (c.sunshine / c.potential * 100); cnt++; }
+    }
+    const avg = cnt > 0 ? sum / cnt : 0;
+    if (avg >= 65) return { mark: '◎', color: '#FF8C00', label: '日照良好' };
+    if (avg >= 45) return { mark: '○', color: '#FFD580', label: '概ね良好' };
+    if (avg >= 25) return { mark: '△', color: '#C0C0C0', label: 'やや少ない' };
+    return { mark: '✕', color: '#888', label: '日照不足' };
+  }
+
+  let totalSum = 0, totalCnt = 0;
+  for (let m = 0; m < 12; m++) for (let s = 0; s < 6; s++) {
+    const c = adjustedData[m][s];
+    if (c.potential > 0) { totalSum += c.rate ?? (c.sunshine/c.potential*100); totalCnt++; }
+  }
+  const score = Math.round(Math.min(100, (totalCnt > 0 ? totalSum/totalCnt : 0) * 1.1));
+  const winter = seasonMark([11,0,1]);
+  const summer = seasonMark([5,6,7]);
+
+  document.getElementById('modeASummary').innerHTML = `
+    <div class="summary-info-card">
+      <div class="s-title">🏆 年間日照トップ3 時間帯</div>
+      <div class="s-val">${ranked.slice(0,3).map((r,i) => `<span style="color:var(--sun)">${i+1}位</span> ${slotLabels[r.idx]} <small style="color:var(--muted)">${r.val.toFixed(0)}%</small><br>`).join('')}</div>
+    </div>
+    <div class="summary-info-card">
+      <div class="s-title">❄ 冬（12〜2月）の評価</div>
+      <div class="s-val"><span style="font-size:1.3rem;font-weight:700;color:${winter.color}">${winter.mark}</span> ${winter.label}</div>
+    </div>
+    <div class="summary-info-card">
+      <div class="s-title">☀ 夏（6〜8月）の評価</div>
+      <div class="s-val"><span style="font-size:1.3rem;font-weight:700;color:${summer.color}">${summer.mark}</span> ${summer.label}</div>
+    </div>
+    <div class="summary-info-card" style="text-align:center;">
+      <div class="s-title">🌟 総合日照スコア</div>
+      <div class="s-score">${score}</div>
+      <div style="font-size:11px;color:var(--muted);">/ 100点</div>
+    </div>
+  `;
+}
+
+function renderModeBChart(monthlyRad) {
+  if (modeBChart) { modeBChart.destroy(); modeBChart = null; }
+  const ctx = document.getElementById('modeBChart').getContext('2d');
+  modeBChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+      datasets: [{
+        label: '積算日射量（相対値）',
+        data: monthlyRad.map(v => Math.round(v * 10) / 10),
+        backgroundColor: monthlyRad.map(v => {
+          const max = Math.max(...monthlyRad);
+          const t = max > 0 ? v / max : 0;
+          return `rgba(${Math.round(50+t*205)},${Math.round(50+t*90)},${Math.round(10+t*30)},0.85)`;
+        }),
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.parsed.y.toFixed(1)}` } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#4a6a8a' } },
+        x: { grid: { display: false }, ticks: { color: '#4a6a8a' } },
+      },
+    },
+  });
+}
+
+function renderModeBResults(data, tiltDeg, facingAzDeg, optimalTilt) {
+  const { monthlyRad, monthlySunHr } = data;
+  const annualHours = monthlySunHr.reduce((a,b) => a+b, 0);
+  const annualRad   = monthlyRad.reduce((a,b) => a+b, 0);
+  const bestMonth   = monthlyRad.indexOf(Math.max(...monthlyRad)) + 1;
+  document.getElementById('kpiBHours').textContent    = Math.round(annualHours);
+  document.getElementById('kpiBestMonth').textContent = bestMonth;
+  document.getElementById('kpiBRad').textContent      = Math.round(annualRad * 1.2);
+  const diff = optimalTilt - tiltDeg;
+  const diffStr = diff === 0 ? '最適です' : (diff > 0 ? `+${diff}° 傾けると改善` : `${diff}° 減らすと改善`);
+  document.getElementById('optimalRow').innerHTML = `
+    <div class="optimal-item"><div class="oi-label">現在の設置角</div><div class="oi-val">${tiltDeg}<span class="oi-unit">°</span></div></div>
+    <div class="optimal-item"><div class="oi-label">推奨設置角</div><div class="oi-val" style="color:var(--green)">${optimalTilt}<span class="oi-unit">°</span></div><div class="oi-note">${diffStr}</div></div>
+    <div class="optimal-item"><div class="oi-label">設置方位角</div><div class="oi-val">${facingAzDeg}<span class="oi-unit">°</span></div><div class="oi-note">真南=180°が最適</div></div>
+  `;
+  renderModeBChart(monthlyRad);
+}
+
+// ── UI ハンドラ ──
+function onTreesChange() { updatePrecision(); }
+function onSlopeChange() {
+  document.getElementById('slopeDirRow').style.display = document.getElementById('cbSlope').checked ? '' : 'none';
+  updatePrecision();
+}
+function onFacingBuildingChange() {
+  updatePrecision();
+}
+function onSouthBuildingChange() {
+  hideErr('buildingError');
+  updatePrecision();
+}
+
+// ── 計算フロー ──
+async function runCalculation() {
+  if (currentLat === null || currentLng === null) {
+    document.getElementById('locationError').textContent = '地点を設定してください（STEP 1 で緯度・経度を入力）';
+    document.getElementById('locationError').style.display = 'block';
+    document.getElementById('latInput').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+
+  const btn = document.getElementById('calcBtn');
+  btn.disabled = true; btn.textContent = '計算中…';
+
+  try {
+    const photoList = getDirPhotoList();
+    for (const p of photoList) { if (!p.result) p.result = await analyzePhoto(p); }
+    for (const dir of ['S','E','W','N']) {
+      if (dirPhotos[dir] && dirPhotos[dir].result) {
+        const badge = document.getElementById('badge' + dir);
+        if (badge) badge.textContent = `✓ 解析完了: 空可視率 ${dirPhotos[dir].result.svf.toFixed(0)}%`;
+      }
+    }
+
+    let obstMap = mergeObstructions(photoList);
+
+    if (currentMode === 'A') {
+      const floor          = Math.max(1, parseInt(document.getElementById('floorInput').value) || 1);
+      const heightM        = parseFloat(document.getElementById('heightInput').value) || floor * 3;
+      const southBuildingH = parseInt(document.getElementById('southBuildingHeight').value) || 0;
+      const southBuildingDist = parseFloat(document.getElementById('southBuildingDist') ? document.getElementById('southBuildingDist').value : 22) || 22;
+      const roomDir        = document.getElementById('roomDir').value;
+      const facingBuildingH    = parseInt(document.getElementById('facingBuildingHeight').value) || 0;
+      const facingBuildingDist = parseFloat(document.getElementById('facingBuildingDist') ? document.getElementById('facingBuildingDist').value : 22) || 22;
+      const hasTrees       = document.getElementById('cbTrees').checked;
+      const hasSlope       = document.getElementById('cbSlope').checked;
+      const slopeDir       = document.getElementById('slopeDir').value;
+
+      obstMap = applyBuildingObstruction(obstMap, heightM, southBuildingH, southBuildingDist);
+      obstMap = applyFacingBuildingObstruction(obstMap, heightM, facingBuildingH, facingBuildingDist, roomDir);
+      if (hasSlope) obstMap = applySlopeCorrection(obstMap, slopeDir);
+
+      const hmData = calculateModeAHeatmap(currentLat, currentLng, obstMap, roomDir);
+      const adjustedData = renderModeAHeatmap(hmData, hasTrees);
+      renderModeASummary(adjustedData);
+
+      const notes = [];
+      if (southBuildingH > 0) {
+        const diffH = Math.max(0, southBuildingH - heightM);
+        const ang = Math.round(Math.atan2(diffH, southBuildingDist) * 180 / Math.PI);
+        notes.push(`南側建物遮蔽補正（仰角 ${ang}°）`);
+      }
+      if (facingBuildingH > 0 && DIR_LABEL[roomDir]) {
+        const diffH = Math.max(0, facingBuildingH - heightM);
+        const ang = Math.round(Math.atan2(diffH, facingBuildingDist) * 180 / Math.PI);
+        notes.push(`${DIR_LABEL[roomDir]}側建物遮蔽補正（仰角 ${ang}°）`);
+      }
+      if (hasSlope) notes.push(`斜面補正（${document.querySelector('#slopeDir option:checked').text}）`);
+      if (hasTrees) notes.push('樹木補正（4〜10月 −15%）');
+      document.getElementById('correctionNotes').innerHTML = notes.length
+        ? '適用した補正: ' + notes.map(n => `<span class="corr-badge">${n}</span>`).join('') : '';
+
+      document.getElementById('resultsA').style.display = '';
+      document.getElementById('resultsB').style.display = 'none';
+
+    } else {
+      const tiltDeg     = parseFloat(document.getElementById('tiltAngle').value) || 30;
+      const facingAzDeg = parseFloat(document.getElementById('facingAzimuth').value) || 180;
+      const terrain     = document.getElementById('terrain').value;
+      let terrainFactor = 1.0;
+      if (terrain === 'slope_s') terrainFactor = 1.05;
+      if (terrain === 'slope_n') terrainFactor = 0.92;
+      if (terrain === 'coastal') terrainFactor = 1.08;
+      if (terrain === 'mountain') terrainFactor = 0.88;
+
+      const data = calculateModeBData(currentLat, currentLng, obstMap, tiltDeg, facingAzDeg);
+      data.monthlyRad   = data.monthlyRad.map(v => v * terrainFactor);
+      data.monthlySunHr = data.monthlySunHr.map(v => v * terrainFactor);
+
+      const optimalTilt = findOptimalTilt(currentLat, currentLng, obstMap, facingAzDeg);
+      renderModeBResults(data, tiltDeg, facingAzDeg, optimalTilt);
+
+      const notes = [];
+      if (terrain !== 'flat') notes.push(`地形補正（${document.querySelector('#terrain option:checked').text} ×${terrainFactor.toFixed(2)}）`);
+      document.getElementById('correctionNotesB').innerHTML = notes.length
+        ? '適用した補正: ' + notes.map(n => `<span class="corr-badge">${n}</span>`).join('') : '';
+
+      document.getElementById('resultsA').style.display = 'none';
+      document.getElementById('resultsB').style.display = '';
+    }
+
+    const resultsEl = document.getElementById('results');
+    resultsEl.style.display = 'block';
+    resultsEl.scrollIntoView({ behavior: 'smooth' });
+
+  } catch (err) {
+    console.error(err);
+    alert(`エラー: ${err.message}`);
+  } finally {
+    btn.disabled = false; btn.textContent = '☀ 日照率を計算する';
+  }
+}
+
+// ── ユーティリティ ──
+function showErr(id, msg) { const el = document.getElementById(id); if (el) { el.textContent = msg; el.style.display = 'block'; } }
+function hideErr(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+
+// ── モーダル ──
+function openHowItWorks() {
+  const modal = document.getElementById('howModal');
+  const iframe = document.getElementById('howIframe');
+  if (!iframe.src || iframe.src === window.location.href) iframe.src = 'sunny_how_it_works.html';
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeHowItWorks(e) {
+  if (e && e.target !== document.getElementById('howModal')) return;
+  document.getElementById('howModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHowItWorks(null); });
+
+// ── 初期化 ──
+document.getElementById('southDistRow').style.display = 'none';
+updatePrecision();
+</script>
+</body>
+</html>

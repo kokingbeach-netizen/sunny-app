@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunny — 日照率チェッカー</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #07111f;
+  --panel: #0c1d30;
+  --card: #0f2440;
+  --border: rgba(80,180,240,0.12);
+  --sun: #FFB800;
+  --sky: #5BC8F5;
+  --green: #34D399;
+  --red: #FF6B6B;
+  --white: #e8f2ff;
+  --muted: #4a6a8a;
+  --active: #5BC8F5;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--sun);
+  letter-spacing: 2px;
+}
+.logo-sub { font-size: 11px; color: var(--muted); margin-left: 4px; }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  padding: 16px 28px 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.prog-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  cursor: pointer;
+}
+.prog-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 500;
+  border: 1.5px solid var(--muted);
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+.prog-label {
+  font-size: 10px;
+  color: var(--muted);
+  transition: color 0.3s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.prog-line {
+  flex: 1; height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+  min-width: 12px;
+}
+.prog-step.active .prog-num {
+  border-color: var(--sky);
+  color: var(--sky);
+  background: rgba(91,200,245,0.1);
+  box-shadow: 0 0 10px rgba(91,200,245,0.3);
+}
+.prog-step.active .prog-label { color: var(--sky); }
+.prog-step.done .prog-num {
+  border-color: var(--green);
+  color: var(--bg);
+  background: var(--green);
+}
+.prog-step.done .prog-label { color: var(--green); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: calc(100vh - 120px);
+}
+
+/* ── ILLUST PANEL ── */
+.illust-panel {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 100px);
+  overflow: hidden;
+}
+
+.illust-scene {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  animation: fadeIn 0.4s ease;
+}
+.illust-scene.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.illust-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--sky);
+  text-transform: uppercase;
+}
+.illust-title {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.5;
+}
+.illust-title em { color: var(--sun); font-style: normal; }
+.illust-desc {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.9;
+  max-width: 280px;
+}
+.illust-desc strong { color: var(--white); }
+
+/* ── FORM PANEL ── */
+.form-panel {
+  padding: 40px 36px;
+  overflow-y: auto;
+}
+
+.step-block { display: none; }
+.step-block.active { display: block; animation: fadeIn 0.35s ease; }
+
+.step-heading {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.step-heading em { color: var(--sky); font-style: normal; }
+.step-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+
+/* form elements */
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+.required { color: var(--sky); margin-left: 4px; }
+.optional { color: var(--muted); font-size: 10px; margin-left: 4px; }
+
+input[type=text], input[type=number], select {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--white);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 20px;
+  appearance: none;
+}
+input:focus, select:focus {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(91,200,245,0.1);
+}
+select option { background: var(--card); }
+
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* カード選択 */
+.card-select {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.card-select.cols2 { grid-template-columns: 1fr 1fr; }
+.card-select.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.sel-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sel-card:hover { border-color: rgba(91,200,245,0.3); }
+.sel-card.selected {
+  border-color: var(--sky);
+  background: rgba(91,200,245,0.08);
+  box-shadow: 0 0 0 3px rgba(91,200,245,0.1);
+}
+.sel-card .sel-icon { font-size: 24px; margin-bottom: 6px; }
+.sel-card .sel-label { font-size: 12px; color: var(--muted); }
+.sel-card.selected .sel-label { color: var(--sky); }
+
+/* 写真アップロード */
+.photo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.photo-slot {
+  background: var(--card);
+  border: 1.5px dashed var(--border);
+  border-radius: 12px;
+  padding: 18px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.photo-slot:hover { border-color: rgba(91,200,245,0.4); }
+.photo-slot.key { border-color: rgba(255,184,0,0.3); }
+.photo-slot.key:hover { border-color: var(--sun); }
+.photo-slot.uploaded { border-style: solid; border-color: var(--green); }
+.slot-icon { font-size: 22px; margin-bottom: 6px; }
+.slot-dir { font-size: 13px; font-weight: 700; }
+.slot-key-badge {
+  display: inline-block;
+  font-size: 9px;
+  background: rgba(255,184,0,0.15);
+  color: var(--sun);
+  padding: 2px 7px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+.slot-optional { font-size: 9px; color: var(--muted); margin-top: 4px; }
+
+/* スライダー */
+.slider-wrap { margin-bottom: 20px; }
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.slider-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  color: var(--sun);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.slider-unit { font-size: 12px; color: var(--muted); }
+input[type=range] {
+  width: 100%;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 4px;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  margin-bottom: 0;
+  box-shadow: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--sky);
+  box-shadow: 0 0 8px rgba(91,200,245,0.5);
+  cursor: pointer;
+}
+
+/* チェックボックス */
+.check-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.check-item:hover { border-color: rgba(91,200,245,0.3); }
+.check-item.checked { border-color: rgba(91,200,245,0.4); background: rgba(91,200,245,0.06); }
+.check-box {
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  font-size: 11px;
+}
+.check-item.checked .check-box { background: var(--sky); border-color: var(--sky); color: #000; }
+.check-text { font-size: 13px; }
+.check-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* モード選択 */
+.mode-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.mode-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.mode-card:hover { border-color: rgba(91,200,245,0.3); transform: translateY(-2px); }
+.mode-card.selected { border-color: var(--sky); background: rgba(91,200,245,0.08); }
+.mode-icon { font-size: 32px; margin-bottom: 8px; }
+.mode-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.mode-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.mode-card.selected .mode-name { color: var(--sky); }
+
+/* 精度インジケーター */
+.accuracy-bar {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+.accuracy-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+.accuracy-track { background: rgba(255,255,255,0.05); border-radius: 6px; height: 8px; overflow: hidden; }
+.accuracy-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(to right, var(--sky), var(--green));
+  transition: width 0.4s ease;
+}
+
+/* ナビボタン */
+.nav-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+.btn {
+  padding: 14px 28px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+.btn-back {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-back:hover { border-color: var(--sky); color: var(--sky); }
+.btn-next {
+  background: linear-gradient(135deg, var(--sky), #3a9fd0);
+  color: #000;
+  font-weight: 900;
+}
+.btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(91,200,245,0.3); }
+.btn-calc {
+  background: linear-gradient(135deg, var(--sun), #e09000);
+  color: #000;
+  font-weight: 900;
+}
+.btn-calc:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,184,0,0.4); }
+
+/* ── SVG ILLUSTRATIONS ── */
+svg text { font-family: 'DM Mono', monospace; }
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  .main { grid-template-columns: 1fr; }
+  .illust-panel {
+    position: relative; height: auto;
+    padding: 28px 20px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-panel { padding: 28px 20px; }
+  .progress-wrap { padding: 12px 16px 0; }
+  .prog-label { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">SUNNY<span class="logo-sub">日照率チェッカー</span></div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progress">
+  <div class="prog-step active" data-step="1" onclick="goStep(1)">
+    <div class="prog-num">1</div>
+    <div class="prog-label">地点</div>
+  </div>
+  <div class="prog-line"></div>
+  <div class="prog-step" data-step="2" onclick="goStep(2)">
+    <div class="prog-num">2</div>
+    <div class="prog-label">建物情報</div>
+  </div>
+  <div class="prog-line"></div>
+  <div class="prog-step" data-step="3" onclick="goStep(3)">
+    <div class="prog-num">3</div>
+    <div class="prog-label">写真</div>
+  </div>
+  <div class="prog-line"></div>
+  <div class="prog-step" data-step="4" onclick="goStep(4)">
+    <div class="prog-num">4</div>
+    <div class="prog-label">周辺環境</div>
+  </div>
+  <div class="prog-line"></div>
+  <div class="prog-step" data-step="5" onclick="goStep(5)">
+    <div class="prog-num">5</div>
+    <div class="prog-label">目的・モード</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ══════ ILLUST PANEL ══════ -->
+  <div class="illust-panel">
+
+    <!-- STEP 1 イラスト -->
+    <div class="illust-scene active" id="illust-1">
+      <div class="illust-tag">STEP 01 · 地点</div>
+      <svg width="240" height="160" viewBox="0 0 240 160">
+        <!-- 軌道パス -->
+        <path d="M20 140 Q120 20 220 140" stroke="rgba(255,184,0,0.25)" stroke-width="1.5" fill="none" stroke-dasharray="5,4"/>
+        <path d="M40 140 Q120 50 200 140" stroke="rgba(255,184,0,0.15)" stroke-width="1" fill="none"/>
+        <path d="M60 140 Q120 80 180 140" stroke="rgba(251,146,60,0.15)" stroke-width="1" fill="none"/>
+        <!-- 地平線 -->
+        <line x1="10" y1="140" x2="230" y2="140" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
+        <!-- 太陽アニメ -->
+        <circle id="anim-sun" cx="120" cy="35" r="14" fill="#FFB800">
+          <animateMotion dur="5s" repeatCount="indefinite" path="M-100,105 Q0,-15 100,105"/>
+        </circle>
+        <circle cx="120" cy="35" r="22" fill="rgba(255,184,0,0.1)">
+          <animateMotion dur="5s" repeatCount="indefinite" path="M-100,105 Q0,-15 100,105"/>
+        </circle>
+        <!-- ラベル -->
+        <text x="15" y="135" fill="rgba(91,200,245,0.5)" font-size="9">東</text>
+        <text x="112" y="135" fill="rgba(91,200,245,0.5)" font-size="9">南中</text>
+        <text x="208" y="135" fill="rgba(91,200,245,0.5)" font-size="9">西</text>
+        <text x="60" y="28" fill="rgba(255,184,0,0.6)" font-size="8">夏至</text>
+        <text x="72" y="58" fill="rgba(251,146,60,0.5)" font-size="8">冬至</text>
+        <!-- ピン -->
+        <circle cx="120" cy="140" r="6" fill="#34D399"/>
+        <circle cx="120" cy="140" r="12" fill="rgba(52,211,153,0.2)">
+          <animate attributeName="r" values="6;16;6" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <text x="130" y="155" fill="#34D399" font-size="9">あなたの場所</text>
+      </svg>
+      <div class="illust-title">場所がわかれば<br><em>太陽の動きが決まる</em></div>
+      <div class="illust-desc">緯度・経度を入力するだけで<strong>365日・24時間の太陽の位置</strong>が数式で計算できます。夏は高く、冬は低い軌道を描きます。</div>
+    </div>
+
+    <!-- STEP 2 イラスト -->
+    <div class="illust-scene" id="illust-2">
+      <div class="illust-tag">STEP 02 · 建物情報</div>
+      <svg width="260" height="160" viewBox="0 0 260 160">
+        <!-- 地面 -->
+        <rect x="0" y="145" width="260" height="15" fill="#1a3a5a" rx="3"/>
+        <!-- 建物 -->
+        <rect x="20" y="55" width="55" height="90" fill="#1e3a5f" rx="3" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
+        <rect x="28" y="63" width="14" height="12" fill="rgba(255,220,100,0.4)" rx="2"/>
+        <rect x="48" y="63" width="14" height="12" fill="rgba(255,220,100,0.15)" rx="2"/>
+        <rect x="28" y="83" width="14" height="12" fill="rgba(255,220,100,0.15)" rx="2"/>
+        <rect x="48" y="83" width="14" height="12" fill="rgba(255,220,100,0.4)" rx="2"/>
+        <rect x="28" y="103" width="14" height="12" fill="rgba(255,220,100,0.4)" rx="2"/>
+        <rect x="48" y="103" width="14" height="12" fill="rgba(255,220,100,0.15)" rx="2"/>
+        <!-- 高さ矢印 -->
+        <line x1="85" y1="55" x2="85" y2="145" stroke="rgba(91,200,245,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="88" y="102" fill="rgba(91,200,245,0.6)" font-size="9">高さ</text>
+        <text x="88" y="114" fill="#5BC8F5" font-size="10" font-weight="bold">30m</text>
+        <!-- 距離矢印 -->
+        <line x1="75" y1="152" x2="205" y2="152" stroke="rgba(255,184,0,0.4)" stroke-width="1"/>
+        <polygon points="75,149 75,155 68,152" fill="rgba(255,184,0,0.5)"/>
+        <polygon points="205,149 205,155 212,152" fill="rgba(255,184,0,0.5)"/>
+        <text x="120" y="160" fill="rgba(255,184,0,0.7)" font-size="9" text-anchor="middle">距離 20m</text>
+        <!-- 遮蔽ライン -->
+        <line x1="210" y1="145" x2="75" y2="55" stroke="rgba(255,107,107,0.6)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <!-- 角度弧 -->
+        <path d="M210,145 L240,145 L225,118" stroke="rgba(255,107,107,0.5)" stroke-width="1" fill="none"/>
+        <text x="232" y="138" fill="#FF6B6B" font-size="9">56°</text>
+        <!-- 測定点 -->
+        <circle cx="210" cy="145" r="5" fill="#34D399"/>
+        <text x="196" y="140" fill="#34D399" font-size="8">部屋</text>
+        <!-- 太陽（冬・低い） -->
+        <circle cx="140" cy="90" r="10" fill="rgba(255,184,0,0.3)"/>
+        <text x="150" y="88" fill="rgba(255,184,0,0.5)" font-size="8">冬の太陽</text>
+        <text x="148" y="99" fill="rgba(255,107,107,0.5)" font-size="9">（遮られる）</text>
+        <!-- バツ -->
+        <line x1="136" y1="86" x2="144" y2="94" stroke="rgba(255,107,107,0.7)" stroke-width="2"/>
+        <line x1="144" y1="86" x2="136" y2="94" stroke="rgba(255,107,107,0.7)" stroke-width="2"/>
+      </svg>
+      <div class="illust-title">建物の<em>高さ×距離</em>で<br>影の届く角度がわかる</div>
+      <div class="illust-desc">南側の建物が<strong>高いほど・近いほど</strong>遮蔽仰角が大きくなり、太陽が遮られる時間が増えます。特に冬の低い太陽に影響大。</div>
+    </div>
+
+    <!-- STEP 3 イラスト -->
+    <div class="illust-scene" id="illust-3">
+      <div class="illust-tag">STEP 03 · 写真</div>
+      <!-- コンパス -->
+      <div style="position:relative;width:200px;height:200px;">
+        <svg width="200" height="200" viewBox="0 0 200 200" style="position:absolute;top:0;left:0;">
+          <circle cx="100" cy="100" r="90" stroke="rgba(91,200,245,0.15)" stroke-width="1.5" fill="rgba(0,0,0,0.2)"/>
+          <line x1="10" y1="100" x2="190" y2="100" stroke="rgba(91,200,245,0.1)" stroke-width="1"/>
+          <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(91,200,245,0.1)" stroke-width="1"/>
+          <!-- 南向き強調ライン -->
+          <line x1="100" y1="100" x2="100" y2="172" stroke="rgba(255,184,0,0.3)" stroke-width="2" stroke-dasharray="3,3"/>
+        </svg>
+        <!-- 南（最重要） -->
+        <div style="position:absolute;left:50%;top:76%;transform:translate(-50%,-50%);">
+          <div style="width:52px;height:52px;border-radius:11px;border:2px solid var(--sun);background:rgba(255,184,0,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;animation:glow 2s ease-in-out infinite;">📷
+            <div style="font-size:9px;color:var(--sun);font-weight:700;">南 ★</div>
+          </div>
+        </div>
+        <!-- 東 -->
+        <div style="position:absolute;left:76%;top:50%;transform:translate(-50%,-50%);">
+          <div style="width:44px;height:44px;border-radius:10px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;">📷<div style="font-size:8px;color:var(--muted);">東</div></div>
+        </div>
+        <!-- 西 -->
+        <div style="position:absolute;left:24%;top:50%;transform:translate(-50%,-50%);">
+          <div style="width:44px;height:44px;border-radius:10px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;">📷<div style="font-size:8px;color:var(--muted);">西</div></div>
+        </div>
+        <!-- 北 -->
+        <div style="position:absolute;left:50%;top:24%;transform:translate(-50%,-50%);">
+          <div style="width:44px;height:44px;border-radius:10px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;">📷<div style="font-size:8px;color:var(--muted);">北</div></div>
+        </div>
+        <!-- 中心 -->
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 10px rgba(52,211,153,0.5);"></div>
+      </div>
+      <style>@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0.3);}50%{box-shadow:0 0 0 10px rgba(255,184,0,0);}}</style>
+      <div class="illust-title">空の写真から<br><em>遮蔽物マップ</em>を作る</div>
+      <div class="illust-desc">東西南北に向けて空を撮影すると、<strong>どの方角・どの高さに障害物があるか</strong>が検出できます。特に南側が年間日照に最も影響します。</div>
+    </div>
+
+    <!-- STEP 4 イラスト -->
+    <div class="illust-scene" id="illust-4">
+      <div class="illust-tag">STEP 04 · 周辺環境</div>
+      <svg width="260" height="160" viewBox="0 0 260 160">
+        <!-- 魚眼風：空の見え率 -->
+        <!-- 左：開けた場所 -->
+        <circle cx="70" cy="75" r="55" fill="#0a1e34" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
+        <circle cx="70" cy="75" r="55" fill="url(#sky-open)" opacity="0.8"/>
+        <defs>
+          <radialGradient id="sky-open" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#87CEEB" stop-opacity="0.9"/>
+            <stop offset="55%" stop-color="#4AB8F5" stop-opacity="0.7"/>
+            <stop offset="80%" stop-color="#1a3a5a" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#0a1e34" stop-opacity="1"/>
+          </radialGradient>
+          <radialGradient id="sky-closed" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#5BC8F5" stop-opacity="0.7"/>
+            <stop offset="30%" stop-color="#3a8ab5" stop-opacity="0.5"/>
+            <stop offset="55%" stop-color="#1a3a5a" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#0a1e34" stop-opacity="1"/>
+          </radialGradient>
+        </defs>
+        <text x="70" y="148" text-anchor="middle" fill="#FFB800" font-size="14" font-weight="bold">80%</text>
+        <text x="70" y="160" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8">開けた場所</text>
+
+        <!-- 矢印 -->
+        <text x="130" y="78" fill="rgba(91,200,245,0.4)" font-size="18">→</text>
+
+        <!-- 右：囲まれた場所 -->
+        <circle cx="190" cy="75" r="55" fill="url(#sky-closed)" opacity="0.9"/>
+        <!-- 建物マスク -->
+        <rect x="135" y="55" width="30" height="75" fill="#1a2a3a" rx="2"/>
+        <rect x="215" y="38" width="30" height="92" fill="#1a2a3a" rx="2"/>
+        <circle cx="190" cy="75" r="55" fill="none" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
+        <text x="190" y="148" text-anchor="middle" fill="rgba(90,120,140,1)" font-size="14" font-weight="bold">20%</text>
+        <text x="190" y="160" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8">囲まれた場所</text>
+      </svg>
+      <div class="illust-title">空の<em>見え率</em>が<br>日照率に直結する</div>
+      <div class="illust-desc">写真から空が占める割合（Sky View Factor）を算出。<strong>樹木・地形など</strong>の補足情報で精度がさらに上がります。</div>
+    </div>
+
+    <!-- STEP 5 イラスト -->
+    <div class="illust-scene" id="illust-5">
+      <div class="illust-tag">STEP 05 · 目的・モード</div>
+      <svg width="260" height="160" viewBox="0 0 260 160">
+        <!-- 不動産モード -->
+        <rect x="10" y="20" width="110" height="120" rx="12" fill="rgba(91,200,245,0.06)" stroke="rgba(91,200,245,0.2)" stroke-width="1.5" id="mode-a-rect"/>
+        <text x="65" y="48" text-anchor="middle" font-size="24">🏠</text>
+        <text x="65" y="68" text-anchor="middle" fill="var(--white)" font-size="11" font-weight="bold">不動産・居住</text>
+        <!-- ヒートマップ mini -->
+        <rect x="20" y="76" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="36" y="76" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="52" y="76" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="68" y="76" width="14" height="9" rx="1" fill="#2a3a4a"/>
+        <rect x="84" y="76" width="14" height="9" rx="1" fill="#2a3a4a"/>
+        <rect x="100" y="76" width="14" height="9" rx="1" fill="#151f2e"/>
+        <rect x="20" y="87" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="36" y="87" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="52" y="87" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
+        <rect x="68" y="87" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="84" y="87" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
+        <rect x="100" y="87" width="14" height="9" rx="1" fill="#2a3a4a"/>
+        <text x="65" y="112" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8">月別×時間帯ヒートマップ</text>
+        <text x="65" y="125" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8">晴天前提・理論値</text>
+        <text x="65" y="136" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8">四季すべてを判定</text>
+
+        <!-- ソーラーモード -->
+        <rect x="140" y="20" width="110" height="120" rx="12" fill="rgba(255,184,0,0.06)" stroke="rgba(255,184,0,0.2)" stroke-width="1.5"/>
+        <text x="195" y="48" text-anchor="middle" font-size="24">☀️</text>
+        <text x="195" y="68" text-anchor="middle" fill="var(--white)" font-size="11" font-weight="bold">ソーラー・農業</text>
+        <!-- 棒グラフ mini -->
+        <rect x="150" y="106" width="9" height="22" rx="1" fill="#4AB8F5" opacity="0.7"/>
+        <rect x="161" y="102" width="9" height="26" rx="1" fill="#4AB8F5" opacity="0.7"/>
+        <rect x="172" y="96" width="9" height="32" rx="1" fill="#FFB800" opacity="0.8"/>
+        <rect x="183" y="89" width="9" height="39" rx="1" fill="#FFB800" opacity="0.9"/>
+        <rect x="194" y="93" width="9" height="35" rx="1" fill="#FFB800" opacity="0.8"/>
+        <rect x="205" y="99" width="9" height="29" rx="1" fill="#4AB8F5" opacity="0.7"/>
+        <rect x="216" y="104" width="9" height="24" rx="1" fill="#4AB8F5" opacity="0.6"/>
+        <line x1="148" y1="128" x2="228" y2="128" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="195" y="142" text-anchor="middle" fill="rgba(255,184,0,0.5)" font-size="8">月別積算日射量グラフ</text>
+      </svg>
+      <div class="illust-title">用途によって<br><em>計算方法が変わる</em></div>
+      <div class="illust-desc"><strong>不動産用</strong>は晴天前提の理論値で四季を判定。<strong>ソーラー・農業用</strong>は気象データを加えた積算日射量を算出します。</div>
+    </div>
+
+  </div><!-- /illust-panel -->
+
+  <!-- ══════ FORM PANEL ══════ -->
+  <div class="form-panel">
+
+    <!-- 精度インジケーター -->
+    <div class="accuracy-bar">
+      <div class="accuracy-label">
+        <span>推定精度</span>
+        <span id="accuracy-text" style="color:var(--sky);">低</span>
+      </div>
+      <div class="accuracy-track">
+        <div class="accuracy-fill" id="accuracy-fill" style="width:10%;"></div>
+      </div>
+    </div>
+
+    <!-- STEP 1: 地点 -->
+    <div class="step-block active" id="step-1">
+      <div class="step-heading">📍 <em>地点</em>を指定する</div>
+      <div class="step-sub">測定したい場所の住所または緯度・経度を入力してください。ここから太陽の1年間の軌道を計算します。</div>
+
+      <label>住所で検索<span class="optional">（任意）</span></label>
+      <input type="text" placeholder="例：東京都渋谷区神南1-1-1" id="address"/>
+
+      <label>緯度<span class="required">★必須</span></label>
+      <input type="number" placeholder="例：35.6812" id="lat" step="0.0001"/>
+
+      <label>経度<span class="required">★必須</span></label>
+      <input type="number" placeholder="例：139.7671" id="lng" step="0.0001"/>
+
+      <div class="nav-row">
+        <button class="btn btn-next" onclick="nextStep(1)">次へ：建物情報 →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: 建物情報 -->
+    <div class="step-block" id="step-2">
+      <div class="step-heading">🏢 <em>建物情報</em>を入力する</div>
+      <div class="step-sub">あなたの部屋の階数と、南側にある建物の情報を入力します。これが日照計算の精度に最も影響します。</div>
+
+      <label>測定する部屋の階数<span class="required">★必須</span></label>
+      <div class="slider-wrap">
+        <div class="slider-val"><span id="floor-val">3</span><span class="slider-unit">階</span></div>
+        <input type="range" min="1" max="50" value="3" oninput="document.getElementById('floor-val').textContent=this.value;updateAccuracy()"/>
+        <div class="slider-labels"><span>1階</span><span>25階</span><span>50階</span></div>
+      </div>
+
+      <label>部屋の向き<span class="required">★必須</span></label>
+      <div class="card-select cols3">
+        <div class="sel-card" onclick="selectCard(this,'dir')"><div class="sel-icon">⬆️</div><div class="sel-label">南向き</div></div>
+        <div class="sel-card" onclick="selectCard(this,'dir')"><div class="sel-icon">↗️</div><div class="sel-label">南東向き</div></div>
+        <div class="sel-card" onclick="selectCard(this,'dir')"><div class="sel-icon">↖️</div><div class="sel-label">南西向き</div></div>
+        <div class="sel-card" onclick="selectCard(this,'dir')"><div class="sel-icon">➡️</div><div class="sel-label">東向き</div></div>
+        <div class="sel-card" onclick="selectCard(this,'dir')"><div class="sel-icon">⬅️</div><div class="sel-label">西向き</div></div>
+        <div class="sel-card" onclick="selectCard(this,'dir')"><div class="sel-icon">⬇️</div><div class="sel-label">北向き</div></div>
+      </div>
+
+      <label>南側の建物の高さ<span class="optional">（任意）</span></label>
+      <select onchange="updateAccuracy()">
+        <option value="">選択してください</option>
+        <option>なし（開けている）</option>
+        <option>低い（1〜2階 / 〜7m）</option>
+        <option>中程度（3〜5階 / 〜15m）</option>
+        <option>高い（6〜10階 / 〜30m）</option>
+        <option>とても高い（11階以上 / 30m〜）</option>
+      </select>
+
+      <label>南側の建物までの距離<span class="optional">（任意）</span></label>
+      <select onchange="updateAccuracy()">
+        <option value="">選択してください</option>
+        <option>接近（〜5m）</option>
+        <option>近い（5〜15m）</option>
+        <option>普通（15〜30m）</option>
+        <option>遠い（30m〜）</option>
+      </select>
+
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="prevStep(2)">← 戻る</button>
+        <button class="btn btn-next" onclick="nextStep(2)">次へ：写真 →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: 写真 -->
+    <div class="step-block" id="step-3">
+      <div class="step-heading">📷 <em>空の写真</em>をアップロード</div>
+      <div class="step-sub">スマートフォンでその方角に向け、やや上向き（45°）で空を撮影してください。南側は必須、他は任意です。</div>
+
+      <div class="photo-grid">
+        <div class="photo-slot key" onclick="simulateUpload(this,'南')">
+          <div class="slot-icon">📷</div>
+          <div class="slot-dir">南</div>
+          <div class="slot-key-badge">★ 最重要・必須</div>
+        </div>
+        <div class="photo-slot" onclick="simulateUpload(this,'東')">
+          <div class="slot-icon">📷</div>
+          <div class="slot-dir">東</div>
+          <div class="slot-optional">任意</div>
+        </div>
+        <div class="photo-slot" onclick="simulateUpload(this,'西')">
+          <div class="slot-icon">📷</div>
+          <div class="slot-dir">西</div>
+          <div class="slot-optional">任意</div>
+        </div>
+        <div class="photo-slot" onclick="simulateUpload(this,'北')">
+          <div class="slot-icon">📷</div>
+          <div class="slot-dir">北</div>
+          <div class="slot-optional">任意</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:20px;">💡 空が全体の30%以上写るように撮影してください。室内からの撮影はNGです。</div>
+
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="prevStep(3)">← 戻る</button>
+        <button class="btn btn-next" onclick="nextStep(3)">次へ：周辺環境 →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: 周辺環境 -->
+    <div class="step-block" id="step-4">
+      <div class="step-heading">🌿 <em>周辺環境</em>を教える</div>
+      <div class="step-sub">写真では検出しにくい情報を補足してください。これらの情報で計算精度がさらに上がります。</div>
+
+      <label>当てはまるものを選んでください<span class="optional">（任意・複数選択可）</span></label>
+      <div class="check-group">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <div><div class="check-text">🌳 南側に大きな樹木がある（高さ5m以上）</div><div class="check-sub">落葉樹は春〜秋に15%程度の遮蔽補正が入ります</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <div><div class="check-text">⛰️ 斜面・傾斜地に建っている</div><div class="check-sub">山の中腹など地形が遮蔽物になるケース</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box">✓</div>
+          <div><div class="check-text">🌊 周囲が開けている（田畑・海沿いなど）</div><div class="check-sub">遮蔽物が少ないため日照率が高めに算出されます</div></div>
+        </div>
+      </div>
+
+      <label>窓の大きさ<span class="optional">（任意）</span></label>
+      <div class="card-select cols3">
+        <div class="sel-card" onclick="selectCard(this,'win')"><div class="sel-icon">🪟</div><div class="sel-label">大きい</div></div>
+        <div class="sel-card" onclick="selectCard(this,'win')"><div class="sel-icon">▪️</div><div class="sel-label">普通</div></div>
+        <div class="sel-card" onclick="selectCard(this,'win')"><div class="sel-icon">◾</div><div class="sel-label">小さい</div></div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="prevStep(4)">← 戻る</button>
+        <button class="btn btn-next" onclick="nextStep(4)">次へ：目的 →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: モード選択 -->
+    <div class="step-block" id="step-5">
+      <div class="step-heading">🎯 <em>目的</em>を選んで計算</div>
+      <div class="step-sub">用途によって計算方法が変わります。どちらの目的で日照率を確認しますか？</div>
+
+      <div class="mode-cards">
+        <div class="mode-card selected" onclick="selectMode(this,'A')" id="mode-a">
+          <div class="mode-icon">🏠</div>
+          <div class="mode-name">不動産・居住用</div>
+          <div class="mode-desc">晴天前提の理論値で、部屋への日照を四季すべて判定</div>
+        </div>
+        <div class="mode-card" onclick="selectMode(this,'B')" id="mode-b">
+          <div class="mode-icon">☀️</div>
+          <div class="mode-name">ソーラー・農業用</div>
+          <div class="mode-desc">気象データを加えた積算日射量を年間・月別で算出</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(91,200,245,0.06);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:24px;font-size:12px;color:var(--muted);line-height:1.8;">
+        <span id="mode-explain">🏠 <strong style="color:var(--white)">不動産モード</strong>：曇りや雨を除いた「晴れた日に何時間日が入るか」を計算。部屋選びの参考値に最適です。</span>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="prevStep(5)">← 戻る</button>
+        <button class="btn btn-calc" onclick="alert('計算を開始します！')">📊 日照率を計算する</button>
+      </div>
+    </div>
+
+  </div><!-- /form-panel -->
+</div><!-- /main -->
+
+<script>
+let currentStep = 1;
+const totalSteps = 5;
+
+function goStep(n) {
+  if (n > currentStep + 1) return; // 未到達は飛ばせない
+  currentStep = n;
+  updateUI();
+}
+
+function nextStep(from) {
+  if (from < totalSteps) {
+    currentStep = from + 1;
+    updateUI();
+  }
+}
+
+function prevStep(from) {
+  if (from > 1) {
+    currentStep = from - 1;
+    updateUI();
+  }
+}
+
+function updateUI() {
+  // フォーム切替
+  document.querySelectorAll('.step-block').forEach(el => el.classList.remove('active'));
+  document.getElementById('step-' + currentStep).classList.add('active');
+
+  // イラスト切替
+  document.querySelectorAll('.illust-scene').forEach(el => el.classList.remove('active'));
+  document.getElementById('illust-' + currentStep).classList.add('active');
+
+  // プログレス更新
+  document.querySelectorAll('.prog-step').forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.remove('active','done');
+    if (s === currentStep) el.classList.add('active');
+    else if (s < currentStep) el.classList.add('done');
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectCard(el, group) {
+  el.closest('.card-select').querySelectorAll('.sel-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  updateAccuracy();
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  updateAccuracy();
+}
+
+function selectMode(el, mode) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const explain = document.getElementById('mode-explain');
+  if (mode === 'A') {
+    explain.innerHTML = '🏠 <strong style="color:var(--white)">不動産モード</strong>：曇りや雨を除いた「晴れた日に何時間日が入るか」を計算。部屋選びの参考値に最適です。';
+  } else {
+    explain.innerHTML = '☀️ <strong style="color:var(--white)">ソーラー・農業モード</strong>：気象庁データを加えた積算日射量を算出。年間・月別グラフと最適設置角度を提案します。';
+  }
+}
+
+function simulateUpload(el, dir) {
+  el.classList.add('uploaded');
+  el.querySelector('.slot-icon').textContent = '✅';
+  updateAccuracy();
+}
+
+function updateAccuracy() {
+  // 入力状況に応じて精度を更新
+  let score = 10;
+  if (document.getElementById('lat').value) score += 20;
+  if (document.getElementById('lng').value) score += 10;
+  const selected = document.querySelectorAll('.sel-card.selected').length;
+  score += selected * 5;
+  const uploaded = document.querySelectorAll('.photo-slot.uploaded').length;
+  score += uploaded * 10;
+  const checked = document.querySelectorAll('.check-item.checked').length;
+  score += checked * 5;
+  score = Math.min(score, 95);
+
+  document.getElementById('accuracy-fill').style.width = score + '%';
+  const txt = document.getElementById('accuracy-text');
+  if (score < 35) { txt.textContent = '低'; txt.style.color = 'var(--red)'; }
+  else if (score < 65) { txt.textContent = '中'; txt.style.color = 'var(--sun)'; }
+  else { txt.textContent = '高'; txt.style.color = 'var(--green)'; }
+}
+</script>
+</body>
+</html>
