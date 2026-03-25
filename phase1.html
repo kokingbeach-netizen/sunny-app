@@ -159,9 +159,9 @@
     .photo-pane { display: none; }
 
     /* SVG guide illustrations */
-    .guide-illust-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
-    .guide-illust-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .guide-illust-item span { font-size: 10px; color: #6B7280; text-align: center; }
+    .shooting-guide-wrap { text-align: center; margin-bottom: 14px; }
+    .shooting-guide-title { font-size: 13px; font-weight: 700; color: #1A1A1A; letter-spacing: 1px; margin-bottom: 10px; }
+    .shooting-guide-img { width: 100%; max-width: 160px; height: auto; display: block; margin: 0 auto; }
 
     /* Photo upload area */
     .photo-upload-area { border: 2px dashed rgba(0,0,0,0.12); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.15s; margin-bottom: 12px; }
@@ -498,8 +498,8 @@
 <section class="hero">
   <div class="hero-sun-bg"></div>
   <div class="hero-inner">
-    <h1 class="hero-h1">あなたの家の<br><span style="border-bottom:5px solid #F5A623;padding-bottom:2px;">日当たり</span>を<br>数値で知る。</h1>
-    <p class="hero-sub">緯度経度・窓の方角・階数を入力、<br>画像をアップするだけ。<br>SunCalcエンジンが1年分の日照を計算します。</p>
+    <h1 class="hero-h1">あなたの家の<br><span style="font-size:2em;line-height:1;display:inline-block;border-bottom:5px solid #F5A623;padding-bottom:2px;">日当たり</span>を<br>数値で知る。</h1>
+    <p class="hero-sub"><span style="color:#1A1A1A;font-weight:600;">緯度経度・物件情報と、画像をアップするだけ。</span><br><br><span style="color:#888;font-weight:400;">NASA・NOAAの太陽軌道アルゴリズムをベースに<br>SunCalcエンジンが1年分の日照を計算します。</span></p>
     <button class="btn-black" onclick="openHowModal()" style="font-size:15px;padding:14px 32px;border-radius:6px;">算出方法をみる →</button>
   </div>
 </section>
@@ -513,8 +513,8 @@
     <div class="usecase-card active" data-usecase="居住・不動産">
       <div class="uc-icon">🏠</div>
       <div class="uc-body">
-        <div class="uc-title">居住・不動産</div>
-        <div class="uc-desc">貼貸・購入検討、既存物件の日照確認</div>
+        <div class="uc-title">居住用不動産</div>
+        <div class="uc-desc">賃貸・購入検討、既存物件の日照確認</div>
       </div>
       <div class="uc-arrow">›</div>
     </div>
@@ -523,7 +523,7 @@
       <div class="uc-icon">🏗</div>
       <div class="uc-body">
         <div class="uc-title">建築前リサーチ</div>
-        <div class="uc-desc">更地・設計前の階数シミュレーション</div>
+        <div class="uc-desc">設計前の日照シミュレーション</div>
       </div>
       <span class="uc-badge">NEW</span>
       <div class="uc-arrow">›</div>
@@ -605,15 +605,15 @@
     <div id="plusCodeError" class="pluscode-error" style="display:none">&#9888;&#65039; Plus Codeは現在対応していません。<br><br>&#128241; <strong>スマホの場合：</strong><br>Googleマップで場所を長押し → 画面上部に数字が表示される → 数字をタップしてコピー<br><br>&#128187; <strong>PCの場合：</strong><br>Googleマップで場所を右クリック → 一番上の数字をクリックでコピー</div>
     <div class="row2" style="margin-top:12px">
       <div>
-        <label>緯度 Latitude<span class="req">★必須</span></label>
+        <label>緯度<span class="req">★必須</span></label>
         <input type="number" id="lat" placeholder="例：35.6909" step="0.0001" oninput="updatePrecision()">
       </div>
       <div>
-        <label>経度 Longitude<span class="req">★必須</span></label>
+        <label>経度<span class="req">★必須</span></label>
         <input type="number" id="lng" placeholder="例：139.7302" step="0.0001" oninput="updatePrecision()">
       </div>
     </div>
-    <label style="margin-top:14px">住所（任意・記録用）</label>
+    <label style="margin-top:14px">住所（任意）</label>
     <input type="text" id="address" placeholder="例：東京都渋谷区代々木2丁目...">
   </div>
 
@@ -631,7 +631,7 @@
       <div class="card-row" id="yotoCards">
         <button class="sel-card" onclick="selYoto(this,'living')">🛋 リビング</button>
         <button class="sel-card" onclick="selYoto(this,'bedroom')">🛏 寝室</button>
-        <button class="sel-card" onclick="selYoto(this,'study')">💼 書斎・仕事部屋</button>
+        <button class="sel-card" onclick="selYoto(this,'study')">💼 仕事部屋</button>
         <button class="sel-card" onclick="selYoto(this,'kids')">👶 子ども部屋</button>
         <button class="sel-card" onclick="selYoto(this,'kitchen')">🍳 キッチン・ダイニング</button>
         <button class="sel-card" onclick="selYoto(this,'balcony')">🏡 ベランダ・バルコニー</button>
@@ -659,7 +659,7 @@
   <div class="step-card" id="step3">
     <div class="step-header">
       <span class="step-badge">STEP 3</span>
-      <span class="step-title" id="step3Title">窓ごとの周辺環境</span>
+      <span class="step-title" id="step3Title">窓の位置と周辺環境</span>
     </div>
 
     <div id="windowsContainer"><!-- JS renders window cards here --></div>
@@ -691,29 +691,34 @@
           <div class="photo-check-section">
             <p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>
             <div class="photo-check-items" id="c-checks-south">
-              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（常緑樹・1年中葉がある）</span></label>
-              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（落葉樹・冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="none" checked onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">上記に該当するものは写っていない</span></label>
             </div>
           </div>
-          <div class="c-field-label">見える建物の高さ <span class="c-key-sup">任意・精度向上</span></div>
-          <select class="finput" onchange="cState['south'].bldH=parseFloat(this.value)" style="margin-bottom:8px;">
-            <option value="0">なし（0m）</option>
-            <option value="7">低い 1-2階（7m）</option>
-            <option value="15">中 3-5階（15m）</option>
-            <option value="30">高い 6-10階（30m）</option>
-            <option value="40">とても高い 10階以上（40m）</option>
-          </select>
-          <div class="c-field-label">建物までの距離 <span class="c-key-sup">任意・精度向上</span></div>
-          <select class="finput" onchange="cState['south'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">
-            <option value="3">接近 ～5m</option>
-            <option value="10" selected>近い 5-15m</option>
-            <option value="22">普通 15-30m</option>
-            <option value="40">遠い 30m～</option>
-          </select>
+          <div style="margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">
+            <div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">南側（正面）の建物について</div>
+            <div class="c-field-label">見える建物の高さ <span class="c-key-sup">任意</span></div>
+            <select class="finput" onchange="cState['south'].bldH=parseFloat(this.value);toggleBldDist(this,'c-bld-dist-south')" style="margin-bottom:8px;">
+              <option value="0">なし（0m）</option>
+              <option value="7">低い 1-2階（7m）</option>
+              <option value="15">中 3-5階（15m）</option>
+              <option value="30">高い 6-10階（30m）</option>
+              <option value="40">とても高い 10階以上（40m）</option>
+            </select>
+            <div id="c-bld-dist-south" style="display:none">
+              <div class="c-field-label">建物までの距離 <span class="c-key-sup">任意</span></div>
+              <select class="finput" onchange="cState['south'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">
+                <option value="3">接近 ～5m</option>
+                <option value="10" selected>近い 5-15m</option>
+                <option value="22">普通 15-30m</option>
+                <option value="40">遠い 30m～</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1041,6 +1046,23 @@ function makeDefaultWindow(i) {
 // ============================================================
 function renderPhotoCards(i, w) {
   var tabs = PHOTO_TAB_MAP[w.dir] || PHOTO_TAB_MAP['\u5357'];
+  var bldHOptions = [
+    [0, '\u306a\u3057 (0m)'],
+    [7, '\u4f4e\u3044 1-2\u968e (7m)'],
+    [15, '\u4e2d 3-5\u968e (15m)'],
+    [30, '\u9ad8\u3044 6-10\u968e (30m)'],
+    [40, '\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a (40m)']
+  ].map(function(item) {
+    return '<option value="' + item[0] + '"' + (w.bldH == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+  }).join('');
+  var bldDistOptions = [
+    [3, '\u63a5\u8fd1\uff5e5m'],
+    [10, '\u8fd1\u3044 5-15m'],
+    [22, '\u666e\u901a 15-30m'],
+    [40, '\u9060\u3044 30m\uff5e']
+  ].map(function(item) {
+    return '<option value="' + item[0] + '"' + (w.bldDist == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+  }).join('');
   var html = '<div class="dir-photo-grid">';
   ['left','center','right'].forEach(function(tabKey) {
     var lbl = tabs[tabKey];
@@ -1067,14 +1089,24 @@ function renderPhotoCards(i, w) {
   });
   html += '</div>';
 
+  // 南（正面）の建物入力
+  html += '<div style="margin:10px 0;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
+    + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066</div>'
+    + '<label style="font-size:11px;">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
+    + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=parseFloat(this.value);updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\')">' + bldHOptions + '</select>'
+    + '<div id="bld-dist-win-' + i + '" style="display:' + (w.bldH > 0 ? '' : 'none') + '">'
+    + '<label style="font-size:11px;">\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
+    + '<select style="width:100%;" onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);updatePrecision()">' + bldDistOptions + '</select>'
+    + '</div>'
+    + '</div>';
+
   // Shared guide below all cards
   html += '<div class="dir-guide-shared">'
-    + '<div class="guide-illust-row">'
-    + '<div class="guide-illust-item">' + svgGuide1() + '<span class="guide-caption-1">\u7a93\u679a\u304c\u5199\u3089\u306a\u3044\u3088\u3046\u306b</span></div>'
-    + '<div class="guide-illust-item">' + svgGuide2() + '<span>\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u308b<br><small style="font-size:9px;color:#F5A623;">\u8d85\u5e83\u89d2\uff080.5\u00d7\uff09\u63a8\u5968</small></span></div>'
-    + '<div class="guide-illust-item">' + svgGuide3() + '<span style="color:#EF4444">NG: \u771f\u4e0a\u306b\u5411\u3051\u306a\u3044</span></div>'
+    + '<div class="shooting-guide-wrap">'
+    + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
+    + '<img src="shooting-guide.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
     + '</div>'
-    + '<p class="photo-guide-desc" id="photo-guide-text"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;"><li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u64ae\u5f71\u3057\u3066\u304f\u3060\u3055\u3044\u3002</li><li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u304c\u4f7f\u3048\u308b\u5834\u5408\u306f\u8d85\u5e83\u89d2\u3067\u64ae\u5f71\u3059\u308b\u3068\u7cbe\u5ea6\u304c\u4e0a\u304c\u308a\u307e\u3059\u3002</li><li>\u7a93\u679a\u304c\u5199\u3089\u306a\u3044\u3088\u3046\u7a93\u306e\u5916\u306b\u5411\u3051\u300145\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71\u3057\u3066\u304f\u3060\u3055\u3044\u3002</li><li>\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK\u3067\u3059\u3002</li><li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066\u5927\u4e08\u592b\u3067\u3059\u3002</li></ul></p>'
+    + '<p class="photo-guide-desc" id="photo-guide-text"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;"><li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li><li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u4f7f\u7528\u306f\u7cbe\u5ea6\u5411\u4e0a</li><li>\u6674\u5929\u6642\u306e\u64ae\u5f71\u3092\u63a8\u5968\uff08\u66c7\u308a\u30fb\u96e8\u5929\u3067\u3082\u8a08\u7b97\u53ef\u80fd\uff09</li><li>\u7a93\u308f\u304f\u304c\u5199\u3089\u306a\u3044\u3088\u3046\u306b</li><li>\u5411\u304b\u3044\u306e\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK</li><li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066OK</li></ul></p>'
     + '</div>';
   return html;
 }
@@ -1150,25 +1182,6 @@ function renderWindowCard(w, i) {
 
   var delBtn = i > 0 ? '<button class="del-btn" onclick="deleteWindow(' + i + ')">\u524a\u9664</button>' : '';
 
-  var bldHOptions = [
-    [0, '\u306a\u3057 (0m)'],
-    [7, '\u4f4e\u3044 1-2\u968e (7m)'],
-    [15, '\u4e2d 3-5\u968e (15m)'],
-    [30, '\u9ad8\u3044 6-10\u968e (30m)'],
-    [40, '\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a (40m)']
-  ].map(function(item) {
-    return '<option value="' + item[0] + '"' + (w.bldH == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
-  }).join('');
-
-  var bldDistOptions = [
-    [3, '\u63a5\u8fd1\uff5e5m'],
-    [10, '\u8fd1\u3044 5-15m'],
-    [22, '\u666e\u901a 15-30m'],
-    [40, '\u9060\u3044 30m\uff5e']
-  ].map(function(item) {
-    return '<option value="' + item[0] + '"' + (w.bldDist == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
-  }).join('');
-
   return '<div class="window-card" id="win-card-' + i + '">'
     + '<div class="window-card-hdr">'
     + '<input class="win-name-input" value="' + escHtml(w.name) + '" onchange="windowStates[' + i + '].name=this.value" aria-label="\u7a93\u306e\u540d\u524d">'
@@ -1189,16 +1202,6 @@ function renderWindowCard(w, i) {
     + '<div class="photo-check-items">'
     + renderSurroundingCheckboxes(i, w.surroundings)
     + '</div>'
-    + '</div>'
-
-    + '<div class="field-group">'
-    + '<label>\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055</label>'
-    + '<select onchange="windowStates[' + i + '].bldH=parseFloat(this.value);updatePrecision()">' + bldHOptions + '</select>'
-    + '</div>'
-
-    + '<div class="field-group">'
-    + '<label>\u898b\u3048\u308b\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2</label>'
-    + '<select onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);updatePrecision()">' + bldDistOptions + '</select>'
     + '</div>'
 
     + '</div>';
@@ -1290,13 +1293,22 @@ function analyzeSVF(img) {
   var data = ctx.getImageData(0, 0, 64, 64).data;
   var skyPixels = 0;
   var total = 64 * 64;
-  for (var p = 0; p < total; p++) {
-    var r = data[p * 4];
-    var g = data[p * 4 + 1];
-    var b = data[p * 4 + 2];
-    var brightness = (r + g + b) / 3;
-    if (b > r + 20 || brightness > 180) {
-      skyPixels++;
+  for (var y = 0; y < 64; y++) {
+    for (var x = 0; x < 64; x++) {
+      var p = y * 64 + x;
+      var r = data[p * 4];
+      var g = data[p * 4 + 1];
+      var b = data[p * 4 + 2];
+      var vPos = y / 64;
+      var isBlueSky = b > 100 && b > r + 10 && b > g * 0.85;
+      var isOvercast = vPos < 0.6
+        && r > 150 && g > 150 && b > 150
+        && r < 245 && g < 245 && b < 245
+        && Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
+      var isWhiteWall = vPos > 0.4
+        && r > 220 && g > 220 && b > 220
+        && Math.abs(r - b) < 10 && Math.abs(r - g) < 10;
+      if (!isWhiteWall && (isBlueSky || isOvercast)) skyPixels++;
     }
   }
   return skyPixels / total;
@@ -1340,6 +1352,11 @@ function selMode(el, mode) {
 // ============================================================
 // Precision bar
 // ============================================================
+function toggleBldDist(selectEl, distId) {
+  var el = document.getElementById(distId);
+  if (el) el.style.display = parseFloat(selectEl.value) > 0 ? '' : 'none';
+}
+
 function updatePrecision() {
   var score = 0;
 
@@ -1992,30 +2009,34 @@ function updateStep2() {
 function updateStep3() {
   var isConstruction = selectedUsecase === '建築前リサーチ';
   var step3Title = document.querySelector('#step3 .step-title');
-  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓ごとの周辺環境';
+  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の位置と周辺環境';
   document.querySelectorAll('.guide-caption-1').forEach(function(el) {
     el.textContent = isConstruction ? '更地の中央に立つ' : '窓の前に立つ';
   });
   var guideText = document.getElementById('photo-guide-text');
-  if (guideText) guideText.innerHTML = isConstruction
-    ? '<li>スマホは横向きで撮影してください。</li><li>超広角カメラ（0.5×）が使える場合は超広角で撮影すると精度が上がります。</li><li>建設予定地の中央に立ち、各方角に向けて45°上向きで撮影。</li><li>周辺の建物が写るようにしてください。</li><li>空が写らなくてもOKです。</li>'
-    : '<li>スマホは横向きで撮影してください。</li><li>超広角カメラ（0.5×）が使える場合は超広角で撮影すると精度が上がります。</li><li>窓枠が写らないよう窓の外に向け、45°上向きで撮影してください。</li><li>建物が高くて空が写らなくてもOKです。</li><li>太陽は写らなくて大丈夫です。</li>';
+  var guideItems = '<li>スマホは横向きで45°上向きで撮影</li>'
+    + '<li>超広角カメラ（0.5×）使用は精度向上</li>'
+    + '<li>晴天時の撮影を推奨（曇り・雨天でも計算可能）</li>'
+    + '<li>窓わくが写らないように</li>'
+    + '<li>向かいの建物が高くて空が写らなくてもOK</li>'
+    + '<li>太陽は写らなくてOK</li>';
+  if (guideText) guideText.innerHTML = guideItems;
   var disclaimer = document.getElementById('construction-disclaimer');
   if (disclaimer) disclaimer.style.display = isConstruction ? 'block' : 'none';
   var guideSection = document.getElementById('construction-guide-section');
   if (guideSection) {
     guideSection.innerHTML = '<div class="dir-guide-shared">'
-      + '<div class="guide-illust-row">'
-      + '<div class="guide-illust-item">' + svgGuide1() + '<span class="guide-caption-1">\u66f4\u5730\u306e\u4e2d\u592e\u306b\u7acb\u3064</span></div>'
-      + '<div class="guide-illust-item">' + svgGuide2() + '<span>\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u308b<br><small style="font-size:9px;color:#F5A623;">\u8d85\u5e83\u89d2\uff080.5\u00d7\uff09\u63a8\u5968</small></span></div>'
-      + '<div class="guide-illust-item">' + svgGuide3() + '<span style="color:#EF4444">NG: \u771f\u4e0a\u306b\u5411\u3051\u306a\u3044</span></div>'
+      + '<div class="shooting-guide-wrap">'
+      + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
+      + '<img src="shooting-guide.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
       + '</div>'
       + '<p class="photo-guide-desc"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;">'
-      + '<li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u64ae\u5f71\u3057\u3066\u304f\u3060\u3055\u3044\u3002</li>'
-      + '<li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u304c\u4f7f\u3048\u308b\u5834\u5408\u306f\u8d85\u5e83\u89d2\u3067\u64ae\u5f71\u3059\u308b\u3068\u7cbe\u5ea6\u304c\u4e0a\u304c\u308a\u307e\u3059\u3002</li>'
-      + '<li>\u5efa\u8a2d\u4e88\u5b9a\u5730\u306e\u4e2d\u592e\u306b\u7acb\u3061\u3001\u5404\u65b9\u89d2\u306b\u5411\u3051\u306645\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71\u3002</li>'
-      + '<li>\u5468\u8fba\u306e\u5efa\u7269\u304c\u5199\u308b\u3088\u3046\u306b\u3057\u3066\u304f\u3060\u3055\u3044\u3002</li>'
-      + '<li>\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK\u3067\u3059\u3002</li>'
+      + '<li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li>'
+      + '<li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u4f7f\u7528\u306f\u7cbe\u5ea6\u5411\u4e0a</li>'
+      + '<li>\u6674\u5929\u6642\u306e\u64ae\u5f71\u3092\u63a8\u5968\uff08\u66c7\u308a\u30fb\u96e8\u5929\u3067\u3082\u8a08\u7b97\u53ef\u80fd\uff09</li>'
+      + '<li>\u7a93\u308f\u304f\u304c\u5199\u3089\u306a\u3044\u3088\u3046\u306b</li>'
+      + '<li>\u5411\u304b\u3044\u306e\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK</li>'
+      + '<li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066OK</li>'
       + '</ul></p></div>';
   }
   var wc = document.getElementById('windowsContainer');
@@ -2090,13 +2111,25 @@ function cAnalyzeSky(dataUrl, dir) {
     canvas.width = img.width; canvas.height = img.height;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const { width, height } = canvas;
+    const data = ctx.getImageData(0, 0, width, height).data;
     let skyPixels = 0;
-    const total = data.length / 4;
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i], g = data[i+1], b = data[i+2];
-      if (b > 100 && b > r * 1.1 && b > g * 0.9) skyPixels++;
-      else if (r > 200 && g > 200 && b > 200) skyPixels++;
+    const total = width * height;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2];
+        const vPos = y / height;
+        const isBlueSky = b > 100 && b > r + 10 && b > g * 0.85;
+        const isOvercast = vPos < 0.6
+          && r > 150 && g > 150 && b > 150
+          && r < 245 && g < 245 && b < 245
+          && Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
+        const isWhiteWall = vPos > 0.4
+          && r > 220 && g > 220 && b > 220
+          && Math.abs(r - b) < 10 && Math.abs(r - g) < 10;
+        if (!isWhiteWall && (isBlueSky || isOvercast)) skyPixels++;
+      }
     }
     const rate = Math.round((skyPixels / total) * 100);
     const rateEl = document.querySelector('#c-photo-' + dir + ' .c-photo-rate');
@@ -2158,28 +2191,35 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '<div class="photo-check-section">'
     + '<p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>'
     + '<div class="photo-check-items">'
-    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">樹木（常緑樹・1年中葉がある）</span></label>'
-    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">樹木（落葉樹・冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="none" checked onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">上記に該当するものは写っていない</span></label>'
     + '</div></div>'
-    + '<div class="c-field-label">見える建物の高さ <span class="c-key-sup">任意</span></div>'
-    + '<select class="finput" onchange="cState[\''+key+'\'].bldH=parseFloat(this.value)" style="margin-bottom:8px;">'
-    + '<option value="0">なし（0m）</option>'
-    + '<option value="7">低い 1-2階（7m）</option>'
-    + '<option value="15">中 3-5階（15m）</option>'
-    + '<option value="30">高い 6-10階（30m）</option>'
-    + '<option value="40">とても高い 10階以上（40m）</option>'
-    + '</select>'
-    + '<div class="c-field-label">建物までの距離 <span class="c-key-sup">任意</span></div>'
-    + '<select class="finput" onchange="cState[\''+key+'\'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">'
-    + '<option value="3">接近 ～5m</option>'
-    + '<option value="10" selected>近い 5-15m</option>'
-    + '<option value="22">普通 15-30m</option>'
-    + '<option value="40">遠い 30m～</option>'
-    + '</select>'
+    + (key === 'south'
+      ? '<div style="margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
+        + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066</div>'
+        + '<div class="c-field-label">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f</span></div>'
+        + '<select class="finput" onchange="cState[\'south\'].bldH=parseFloat(this.value);toggleBldDist(this,\'c-bld-dist-south-dyn\')" style="margin-bottom:8px;">'
+        + '<option value="0">\u306a\u3057\uff080m\uff09</option>'
+        + '<option value="7">\u4f4e\u3044 1-2\u968e\uff087m\uff09</option>'
+        + '<option value="15">\u4e2d 3-5\u968e\uff0815m\uff09</option>'
+        + '<option value="30">\u9ad8\u3044 6-10\u968e\uff0830m\uff09</option>'
+        + '<option value="40">\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a\uff0840m\uff09</option>'
+        + '</select>'
+        + '<div id="c-bld-dist-south-dyn" style="display:none">'
+        + '<div class="c-field-label">\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f</span></div>'
+        + '<select class="finput" onchange="cState[\'south\'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">'
+        + '<option value="3">\u63a5\u8fd1 \uff5e5m</option>'
+        + '<option value="10" selected>\u8fd1\u3044 5-15m</option>'
+        + '<option value="22">\u666e\u901a 15-30m</option>'
+        + '<option value="40">\u9060\u3044 30m\uff5e</option>'
+        + '</select>'
+        + '</div>'
+        + '</div>'
+      : '')
     + '</div>';
   container.appendChild(block);
   const panel = document.getElementById('c-add-panel');
