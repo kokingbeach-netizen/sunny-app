@@ -1,1621 +1,2249 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sunny — 日照率チェッカー</title>
-<script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUNNY — 日照率チェッカー</title>
+  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F4F0;
+      --white: #FFFFFF;
+      --black: #1A1A1A;
+      --amber: #F5A623;
+      --amber-dk: #D4880F;
+      --gray: #6B7280;
+      --gray-lt: #EFEFEC;
+      --border: rgba(0,0,0,0.08);
+      --border-md: rgba(0,0,0,0.12);
+      --red: #EF4444;
+      --green: #10B981;
+    }
 
-:root {
-  --bg: #07111f;
-  --panel: #0c1d30;
-  --card: #0f2440;
-  --border: rgba(80,180,240,0.14);
-  --sun: #FFB800;
-  --sky: #5BC8F5;
-  --green: #34D399;
-  --red: #FF6B6B;
-  --white: #e8f2ff;
-  --muted: #7a9ab5;
-}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); color:var(--white); font-family:'Noto Sans JP',sans-serif; min-height:100vh; line-height:1.6; }
+    body {
+      background: var(--bg);
+      color: var(--black);
+      font-family: 'Noto Sans JP', sans-serif;
+      min-height: 100vh;
+    }
 
-/* ── TOP BAR ── */
-.topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; background:var(--bg); backdrop-filter:blur(8px); }
-.logo { font-family:'DM Mono',monospace; font-size:18px; font-weight:500; color:var(--sun); letter-spacing:2px; }
-.logo-sub { font-size:12px; color:var(--muted); margin-left:4px; }
-.header-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:transparent; border:1px solid rgba(91,200,245,0.3); border-radius:20px; color:var(--sky); font-size:16px; font-weight:600; cursor:pointer; transition:background 0.2s; }
-.header-btn:hover { background:rgba(91,200,245,0.08); border-color:var(--sky); }
+    /* Topbar */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,0.12);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 56px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo-text { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: #1A1A1A; letter-spacing: 3px; }
+    .logo-divider { width: 1px; height: 20px; background: rgba(0,0,0,0.12); }
+    .logo-sub { font-size: 11px; color: #6B7280; }
+    .topbar-right { display: flex; align-items: center; gap: 20px; }
+    .nav-link { background: none; border: none; font-size: 13px; color: #6B7280; cursor: pointer; text-decoration: underline; font-family: 'Noto Sans JP', sans-serif; }
+    .nav-link:hover { color: #1A1A1A; }
+    .btn-black { background: #1A1A1A; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; text-decoration: none; display: inline-block; }
+    .btn-black:hover { background: #333; }
 
-/* ── MODAL ── */
-.modal-overlay { position:fixed; inset:0; z-index:10000; background:rgba(7,17,31,0.88); display:none; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px); }
-.modal-overlay.open { display:flex; }
-.modal-box { position:relative; width:100%; max-width:900px; height:90vh; background:#07111f; border:1px solid rgba(80,180,240,0.18); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 80px rgba(0,0,0,0.7); animation:modalIn 0.25s ease; }
-@keyframes modalIn { from { opacity:0; transform:translateY(16px) scale(0.98); } to { opacity:1; transform:none; } }
-.modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid rgba(80,180,240,0.12); flex-shrink:0; }
-.modal-header-title { font-size:18px; font-weight:700; color:var(--sky); }
-.modal-close { width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--muted); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.modal-close:hover { background:rgba(255,255,255,0.08); color:var(--white); }
-.modal-iframe { flex:1; border:none; width:100%; }
+    /* Hero */
+    .hero { background: var(--bg); padding: 48px 24px 56px; position: relative; overflow: hidden; }
+    .hero-sun-bg {
+      position: absolute; right: -20vw; top: -20vw;
+      width: 90vw; height: 90vw; max-width: 800px; max-height: 800px;
+      background: #F5A623; border-radius: 50%;
+      opacity: 0.5;
+      box-shadow:
+        0 0 80px rgba(245,166,35,0.5),
+        0 0 160px rgba(245,166,35,0.3),
+        0 0 280px rgba(245,166,35,0.15);
+      animation: sunPulse 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes sunPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 80px rgba(245,166,35,0.5), 0 0 160px rgba(245,166,35,0.3);
+      }
+      50% {
+        transform: scale(1.04);
+        box-shadow: 0 0 120px rgba(245,166,35,0.6), 0 0 240px rgba(245,166,35,0.35);
+      }
+    }
+    .hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+    .hero-h1 { font-size: clamp(36px, 6vw, 60px); font-weight: 900; letter-spacing: -2px; line-height: 1.15; text-align: left; margin-bottom: 16px; }
+    .hero-sub { font-size: 15px; font-weight: 300; color: var(--gray); text-align: left; line-height: 1.8; margin-bottom: 28px; }
 
-/* ── CONTAINER ── */
-.container { max-width:760px; margin:0 auto; padding:28px 20px 60px; }
+    /* Container */
+    .container { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
 
-/* ── PRECISION BAR ── */
-.accuracy-bar { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:24px; }
-.accuracy-label { font-size:12px; color:var(--muted); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
-.accuracy-track { background:rgba(255,255,255,0.05); border-radius:6px; height:7px; overflow:hidden; }
-.accuracy-fill { height:100%; border-radius:6px; background:linear-gradient(to right, var(--sky), var(--green)); transition:width 0.4s; }
+    /* Precision bar */
+    .precision-bar { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; }
+    .precision-bar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: #6B7280; }
+    .precision-bar-label { font-weight: 700; }
+    .precision-track { background: #EFEFEC; border-radius: 6px; height: 6px; overflow: hidden; }
+    #precisionFill { height: 100%; border-radius: 6px; background: #ef4444; transition: width 0.4s, background 0.3s; width: 0%; }
 
-/* ── SECTION CARD ── */
-.sec { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:20px; }
-.sec-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
-.sec-num { font-family:'DM Mono',monospace; font-size:13px; font-weight:500; color:var(--sky); background:rgba(91,200,245,0.1); border:1px solid rgba(91,200,245,0.2); border-radius:20px; padding:2px 10px; flex-shrink:0; }
-.sec-title { font-size:24px; font-weight:900; }
-.sec-title em { color:var(--sky); font-style:normal; }
-.sec-sub { font-size:15px; color:var(--muted); margin-bottom:18px; line-height:1.7; }
+    /* Step cards */
+    .step-card { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+    .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .step-badge { font-family: 'DM Mono', monospace; font-size: 10px; background: #1A1A1A; color: #F5A623; border-radius: 4px; padding: 3px 8px; letter-spacing: 0.5px; }
+    .step-title { font-size: 16px; font-weight: 700; }
+    .step-title-sub { font-size: 11px; font-weight: 400; color: var(--amber-dk); margin-left: 8px; }
+    .paste-hint { font-size: 11px; color: var(--gray); margin-bottom: 0; }
+    .pluscode-error { margin-top: 8px; padding: 12px 14px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; font-size: 12px; color: #DC2626; line-height: 1.8; }
 
-/* ── FORM ELEMENTS ── */
-label { display:block; font-size:15px; color:var(--muted); margin-bottom:5px; letter-spacing:0.5px; }
-.req { color:var(--sky); margin-left:3px; font-size:13px; }
-.opt { color:var(--muted); font-size:13px; margin-left:3px; }
-input[type=text], input[type=number], input[type=password], select {
-  width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px;
-  padding:11px 14px; color:var(--white); font-family:'DM Mono',monospace; font-size:16px;
-  outline:none; transition:border-color 0.2s, box-shadow 0.2s; margin-bottom:14px; appearance:none;
-}
-input:focus, select:focus { border-color:var(--sky); box-shadow:0 0 0 3px rgba(91,200,245,0.1); }
-select option { background:var(--card); }
-.row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    /* Form */
+    label { display: block; font-size: 11px; color: #6B7280; font-weight: 700; margin-bottom: 4px; }
+    .req { color: #EF4444; margin-left: 2px; }
+    input[type=text] {
+      width: 100%; background: #EFEFEC; border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px; padding: 10px 12px; color: #1A1A1A;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 13px;
+      outline: none; transition: border-color 0.2s; margin-bottom: 14px;
+    }
+    input[type=text]:focus { border-color: #F5A623; }
+    input[type=number], select {
+      width: 100%; background: #EFEFEC; border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px; padding: 10px 12px; color: #1A1A1A;
+      font-family: 'DM Mono', monospace; font-size: 13px;
+      outline: none; transition: border-color 0.2s; margin-bottom: 14px;
+      appearance: none; -webkit-appearance: none;
+    }
+    input[type=number]:focus, select:focus { border-color: #F5A623; }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+    }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* ── SLIDER ── */
-.slider-wrap { margin-bottom:14px; }
-.slider-val { font-family:'DM Mono',monospace; font-size:22px; color:var(--sun); margin-bottom:6px; }
-.slider-unit { font-size:12px; color:var(--muted); }
-.slider-labels { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:4px; }
-input[type=range] { width:100%; appearance:none; height:4px; background:rgba(80,180,240,0.15); border-radius:4px; outline:none; margin:0; padding:0; border:none; box-shadow:none; margin-bottom:0; }
-input[type=range]::-webkit-slider-thumb { appearance:none; width:18px; height:18px; border-radius:50%; background:var(--sky); box-shadow:0 0 8px rgba(91,200,245,0.5); cursor:pointer; }
+    /* Hint box */
+    .hint-box { background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.25); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #6B7280; line-height: 1.6; margin-top: 4px; }
 
-/* ── CARD SELECT ── */
-.card-select { display:grid; gap:8px; margin-bottom:14px; }
-.card-select.c2 { grid-template-columns:1fr 1fr; }
-.card-select.c3 { grid-template-columns:1fr 1fr 1fr; }
-.sel-card { background:var(--card); border:1.5px solid var(--border); border-radius:10px; padding:12px 10px; text-align:center; cursor:pointer; transition:all 0.2s; }
-.sel-card:hover { border-color:rgba(91,200,245,0.3); }
-.sel-card.selected { border-color:var(--sky); background:rgba(91,200,245,0.08); }
-.sel-icon { font-size:20px; margin-bottom:4px; }
-.sel-label { font-size:14px; color:var(--muted); }
-.sel-card.selected .sel-label { color:var(--sky); }
+    /* Card row */
+    .card-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .sel-card { border: 1.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: #6B7280; cursor: pointer; background: #fff; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; }
+    .sel-card:hover { border-color: #F5A623; color: #D4880F; }
+    .sel-card.active { border-color: #F5A623; background: rgba(245,166,35,0.08); color: #D4880F; }
 
-/* ── PHOTO GRID ── */
-.photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-.photo-slot { background:var(--card); border:1.5px dashed var(--border); border-radius:12px; padding:16px 10px; text-align:center; cursor:pointer; transition:all 0.2s; }
-.photo-slot:hover { border-color:rgba(91,200,245,0.4); }
-.photo-slot.key { border-color:rgba(255,184,0,0.3); }
-.photo-slot.key:hover { border-color:var(--sun); }
-.photo-slot.uploaded { border-style:solid; border-color:var(--green); }
-.slot-icon { font-size:22px; margin-bottom:5px; }
-.slot-dir { font-size:16px; font-weight:700; }
-.slot-key-badge { display:inline-block; font-size:12px; background:rgba(255,184,0,0.12); color:var(--sun); padding:2px 7px; border-radius:8px; margin-top:4px; }
-.slot-optional { font-size:13px; color:var(--muted); margin-top:4px; }
-.analysis-badge { font-size:14px; color:var(--green); }
-.rm-btn { width:100%; margin-top:6px; padding:4px; font-size:12px; background:transparent; border:1px solid var(--red); color:var(--red); border-radius:6px; cursor:pointer; }
+    /* Window card */
+    .window-card { background: #F5F4F0; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+    .window-card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .window-card-title { font-size: 13px; font-weight: 700; }
+    .win-name-input { background: transparent; border: none; border-bottom: 1.5px solid rgba(0,0,0,0.12); border-radius: 0; padding: 2px 4px; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 0; width: auto; font-family: 'Noto Sans JP', sans-serif; }
+    .win-name-input:focus { border-bottom-color: #F5A623; outline: none; }
+    .del-btn { background: none; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #6B7280; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+    .del-btn:hover { border-color: #EF4444; color: #EF4444; }
 
-/* ── CHECK ITEMS ── */
-.check-group { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
-.check-item { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 13px; cursor:pointer; transition:border-color 0.2s; }
-.check-item:hover { border-color:rgba(91,200,245,0.3); }
-.check-item.checked { border-color:rgba(91,200,245,0.4); background:rgba(91,200,245,0.05); }
-.check-box { width:18px; height:18px; border-radius:5px; border:1.5px solid var(--muted); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; font-size:11px; }
-.check-item.checked .check-box { background:var(--sky); border-color:var(--sky); color:#000; }
-.check-text { font-size:16px; }
-.check-sub { font-size:14px; color:var(--muted); margin-top:1px; }
+    /* Dir grid */
+    .dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+    .dir-btn { border: 1.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 8px 6px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 700; color: #6B7280; background: #fff; user-select: none; transition: all 0.15s; }
+    .dir-btn:hover { border-color: #F5A623; color: #D4880F; }
+    .dir-btn.active { border-color: #F5A623; background: rgba(245,166,35,0.1); color: #D4880F; }
 
-/* ── MODE CARDS ── */
-.mode-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
-.mode-card { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:18px 14px; text-align:center; cursor:pointer; transition:all 0.25s; }
-.mode-card:hover { border-color:rgba(91,200,245,0.3); transform:translateY(-2px); }
-.mode-card.selected { border-color:var(--sky); background:rgba(91,200,245,0.07); }
-.mode-icon { font-size:28px; margin-bottom:7px; }
-.mode-name { font-size:18px; font-weight:700; margin-bottom:4px; }
-.mode-desc { font-size:14px; color:var(--muted); line-height:1.6; }
-.mode-card.selected .mode-name { color:var(--sky); }
+    /* Size grid */
+    .size-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+    .size-btn { border: 1.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 8px 6px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 700; color: #6B7280; background: #fff; user-select: none; transition: all 0.15s; }
+    .size-btn:hover { border-color: #F5A623; color: #D4880F; }
+    .size-btn.active { border-color: #F5A623; background: rgba(245,166,35,0.1); color: #D4880F; }
 
-/* ── MODE EXPLAIN ── */
-.mode-explain-box { background:rgba(91,200,245,0.05); border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:14px; color:var(--muted); line-height:1.8; margin-bottom:18px; }
+    /* Photo tabs */
+    .photo-tabs { display: flex; gap: 0; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; overflow: hidden; }
+    .ptab { flex: 1; padding: 8px 4px; font-size: 11px; font-weight: 700; color: #6B7280; background: #fff; border: none; cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; }
+    .ptab:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.08); }
+    .ptab.active { background: #1A1A1A; color: #F5A623; }
+    .ptab:hover:not(.active) { background: #F5F4F0; }
+    .photo-pane { display: none; }
 
-/* ── CALC BUTTON ── */
-.btn-calc { width:100%; padding:16px; border-radius:12px; border:none; background:linear-gradient(135deg, var(--sun), #e09000); color:#000; font-family:'Noto Sans JP',sans-serif; font-size:17px; font-weight:900; cursor:pointer; transition:all 0.2s; }
-.btn-calc:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,184,0,0.4); }
-.btn-calc:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
-.btn-sec { padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:'Noto Sans JP',sans-serif; font-size:16px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-.btn-sec:hover { border-color:var(--sky); color:var(--sky); }
-.btn-sky { padding:9px 18px; border-radius:10px; border:none; background:linear-gradient(135deg,var(--sky),#3a9fd0); color:#000; font-family:'Noto Sans JP',sans-serif; font-size:16px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    /* SVG guide illustrations */
+    .shooting-guide-wrap { text-align: center; margin-bottom: 14px; }
+    .shooting-guide-title { font-size: 13px; font-weight: 700; color: #1A1A1A; letter-spacing: 1px; margin-bottom: 10px; }
+    .shooting-guide-img { width: 100%; max-width: 160px; height: auto; display: block; margin: 0 auto; }
 
-/* ── API / MAP ── */
-.api-row { display:flex; gap:8px; margin-bottom:10px; }
-.api-row input { margin-bottom:0; flex:1; }
-#map { width:100%; height:200px; border-radius:10px; border:1px solid var(--border); margin-bottom:12px; background:var(--card); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+    /* Photo upload area */
+    .photo-upload-area { border: 2px dashed rgba(0,0,0,0.12); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.15s; margin-bottom: 12px; }
+    .photo-upload-area:hover { border-color: #F5A623; }
+    .photo-upload-area.has-photo { border-style: solid; border-color: #10B981; }
+    .photo-preview-img { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 6px; display: none; margin-bottom: 8px; cursor: pointer; }
+    .photo-upload-area.has-photo .photo-preview-img { display: block; }
+    .photo-upload-area.has-photo .upload-prompt { display: none; }
+    .upload-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+    .upload-text { font-size: 13px; color: #1A1A1A; display: block; }
+    .upload-sub { font-size: 11px; color: #6B7280; display: block; margin-top: 2px; }
+    .svf-badge { font-size: 11px; color: #10B981; font-weight: 700; margin-top: 4px; }
+    .photo-guide-desc { font-size: 12px; color: var(--gray); line-height: 1.7; margin-bottom: 12px; padding: 8px 10px; background: rgba(245,166,35,0.05); border-radius: 8px; border: 1px solid rgba(245,166,35,0.15); }
+    .result-precision { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 12px; }
 
-/* ── GUIDE TOGGLE ── */
-.guide-toggle-btn { background:var(--card); color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:7px 14px; font-size:14px; cursor:pointer; margin-bottom:12px; transition:all 0.2s; }
-.guide-toggle-btn:hover { border-color:var(--sky); color:var(--sky); }
+    /* Photo strip (always-visible thumbnails) */
+    .photo-strip { display: flex; gap: 6px; margin-bottom: 10px; }
+    .photo-strip-item { flex: 1; cursor: pointer; }
+    .photo-strip-thumb { width: 100%; max-height: 64px; object-fit: contain; border-radius: 6px; border: 2px solid #10B981; display: block; }
+    .photo-strip-empty { height: 56px; border: 1.5px dashed rgba(0,0,0,0.12); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafaf8; gap: 2px; }
+    .photo-strip-empty span:first-child { font-size: 18px; }
+    .photo-strip-empty span:last-child { font-size: 9px; color: #9CA3AF; }
+    .ptab-badge { font-size: 9px; color: #10B981; margin-left: 2px; }
 
-/* ── SUB SECTION ── */
-.sub-sec { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px; }
-.sub-sec-title { font-size:12px; font-weight:700; color:var(--sky); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+    /* Heatmap symbols */
+    .hm-cell { height: 28px; border-radius: 4px; border: none; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+    .hm-cell.light { color: rgba(0,0,0,0.5); }
+    .hm-mn { font-size: 11px; font-weight: 700; color: #666; }
+    .hm-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-size: 11px; }
+    .hm-leg-item { padding: 3px 10px; border-radius: 6px; font-weight: 600; font-size: 11px; color: #555; }
+    .hm-desc { font-size: 11px; color: var(--gray); line-height: 1.8; margin-top: 10px; padding: 8px 10px; background: var(--gray-lt); border-radius: 6px; }
+    .peak-month { text-align: right; margin-top: 12px; }
+    .peak-label { font-size: 10px; color: #666; margin-bottom: 4px; }
+    .peak-value { font-size: 16px; font-weight: 800; color: #F5A623; letter-spacing: -0.5px; }
 
-/* ── ERROR ── */
-.error-msg { background:rgba(127,29,29,0.4); border:1px solid rgba(239,68,68,0.4); border-radius:8px; padding:8px 12px; font-size:14px; color:#fca5a5; margin-bottom:10px; display:none; }
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; z-index: 20000; background: rgba(0,0,0,0.88); display: none; align-items: center; justify-content: center; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 8px; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-/* ── DISCLAIMER ── */
-.disclaimer { background:rgba(127,29,29,0.15); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:11px 15px; font-size:14px; color:#fca5a5; margin-bottom:20px; overflow-wrap:break-word; word-break:break-word; }
+    /* Radio group */
+    .radio-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .radio-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1A1A1A; cursor: pointer; }
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .checkbox-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #1A1A1A; cursor: pointer; line-height: 1.5; }
+    .checkbox-item input[type=checkbox] { margin-top: 3px; accent-color: var(--amber); flex-shrink: 0; width: 15px; height: 15px; }
+    .checkbox-item small { color: var(--amber-dk); margin-left: 4px; }
+    .surrounding-note { font-size: 12px; color: #666; background: #FFF8ED; border-left: 3px solid var(--amber); padding: 6px 10px; margin: 4px 0 10px; border-radius: 2px; }
 
-/* ── RESULTS ── */
-#results { display:none; }
-.res-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:20px; }
-.res-card h2 { font-size:18px; font-weight:700; color:var(--sun); margin-bottom:14px; }
+    /* Direction photo cards */
+    .dir-photo-grid { display: flex; gap: 8px; margin-bottom: 10px; }
+    .dir-card { flex: 1; border: 2px solid rgba(0,0,0,0.12); border-radius: 10px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+    .dir-card.has-photo { border-color: rgba(245,166,35,0.6); }
+    .dir-card-label { font-size: 11px; font-weight: 700; padding: 6px 8px 5px; background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.06); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dir-card-check { color: var(--amber-dk); }
+    .dir-card-btns { padding: 7px 6px 6px; }
+    .dir-card-btn-full { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; padding: 9px 6px; border: 1.5px solid var(--amber); border-radius: 7px; font-size: 12px; font-weight: 700; color: var(--amber-dk); cursor: pointer; background: #fff; text-align: center; transition: background 0.15s; box-sizing: border-box; }
+    .dir-card-btn-full:hover { background: #FFF8ED; }
+    .dir-card-preview { padding: 6px; }
+    .dir-card-thumb { width: 100%; height: 64px; object-fit: cover; border-radius: 5px; display: block; cursor: pointer; }
+    .dir-card-svf { font-size: 9px; color: var(--amber-dk); text-align: center; margin-top: 3px; }
+    .dir-card-del { display: block; width: 100%; margin-top: 4px; font-size: 10px; color: #EF4444; background: none; border: 1px solid #EF4444; border-radius: 5px; padding: 3px 0; cursor: pointer; }
+    .dir-card-del:hover { background: #FEF2F2; }
+    /* Shared guide */
+    .dir-guide-shared { background: #FAFAFA; border: 1px solid rgba(0,0,0,0.09); border-radius: 10px; padding: 12px 14px; margin-bottom: 4px; }
+    .radio-item input[type=radio] { width: auto; margin: 0; background: none; border: none; appearance: auto; -webkit-appearance: auto; accent-color: #F5A623; }
 
-/* heatmap */
-.heatmap-a-wrap { overflow-x:auto; margin-bottom:16px; }
-.heatmap-a-table { border-collapse:collapse; min-width:460px; width:100%; }
-.heatmap-a-table th { font-size:12px; color:var(--muted); padding:5px 4px; text-align:center; background:rgba(15,36,64,0.9); white-space:nowrap; border:1px solid rgba(80,180,240,0.1); }
-.heatmap-a-table td.month-label { font-size:13px; color:var(--muted); padding:4px 10px; background:rgba(15,36,64,0.9); border:1px solid rgba(80,180,240,0.1); font-weight:600; white-space:nowrap; }
-.heatmap-a-table td.hm-cell { height:36px; text-align:center; vertical-align:middle; font-size:13px; cursor:default; border:1px solid rgba(0,0,0,0.2); transition:filter 0.15s; }
-.heatmap-a-table td.hm-cell:hover { filter:brightness(1.35); outline:2px solid var(--sun); z-index:1; position:relative; }
-.hm-tooltip { position:fixed; background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12px; color:var(--white); pointer-events:none; z-index:9999; display:none; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
-.legend-row { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; font-size:14px; color:var(--muted); }
-.legend-dot { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:middle; margin-right:4px; }
+    /* Field group */
+    .field-group { margin-bottom: 14px; }
+    .field-group label { margin-bottom: 6px; }
 
-/* mode A summary */
-.mode-a-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:14px; }
-.summary-info-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; }
-.s-title { font-size:15px; color:var(--muted); margin-bottom:6px; font-weight:600; }
-.s-val { font-size:16px; font-weight:700; color:var(--white); line-height:1.7; }
-.s-score { font-size:2.4rem; font-weight:700; color:var(--sun); }
+    /* Add window button */
+    .add-window-btn { width: 100%; border: 2px dashed rgba(0,0,0,0.12); border-radius: 8px; background: transparent; padding: 12px; font-size: 14px; font-weight: 700; color: #6B7280; cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; }
+    .add-window-btn:hover { border-color: #F5A623; color: #F5A623; }
 
-/* mode B */
-.summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:18px; }
-.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
-.kpi-card .val { font-size:2.1rem; font-weight:700; color:var(--sun); }
-.kpi-card .unit { font-size:12px; color:var(--muted); }
-.kpi-card .lbl { font-size:12px; color:var(--muted); margin-top:3px; }
-.optimal-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px; }
-.oc-title { font-size:18px; font-weight:700; color:var(--sun); margin-bottom:10px; }
-.optimal-row { display:flex; gap:20px; flex-wrap:wrap; }
-.oi-label { font-size:12px; color:var(--muted); margin-bottom:2px; }
-.oi-val { font-size:1.4rem; font-weight:700; color:var(--sun); }
-.oi-unit { font-size:12px; color:var(--muted); }
-.oi-note { font-size:12px; color:var(--green); margin-top:2px; }
-.chart-wrap { position:relative; height:260px; margin-bottom:18px; }
-.caveat { font-size:14px; color:var(--muted); background:var(--card); border-radius:8px; padding:10px 13px; margin-bottom:14px; }
-.corr-badge { display:inline-block; background:var(--card); border:1px solid var(--border); border-radius:4px; padding:2px 7px; margin:2px 3px 2px 0; font-size:12px; color:#a5b4fc; }
+    /* Mode cards */
+    .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .mode-card { background: #fff; border: 2px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 20px 16px; text-align: center; cursor: pointer; transition: all 0.15s; }
+    .mode-card:hover { border-color: #F5A623; }
+    .mode-card.active { border-color: #F5A623; background: rgba(245,166,35,0.06); }
 
-/* ── ILLUST BOX ── */
-.illust-box {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 24px 16px 18px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  text-align: center;
-  overflow: hidden;
-  width: 100%;
-  box-sizing: border-box;
-}
-.illust-box svg { display:block; max-width: 100%; height: auto; }
-.illust-box .i-title { font-size: 18px; font-weight: 900; line-height: 1.4; }
-.illust-box .i-title em { color: var(--sun); font-style: normal; }
-.illust-box .i-desc { font-size: 14px; color: var(--muted); line-height: 1.9; max-width: 100%; }
-.illust-box .i-desc strong { color: var(--white); }
+    /* Error box */
+    .error-box { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #EF4444; margin-bottom: 12px; display: none; }
 
-/* hidden */
-.hidden-input { display:none !important; }
+    /* Results */
+    .score-card { background: #fff; border: 2px solid #F5A623; border-radius: 16px; padding: 32px 24px; margin-bottom: 20px; text-align: center; }
+    .result-card { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .disclaimer { background: #EFEFEC; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #6B7280; line-height: 1.6; margin-bottom: 20px; }
 
-/* divider */
-.divider { height:1px; background:var(--border); margin:20px 0; }
+    /* Window bar */
+    .win-bar { margin-bottom: 12px; }
+    .win-bar-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .win-bar-track { background: #EFEFEC; border-radius: 4px; height: 8px; overflow: hidden; }
+    .win-bar-fill { height: 100%; background: #F5A623; border-radius: 4px; transition: width 0.6s; }
 
-/* ── OVERFLOW CONTROL ── */
-html { overflow-x: hidden; font-size: 18px; }
-body {
-  font-size: 1rem;
-  overflow-x: hidden;
-  position: relative;
-  -webkit-touch-callout: none;
-  touch-action: pan-y;
-}
+    /* Heatmap */
+    .hm-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .hm-tab { padding: 5px 12px; border-radius: 20px; border: 1.5px solid rgba(0,0,0,0.12); font-size: 11px; font-weight: 700; cursor: pointer; color: #6B7280; background: #fff; transition: all 0.15s; }
+    .hm-tab:hover { border-color: #F5A623; color: #D4880F; }
+    .hm-tab.active { background: #1A1A1A; border-color: #1A1A1A; color: #F5A623; }
+    .heatmap-table { border-collapse: separate; border-spacing: 2px; min-width: 340px; font-size: 10px; }
+    .heatmap-table th { padding: 4px 3px; color: #666; text-align: center; white-space: nowrap; font-size: 10px; font-weight: 700; }
+    .heatmap-table td { width: 36px; padding: 0; }
+    .hm-row-label { font-size: 10px; font-weight: 700; color: #6B7280; padding: 2px 6px; white-space: nowrap; text-align: right; }
 
-@media (max-width:600px) {
-  .row2 { grid-template-columns:1fr; }
-  .mode-cards { grid-template-columns:1fr; }
-  .card-select.c3 { grid-template-columns:1fr 1fr; }
-  .topbar { padding:12px 16px; }
-  .container { padding:16px 12px 40px; }
-  .sec { padding:18px 14px; }
-  .illust-box { padding:16px 10px 14px; }
-  .illust-box .i-desc { max-width: 100%; }
-  .illust-box .i-title { font-size:14px; }
-}
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; }
+    .modal-box { width: 100%; max-width: 860px; height: 88vh; background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.12); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
+    .modal-hd { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid rgba(0,0,0,0.08); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .modal-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.12); background: transparent; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6B7280; }
+    .modal-close:hover { border-color: #1A1A1A; color: #1A1A1A; }
+    .modal-iframe { flex: 1; border: none; width: 100%; }
 
-@media (max-width:400px) {
-  .card-select.c3 { grid-template-columns:1fr 1fr; }
-  .sel-card { padding:10px 6px; }
-  .sel-icon { font-size:16px; }
-  .topbar { padding:10px 12px; }
-  .logo { font-size:15px; }
-  .logo-sub { display:none; }
-  .header-btn { padding:6px 12px; font-size:11px; }
-}
+    /* Next steps card */
+    .next-steps-card { background: #fff; border: 1px solid var(--border-md); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+    .next-steps-title { font-size: 13px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+    .next-steps-btns { display: flex; flex-direction: column; gap: 10px; }
+    .next-btn { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 8px; border: 1.5px solid var(--border-md); background: #fff; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--black); font-family: 'Noto Sans JP', sans-serif; text-align: left; transition: all 0.15s; }
+    .next-btn:hover { border-color: var(--amber); background: rgba(245,166,35,0.04); }
+    .next-btn-icon { font-size: 20px; flex-shrink: 0; }
+    .next-btn-sub { font-size: 11px; color: var(--gray); font-weight: 400; margin-top: 2px; }
+
+    /* Screenshot overlay */
+    .ss-overlay { display: none; position: fixed; inset: 0; z-index: 15000; background: #fff; overflow-y: auto; padding: 32px 24px 48px; }
+    .ss-overlay.open { display: block; }
+    .ss-close { position: fixed; top: 16px; right: 16px; background: #1A1A1A; color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; z-index: 15001; font-family: 'Noto Sans JP', sans-serif; }
+    .ss-hint { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--amber-dk); margin-bottom: 24px; font-weight: 700; }
+    .ss-score-big { font-size: 96px; font-weight: 900; letter-spacing: -4px; color: var(--black); line-height: 1; }
+    .ss-label { font-size: 11px; letter-spacing: 3px; color: var(--gray); font-family: 'DM Mono', monospace; margin-bottom: 8px; }
+    .ss-text { font-size: 14px; color: var(--gray); line-height: 1.9; white-space: pre-wrap; margin: 16px 0; }
+    .ss-sep { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* copy URL feedback */
+    .copy-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1A1A1A; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 20000; }
+    .copy-toast.show { opacity: 1; }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .topbar { padding: 0 16px; }
+      .logo-sub, .logo-divider { display: none; }
+      .topbar-right .nav-link { display: none; }
+      .hero { padding: 0 16px 40px; }
+      .hero-h1 { font-size: 32px; letter-spacing: -1px; }
+      .container { padding: 16px 12px 60px; }
+      .step-card { padding: 16px; }
+      .row2 { grid-template-columns: 1fr; }
+      .mode-cards { grid-template-columns: 1fr; }
+    }
+
+
+    /* ── Use-case selector ── */
+    .usecase {
+      padding: 28px 20px 40px;
+      background: #F5F4F0;
+    }
+    .usecase-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .usecase-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1A1A1A;
+      letter-spacing: -0.5px;
+      margin-bottom: 18px;
+      line-height: 1.3;
+    }
+    .usecase-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .usecase-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .usecase-card:hover {
+      border-color: #F5A623;
+      transform: translateX(3px);
+    }
+    .usecase-card.active {
+      border-color: #F5A623;
+      background: #FFFBF2;
+    }
+    .uc-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #F5F4F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .usecase-card.active .uc-icon {
+      background: rgba(245,166,35,0.12);
+    }
+    .uc-body { flex: 1; }
+    .uc-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 2px;
+      letter-spacing: -0.3px;
+    }
+    .uc-desc {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.6;
+    }
+    .uc-arrow {
+      font-size: 18px;
+      color: #DDD;
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+    .usecase-card:hover .uc-arrow,
+    .usecase-card.active .uc-arrow {
+      color: #F5A623;
+    }
+    .uc-badge {
+      position: absolute;
+      top: 12px;
+      right: 40px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: #1A1A1A;
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .usecase-start {
+      margin-top: 20px;
+    }
+    .uc-start-btn {
+      width: 100%;
+      background: #1A1A1A;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: -0.2px;
+      transition: opacity 0.2s;
+    }
+    .uc-start-btn:hover { opacity: 0.85; }
+    .uc-start-hint {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #777;
+    }
+
+    /* -- Construction STEP3 -- */
+    .c-dir-block { background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:16px; margin:0 0 12px; overflow:hidden; }
+    .c-dir-block.active { border-color:#F5A623; }
+    .c-dir-head { display:flex; align-items:center; gap:8px; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,0.06); }
+    .c-dir-arrow { font-size:16px; font-weight:700; color:#1A1A1A; }
+    .c-dir-name { font-size:16px; font-weight:800; color:#1A1A1A; flex:1; letter-spacing:-0.3px; }
+    .c-key-badge { font-size:10px; font-weight:700; background:rgba(245,166,35,0.12); color:#B45309; padding:3px 8px; border-radius:5px; }
+    .c-done-badge { font-size:11px; font-weight:700; color:#34D399; }
+    .c-opt-badge { font-size:10px; color:#666; font-weight:500; margin-left:auto; }
+    .c-chevron { font-size:16px; color:#777; transition:transform 0.2s; }
+    .c-chevron.open { transform:rotate(90deg); }
+    .c-dir-body { padding:14px 16px; }
+    .c-photo-empty { background:#F5F4F0; border:1.5px dashed rgba(0,0,0,0.12); border-radius:10px; padding:20px; text-align:center; cursor:pointer; margin-bottom:14px; }
+    .c-photo-cam { font-size:24px; margin-bottom:6px; }
+    .c-photo-txt { font-size:13px; font-weight:600; color:#555; margin-bottom:3px; }
+    .c-photo-sub { font-size:10px; color:#666; }
+    .c-photo-done { border-radius:10px; overflow:hidden; margin-bottom:14px; border:1.5px solid #34D399; }
+    .c-photo-done img { width:100%; height:160px; object-fit:cover; display:block; }
+    .c-photo-rate { font-size:12px; font-weight:700; color:#34D399; text-align:center; padding:6px; background:#F0FFF8; }
+    .c-photo-change { font-size:11px; color:#34D399; text-align:center; padding:5px; background:#F0FFF8; cursor:pointer; border-top:1px solid rgba(52,211,153,0.2); }
+    .c-field-label { font-size:11px; font-weight:600; color:#555; margin-bottom:7px; display:flex; justify-content:space-between; align-items:center; }
+    .c-key-sup { font-size:9px; color:#B45309; font-weight:500; background:rgba(245,166,35,0.08); padding:2px 6px; border-radius:4px; }
+    .c-opt-sup { font-size:9px; color:#666; font-weight:400; }
+    .c-sel-row { display:flex; gap:5px; margin-bottom:12px; flex-wrap:wrap; }
+    .c-sel { flex:1; min-width:0; background:#F5F4F0; border:1.5px solid rgba(0,0,0,0.08); border-radius:8px; padding:7px 4px; text-align:center; cursor:pointer; font-size:10px; color:#666; white-space:nowrap; transition:all 0.15s; font-family:'Noto Sans JP',sans-serif; }
+    .c-sel.on { border-color:#F5A623; background:#FFFBF2; color:#B45309; font-weight:700; }
+    .c-add-dir-btn { width:100%; background:#fff; border:1.5px dashed rgba(0,0,0,0.1); border-radius:12px; padding:14px; font-size:13px; font-weight:600; color:#666; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:12px; font-family:'Noto Sans JP',sans-serif; }
+    .c-collapsible { cursor:pointer; }
+
+    .c-add-dir-card { background:#F5F4F0; border:1.5px solid rgba(0,0,0,0.08); border-radius:10px; padding:12px; text-align:center; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .c-add-dir-card:hover { border-color:#F5A623; background:#FFFBF2; }
+    .c-add-dir-card.added { opacity:0.35; pointer-events:none; }
+    .c-add-arrow { font-size:16px; font-weight:700; }
+    .c-add-name { font-size:13px; font-weight:700; color:#1A1A1A; }
+      
+    .photo-check-section { margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.06); }
+    .photo-check-label { font-size:11px; font-weight:600; color:#555; margin-bottom:8px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+    .photo-check-opt { font-size:10px; color:#666; font-weight:400; }
+    .photo-check-items { display:flex; flex-direction:column; gap:6px; }
+    .photo-check-item { display:flex; align-items:center; gap:8px; padding:9px 10px; background:#F5F4F0; border:1px solid rgba(0,0,0,0.06); border-radius:8px; cursor:pointer; transition:background 0.15s; }
+    .photo-check-item:has(input:checked) { background:#FFFBF2; border-color:rgba(245,166,35,0.25); }
+    .photo-check-box { width:16px; height:16px; accent-color:#F5A623; cursor:pointer; flex-shrink:0; }
+    .photo-check-text { font-size:12px; color:#444; flex:1; line-height:1.4; }
+    .photo-check-tag { font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; white-space:nowrap; flex-shrink:0; }
+    .photo-check-tag.warn { background:rgba(245,166,35,0.12); color:#B45309; }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="logo">SUNNY<span class="logo-sub">日照率チェッカー</span></div>
-  <button class="header-btn" onclick="openHowItWorks()">📖 しくみを見る</button>
-</div>
-
-<!-- MODAL -->
-<div class="modal-overlay" id="howModal" onclick="closeHowItWorks(event)">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-header-title">📖 なぜ日照率が算出できるのか</span>
-      <button class="modal-close" onclick="closeHowItWorks(null)">✕</button>
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo-block" style="display:flex;align-items:center;gap:6px;">
+      <span style="color:var(--amber);font-size:18px;">&#9728;</span>
+      <span class="logo-text">SUNNY</span>
     </div>
-    <iframe class="modal-iframe" id="howIframe" src="" title="しくみの説明"></iframe>
+    <span class="logo-divider"></span>
+    <span class="logo-sub">日照率チェッカー</span>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-sun-bg"></div>
+  <div class="hero-inner">
+    <h1 class="hero-h1">あなたの家の<br><span style="font-size:2em;line-height:1;display:inline-block;border-bottom:5px solid #F5A623;padding-bottom:2px;">日当たり</span>を<br>数値で知る。</h1>
+    <p class="hero-sub"><span style="color:#1A1A1A;font-weight:600;">緯度経度・物件情報と、画像をアップするだけ。</span><br><br><span style="color:#555;font-weight:400;">NASA・NOAAの太陽軌道アルゴリズムをベースに<br>SunCalcエンジンが1年分の日照を計算します。</span></p>
+    <button class="btn-black" onclick="openHowModal()" style="font-size:15px;padding:14px 32px;border-radius:6px;">算出方法をみる →</button>
+  </div>
+</section>
+
+<section class="usecase">
+  <p class="usecase-label">USE CASE</p>
+  <h2 class="usecase-title">用途を選んでください</h2>
+
+  <div class="usecase-cards">
+
+    <div class="usecase-card active" data-usecase="居住・不動産">
+      <div class="uc-icon">🏠</div>
+      <div class="uc-body">
+        <div class="uc-title">居住用不動産</div>
+        <div class="uc-desc">賃貸・購入検討、既存物件の日照確認</div>
+      </div>
+      <div class="uc-arrow">›</div>
+    </div>
+
+    <div class="usecase-card" data-usecase="建築前リサーチ">
+      <div class="uc-icon">🏗</div>
+      <div class="uc-body">
+        <div class="uc-title">建築前リサーチ</div>
+        <div class="uc-desc">設計前の日照シミュレーション</div>
+      </div>
+      <span class="uc-badge">NEW</span>
+      <div class="uc-arrow">›</div>
+    </div>
+
+    <div class="usecase-card" data-usecase="農業・園芸" style="display:none;">
+      <div class="uc-icon">🌱</div>
+      <div class="uc-body">
+        <div class="uc-title">農業・園芸</div>
+        <div class="uc-desc">農地・畑・家庭菜園・ガーデニング</div>
+      </div>
+      <div class="uc-arrow">›</div>
+    </div>
+
+    <div class="usecase-card" data-usecase="ソーラー・エネルギー" style="display:none;">
+      <div class="uc-icon">☀️</div>
+      <div class="uc-body">
+        <div class="uc-title">ソーラー・エネルギー</div>
+        <div class="uc-desc">太陽光パネル設置の事前調査</div>
+      </div>
+      <div class="uc-arrow">›</div>
+    </div>
+
+    <div class="usecase-card" data-usecase="商業・施設" style="display:none;">
+      <div class="uc-icon">🏪</div>
+      <div class="uc-body">
+        <div class="uc-title">商業・施設</div>
+        <div class="uc-desc">店舗・カフェ・保育園など</div>
+      </div>
+      <div class="uc-arrow">›</div>
+    </div>
+
+  </div>
+
+
+</section>
+
+
+<!-- Hidden canvas for SVF analysis -->
+<canvas id="analyzeCanvas" width="64" height="64" style="display:none;position:absolute;top:-9999px"></canvas>
+
+<!-- Modal -->
+<div class="modal-overlay" id="howModal" onclick="if(event.target===this)closeHowModal()">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <span>&#128214; なぜ日照率が算出できるのか</span>
+      <button class="modal-close" onclick="closeHowModal()">&#x2715;</button>
+    </div>
+    <iframe class="modal-iframe" id="howIframe" src="" title="仕組みの説明"></iframe>
   </div>
 </div>
 
+<!-- Main container -->
 <div class="container">
 
-  <!-- 精度インジケーター -->
-  <div class="accuracy-bar">
-    <div class="accuracy-label">
-      <span>推定精度</span>
+  <!-- Precision bar -->
+  <div class="precision-bar">
+    <div class="precision-bar-top">
+      <span class="precision-bar-label">現在の算出精度</span>
       <span>
-        <span id="precisionScore" style="color:var(--muted);font-size:14px;margin-right:8px;">0 pt</span>
-        <span id="precisionLabel" style="color:var(--red);font-weight:700;font-size:16px;">低</span>
+        <span id="precisionScore" style="font-size:11px;color:var(--gray);margin-right:6px;">0 pt</span>
+        <span id="precisionLabel" style="font-weight:900;font-size:13px;color:#ef4444;">低</span>
       </span>
     </div>
-    <div class="accuracy-track">
-      <div class="accuracy-fill" id="precisionFill" style="width:0%;"></div>
-    </div>
+    <div class="precision-track"><div id="precisionFill"></div></div>
   </div>
 
-  <div class="disclaimer">
-    ⚠️ <strong>免責事項：</strong>この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。
-  </div>
-
-  <!-- ── STEP 1: 地点 ── -->
-  <div class="sec">
-    <div class="sec-head">
-      <span class="sec-num">STEP 1</span>
-      <span class="sec-title">📍 <em>地点</em>を指定する</span>
+  <!-- STEP 1 -->
+  <div class="step-card" id="step1">
+    <div class="step-header">
+      <span class="step-badge">STEP 1</span>
+      <span class="step-title">緯度・経度を入力</span>
+      <span class="step-title-sub">Google Mapから取得可能</span>
     </div>
-    <p class="sec-sub">緯度・経度を入力してください。住所検索はGoogle Maps APIキーが必要です（任意）。</p>
-
-    <div class="illust-box">
-      <svg width="320" height="160" viewBox="0 0 320 160">
-        <path d="M20 140 Q160 15 300 140" stroke="rgba(255,184,0,0.25)" stroke-width="1.5" fill="none" stroke-dasharray="5,4"/>
-        <path d="M55 140 Q160 55 265 140" stroke="rgba(255,184,0,0.15)" stroke-width="1" fill="none"/>
-        <path d="M90 140 Q160 85 230 140" stroke="rgba(251,146,60,0.15)" stroke-width="1" fill="none"/>
-        <line x1="10" y1="140" x2="310" y2="140" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
-        <circle cx="160" cy="30" r="14" fill="#FFB800">
-          <animateMotion dur="5s" repeatCount="indefinite" path="M-140,110 Q0,-20 140,110"/>
-        </circle>
-        <circle cx="160" cy="30" r="22" fill="rgba(255,184,0,0.1)">
-          <animateMotion dur="5s" repeatCount="indefinite" path="M-140,110 Q0,-20 140,110"/>
-        </circle>
-        <text x="18" y="134" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">東</text>
-        <text x="150" y="134" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">南中</text>
-        <text x="288" y="134" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">西</text>
-        <text x="75" y="26" fill="rgba(255,184,0,0.7)" font-size="9" font-family="sans-serif">夏至</text>
-        <text x="92" y="58" fill="rgba(251,146,60,0.6)" font-size="9" font-family="sans-serif">冬至</text>
-        <circle cx="160" cy="140" r="7" fill="#34D399"/>
-        <circle cx="160" cy="140" r="14" fill="rgba(52,211,153,0.2)">
-          <animate attributeName="r" values="7;18;7" dur="2s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
-        </circle>
-        <text x="172" y="156" fill="#34D399" font-size="10" font-family="sans-serif">あなたの場所</text>
-      </svg>
-      <div class="i-title">場所がわかれば<em>太陽の動きが決まる</em></div>
-      <div class="i-desc">緯度・経度を入力するだけで<strong>365日・24時間の太陽位置</strong>が計算できます。夏は高く、冬は低い軌道を描きます。</div>
-    </div>
-
-    <div class="row2">
+    <label>Google Mapの緯度経度をここにペースト</label>
+    <input type="text" id="pasteInput" placeholder="例：35.6909483, 139.7302033"
+      style="margin-bottom:4px" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="paste-hint">ペーストすると下の欄に自動入力されます</div>
+    <div id="plusCodeError" class="pluscode-error" style="display:none">&#9888;&#65039; Plus Codeは現在対応していません。<br><br>&#128241; <strong>スマホの場合：</strong><br>Googleマップで場所を長押し → 画面上部に数字が表示される → 数字をタップしてコピー<br><br>&#128187; <strong>PCの場合：</strong><br>Googleマップで場所を右クリック → 一番上の数字をクリックでコピー</div>
+    <div class="row2" style="margin-top:12px">
       <div>
         <label>緯度<span class="req">★必須</span></label>
-        <input type="number" id="latInput" placeholder="例：35.6812" step="0.0001" min="-90" max="90">
+        <input type="number" id="lat" placeholder="例：35.6909" step="0.0001" oninput="updatePrecision()">
       </div>
       <div>
         <label>経度<span class="req">★必須</span></label>
-        <input type="number" id="lngInput" placeholder="例：139.7671" step="0.0001" min="-180" max="180">
+        <input type="number" id="lng" placeholder="例：139.7302" step="0.0001" oninput="updatePrecision()">
       </div>
     </div>
-    <button class="btn-sky" onclick="applyManualCoords()" style="width:100%;margin-bottom:16px;">この座標を使用</button>
-    <div id="locationNote" style="font-size:12px;color:var(--sky);margin-bottom:10px;"></div>
-    <div class="error-msg" id="locationError"></div>
-
-    <details style="margin-top:4px;">
-      <summary style="font-size:12px;color:var(--muted);cursor:pointer;padding:6px 0;">🗺 Google Maps で住所検索・地図クリック（任意）</summary>
-      <div style="padding:12px 0 4px;">
-        <div class="api-row">
-          <input type="password" id="apiKeyInput" placeholder="APIキー（AIza...）">
-          <button class="btn-sec" onclick="loadGoogleMaps()">地図を読み込む</button>
-        </div>
-        <div class="api-row">
-          <input type="text" id="addressInput" placeholder="住所で検索" onkeydown="if(event.key==='Enter') geocodeAddress()">
-          <button class="btn-sec" onclick="geocodeAddress()">検索</button>
-        </div>
-        <div class="error-msg" id="mapError"></div>
-        <div id="map">地図を表示するにはAPIキーを入力してください</div>
-      </div>
-    </details>
+    <label style="margin-top:14px">住所（任意）</label>
+    <input type="text" id="address" placeholder="例：東京都渋谷区代々木2丁目...">
   </div>
 
-  <!-- ── STEP 2: モード選択 ── -->
-  <div class="sec">
-    <div class="sec-head">
-      <span class="sec-num">STEP 2</span>
-      <span class="sec-title">🎯 <em>用途</em>を選ぶ</span>
+  <!-- STEP 2 -->
+  <div class="step-card" id="step2">
+    <div class="step-header">
+      <span class="step-badge">STEP 2</span>
+      <span class="step-title">物件・部屋の情報</span>
     </div>
-    <p class="sec-sub">用途によって入力項目と計算方法が変わります。</p>
-
-    <div class="illust-box">
-      <svg width="320" height="150" viewBox="0 0 320 150">
-        <rect x="10" y="15" width="140" height="125" rx="12" fill="rgba(91,200,245,0.06)" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
-        <text x="80" y="42" text-anchor="middle" font-size="26" font-family="sans-serif">🏠</text>
-        <text x="80" y="62" text-anchor="middle" fill="#e8f2ff" font-size="11" font-weight="bold" font-family="sans-serif">不動産・居住</text>
-        <rect x="20" y="72" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
-        <rect x="36" y="72" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
-        <rect x="52" y="72" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
-        <rect x="68" y="72" width="14" height="9" rx="1" fill="#263348"/>
-        <rect x="84" y="72" width="14" height="9" rx="1" fill="#263348"/>
-        <rect x="100" y="72" width="14" height="9" rx="1" fill="#151f2e"/>
-        <rect x="20" y="83" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
-        <rect x="36" y="83" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
-        <rect x="52" y="83" width="14" height="9" rx="1" fill="#FF8C00" opacity="0.9"/>
-        <rect x="68" y="83" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
-        <rect x="84" y="83" width="14" height="9" rx="1" fill="#FFD580" opacity="0.9"/>
-        <rect x="100" y="83" width="14" height="9" rx="1" fill="#263348"/>
-        <text x="80" y="108" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8" font-family="sans-serif">月別ヒートマップ</text>
-        <text x="80" y="120" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="8" font-family="sans-serif">四季すべてを判定</text>
-        <rect x="170" y="15" width="140" height="125" rx="12" fill="rgba(255,184,0,0.06)" stroke="rgba(255,184,0,0.2)" stroke-width="1.5"/>
-        <text x="240" y="42" text-anchor="middle" font-size="26" font-family="sans-serif">☀️</text>
-        <text x="240" y="62" text-anchor="middle" fill="#e8f2ff" font-size="11" font-weight="bold" font-family="sans-serif">ソーラー・農業</text>
-        <rect x="183" y="110" width="9" height="22" rx="1" fill="#4AB8F5" opacity="0.7"/>
-        <rect x="194" y="104" width="9" height="28" rx="1" fill="#4AB8F5" opacity="0.8"/>
-        <rect x="205" y="96" width="9" height="36" rx="1" fill="#FFB800" opacity="0.8"/>
-        <rect x="216" y="88" width="9" height="44" rx="1" fill="#FFB800" opacity="0.95"/>
-        <rect x="227" y="93" width="9" height="39" rx="1" fill="#FFB800" opacity="0.8"/>
-        <rect x="238" y="100" width="9" height="32" rx="1" fill="#4AB8F5" opacity="0.7"/>
-        <rect x="249" y="106" width="9" height="26" rx="1" fill="#4AB8F5" opacity="0.6"/>
-        <line x1="181" y1="132" x2="261" y2="132" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-        <text x="240" y="145" text-anchor="middle" fill="rgba(255,184,0,0.5)" font-size="8" font-family="sans-serif">月別積算日射量</text>
-      </svg>
-      <div class="i-title">用途によって<em>計算方法が変わる</em></div>
-      <div class="i-desc"><strong>不動産用</strong>は晴天前提の理論値で四季を判定。<strong>ソーラー・農業用</strong>は気象データを加えた積算日射量を算出します。</div>
-    </div>
-
-    <div class="mode-cards">
-      <div class="mode-card selected" id="modeCardA" onclick="switchMode('A')">
-        <div class="mode-icon">🏠</div>
-        <div class="mode-name">不動産・居住用</div>
-        <div class="mode-desc">月別×時間帯ヒートマップで<br>日照を可視化</div>
-      </div>
-      <div class="mode-card" id="modeCardB" onclick="switchMode('B')">
-        <div class="mode-icon">☀️</div>
-        <div class="mode-name">ソーラー・農業用</div>
-        <div class="mode-desc">年間日照時間・最適設置角度<br>を算出</div>
+    <!-- 居住・不動産用（既存） -->
+    <div id="step2-residential">
+      <label>階数</label>
+      <input type="number" id="floor" value="1" min="1" max="50" style="max-width:160px;" oninput="updatePrecision()">
+      <label style="margin-top:12px">この部屋の用途 <span style="font-size:11px;font-weight:400;color:var(--gray)">任意・解説文の精度が上がります</span></label>
+      <div class="card-row" id="yotoCards">
+        <button class="sel-card" onclick="selYoto(this,'living')">🛋 リビング</button>
+        <button class="sel-card" onclick="selYoto(this,'bedroom')">🛏 寝室</button>
+        <button class="sel-card" onclick="selYoto(this,'study')">💼 仕事部屋</button>
+        <button class="sel-card" onclick="selYoto(this,'kids')">👶 子ども部屋</button>
+        <button class="sel-card" onclick="selYoto(this,'kitchen')">🍳 キッチン・ダイニング</button>
+        <button class="sel-card" onclick="selYoto(this,'balcony')">🏡 ベランダ・バルコニー</button>
+        <button class="sel-card" onclick="selYoto(this,'sunroom')">🌿 サンルーム</button>
+        <button class="sel-card" onclick="selYoto(this,'other')">📦 その他</button>
       </div>
     </div>
-    <div class="mode-explain-box" id="mode-explain">
-      🏠 <strong style="color:var(--white);">不動産モード</strong>：曇りや雨を除いた「晴れた日に何時間日が入るか」を計算。部屋選びの参考値に最適です。
+
+    <!-- 建築前リサーチ用（新規） -->
+    <div id="step2-construction" style="display:none;">
+      <label>建設予定地の階数</label>
+      <p style="font-size:11px;color:#666;margin-bottom:8px;">シミュレーションしたい最大階数を入力</p>
+      <input type="number" id="constructionFloors" min="1" max="50" placeholder="例：5" class="finput" style="max-width:160px;">
+      <label style="margin-top:12px">建設の種類</label>
+      <div class="card-row" id="constructionType">
+        <button class="sel-card" onclick="selectCard(this,'ctype')">🏠 戸建て</button>
+        <button class="sel-card" onclick="selectCard(this,'ctype')">🏢 マンション</button>
+        <button class="sel-card" onclick="selectCard(this,'ctype')">🏗 アパート</button>
+        <button class="sel-card" onclick="selectCard(this,'ctype')">🏪 商業施設</button>
+      </div>
     </div>
   </div>
 
-  <!-- ── STEP 3A: 建物・部屋情報（モードA） ── -->
-  <div class="sec" id="step2ACard">
-    <div class="sec-head">
-      <span class="sec-num">STEP 3</span>
-      <span class="sec-title">🏢 <em>建物・部屋</em>の情報</span>
-    </div>
-    <p class="sec-sub">階数・向き・南側の建物が日照計算に最も影響します。</p>
-
-    <div class="illust-box">
-      <svg width="320" height="155" viewBox="0 0 340 160">
-        <rect x="0" y="145" width="340" height="15" fill="#1a3a5a" rx="3"/>
-        <!-- 南側の建物 -->
-        <rect x="18" y="45" width="70" height="100" fill="#1e3a5f" rx="3" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <rect x="28" y="56" width="18" height="14" fill="rgba(255,220,100,0.4)" rx="2"/>
-        <rect x="52" y="56" width="18" height="14" fill="rgba(255,220,100,0.15)" rx="2"/>
-        <rect x="28" y="77" width="18" height="14" fill="rgba(255,220,100,0.15)" rx="2"/>
-        <rect x="52" y="77" width="18" height="14" fill="rgba(255,220,100,0.4)" rx="2"/>
-        <rect x="28" y="98" width="18" height="14" fill="rgba(255,220,100,0.4)" rx="2"/>
-        <rect x="52" y="98" width="18" height="14" fill="rgba(255,220,100,0.15)" rx="2"/>
-        <!-- 高さ矢印 -->
-        <line x1="100" y1="45" x2="100" y2="145" stroke="rgba(91,200,245,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
-        <text x="104" y="97" fill="rgba(91,200,245,0.6)" font-size="10" font-family="sans-serif">高さ</text>
-        <text x="104" y="112" fill="#5BC8F5" font-size="12" font-weight="bold" font-family="sans-serif">30m</text>
-        <!-- 遮蔽ライン -->
-        <line x1="280" y1="145" x2="88" y2="45" stroke="rgba(255,107,107,0.65)" stroke-width="1.5" stroke-dasharray="5,3"/>
-        <!-- 距離矢印 -->
-        <line x1="100" y1="155" x2="280" y2="155" stroke="rgba(255,184,0,0.4)" stroke-width="1"/>
-        <polygon points="100,152 100,158 93,155" fill="rgba(255,184,0,0.5)"/>
-        <polygon points="280,152 280,158 287,155" fill="rgba(255,184,0,0.5)"/>
-        <text x="185" y="160" text-anchor="middle" fill="rgba(255,184,0,0.7)" font-size="9" font-family="sans-serif">距離 20m</text>
-        <!-- 角度表示 -->
-        <path d="M280,145 L310,145 L295,117" stroke="rgba(255,107,107,0.5)" stroke-width="1" fill="none"/>
-        <text x="305" y="138" fill="#FF6B6B" font-size="10" font-family="sans-serif">56°</text>
-        <!-- 部屋 -->
-        <circle cx="280" cy="145" r="6" fill="#34D399"/>
-        <text x="265" y="140" fill="#34D399" font-size="9" font-family="sans-serif">部屋</text>
-        <!-- 冬の太陽（低い） -->
-        <circle cx="178" cy="90" r="11" fill="rgba(255,184,0,0.25)"/>
-        <text x="192" y="87" fill="rgba(255,184,0,0.6)" font-size="9" font-family="sans-serif">冬の太陽</text>
-        <line x1="174" y1="86" x2="182" y2="94" stroke="rgba(255,107,107,0.8)" stroke-width="2"/>
-        <line x1="182" y1="86" x2="174" y2="94" stroke="rgba(255,107,107,0.8)" stroke-width="2"/>
-      </svg>
-      <div class="i-title">建物の<em>高さ×距離</em>で影の届く角度がわかる</div>
-      <div class="i-desc">南側の建物が<strong>高いほど・近いほど</strong>遮蔽仰角が大きくなり、太陽が遮られる時間が増えます。特に冬の低い太陽に影響大。</div>
+  <!-- STEP 3 -->
+  <div class="step-card" id="step3">
+    <div class="step-header">
+      <span class="step-badge">STEP 3</span>
+      <span class="step-title" id="step3Title">窓の位置と周辺環境</span>
     </div>
 
-    <div class="sub-sec">
-      <div class="sub-sec-title">部屋の向き<span class="req">★必須</span></div>
-      <select id="roomDir" class="hidden-input" onchange="updatePrecision()">
-        <option value="S">南</option><option value="SE">南東</option><option value="SW">南西</option>
-        <option value="E">東</option><option value="W">西</option>
-      </select>
-      <div class="card-select c3">
-        <div class="sel-card selected" onclick="selRoomDir(this,'S')"><div class="sel-icon">⬆️</div><div class="sel-label">南向き</div></div>
-        <div class="sel-card" onclick="selRoomDir(this,'SE')"><div class="sel-icon">↗️</div><div class="sel-label">南東向き</div></div>
-        <div class="sel-card" onclick="selRoomDir(this,'SW')"><div class="sel-icon">↖️</div><div class="sel-label">南西向き</div></div>
-        <div class="sel-card" onclick="selRoomDir(this,'E')"><div class="sel-icon">➡️</div><div class="sel-label">東向き</div></div>
-        <div class="sel-card" onclick="selRoomDir(this,'W')"><div class="sel-icon">⬅️</div><div class="sel-label">西向き</div></div>
+    <div id="windowsContainer"><!-- JS renders window cards here --></div>
+    <button class="add-window-btn" id="addWindowBtn" onclick="addWindow()">＋ 窓を追加する</button>
+
+    <!-- 建築前リサーチ用STEP3 -->
+    <div id="step3-construction" style="display:none;">
+
+      <div id="construction-disclaimer" style="display:none;margin:0 0 16px;background:#FFF8E8;border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:14px 16px;"><div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:6px;">⚠️ 建築前リサーチについて</div><div style="font-size:11px;color:#555;line-height:1.9;">更地の中央から撮影した写真を使用します。<br>実際の窓の位置・階数によって誤差が生じる場合があります。<br>撮影者の身長・カメラ位置による誤差も計算上含まれます。<br><strong style="color:#555;">この結果は土地選定の参考値です。</strong><br>正確な日照シミュレーションは建築士・設計士にご相談ください。</div></div>
+      <div id="construction-guide-section"></div>
+
+      <!-- 南ブロック -->
+      <div class="c-dir-block" id="c-block-south">
+        <div class="c-dir-head">
+          <span class="c-dir-arrow">↑</span>
+          <span class="c-dir-name">南</span>
+          <span class="c-key-badge">★ 最重要</span>
+          <span class="c-done-badge" id="c-done-south" style="display:none;">✓ 登録済み</span>
+        </div>
+        <div class="c-dir-body" id="c-body-south">
+          <div class="c-photo-wrap" id="c-photo-south">
+            <div class="c-photo-empty" onclick="document.getElementById('c-file-south').click()">
+              <div class="c-photo-cam">📷</div>
+              <div class="c-photo-txt">写真を追加</div>
+              <div class="c-photo-sub">タップしてカメラ起動またはファイル選択</div>
+            </div>
+            <input type="file" accept="image/*" id="c-file-south" style="display:none;" onchange="cHandlePhoto(this,'south')">
+          </div>
+          <div class="photo-check-section">
+            <p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>
+            <div class="photo-check-items" id="c-checks-south">
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="none" checked onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">上記に該当するものは写っていない</span></label>
+            </div>
+          </div>
+          <div style="margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">
+            <div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">南側（正面）の建物について</div>
+            <div class="c-field-label">見える建物の高さ <span class="c-key-sup">任意</span></div>
+            <select class="finput" onchange="cState['south'].bldH=parseFloat(this.value);toggleBldDist(this,'c-bld-dist-south')" style="margin-bottom:8px;">
+              <option value="0">なし（0m）</option>
+              <option value="7">低い 1-2階（7m）</option>
+              <option value="15">中 3-5階（15m）</option>
+              <option value="30">高い 6-10階（30m）</option>
+              <option value="40">とても高い 10階以上（40m）</option>
+            </select>
+            <div id="c-bld-dist-south" style="display:none">
+              <div class="c-field-label">建物までの距離 <span class="c-key-sup">任意</span></div>
+              <select class="finput" onchange="cState['south'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">
+                <option value="3">接近 ～5m</option>
+                <option value="10" selected>近い 5-15m</option>
+                <option value="22">普通 15-30m</option>
+                <option value="40">遠い 30m～</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <label>窓の大きさ<span class="opt">任意</span></label>
-      <select id="windowSize" class="hidden-input" onchange="updatePrecision()">
-        <option value="large">大</option><option value="medium" selected>中</option><option value="small">小</option>
-      </select>
-      <div class="card-select c3">
-        <div class="sel-card" onclick="selWindowSize(this,'large')"><div class="sel-icon">🪟</div><div class="sel-label">大きい</div></div>
-        <div class="sel-card selected" onclick="selWindowSize(this,'medium')"><div class="sel-icon">▪️</div><div class="sel-label">普通</div></div>
-        <div class="sel-card" onclick="selWindowSize(this,'small')"><div class="sel-icon">◾</div><div class="sel-label">小さい</div></div>
-      </div>
-    </div>
+      <div id="c-extra-dirs"></div>
 
-    <div class="sub-sec">
-      <div class="sub-sec-title">階数</div>
-      <div class="slider-wrap">
-        <div class="slider-val"><span id="floor-val">1</span><span class="slider-unit"> 階</span></div>
-        <input type="range" min="1" max="50" value="1" oninput="onFloorSlide(this.value)">
-        <div class="slider-labels"><span>1階</span><span>25階</span><span>50階</span></div>
-      </div>
-      <input type="number" id="floorInput" value="1" class="hidden-input">
-      <input type="number" id="heightInput" value="3" class="hidden-input">
-    </div>
+          <button class="c-add-dir-btn" onclick="cToggleAddPanel()">＋ 方角を追加する</button>
 
-    <!-- 向きに連動する建物（南以外の時に表示） -->
-    <div class="sub-sec" id="facingBuildingSection" style="display:none;">
-      <div class="sub-sec-title" id="facingBuildingTitle">方角側の建物<span class="opt">任意</span></div>
-      <label id="facingBuildingHeightLabel">方角側にある建物の高さ</label>
-      <select id="facingBuildingHeight" onchange="onFacingBuildingChange()">
-        <option value="0">なし</option>
-        <option value="7">低い（1〜2階 / 〜7m）</option>
-        <option value="15">中程度（3〜5階 / 〜15m）</option>
-        <option value="30">高い（6〜10階 / 〜30m）</option>
-        <option value="40">とても高い（11階以上 / 30m〜）</option>
-      </select>
-      <div id="facingDistRow">
-        <label id="facingBuildingDistLabel">方角側の建物までの距離</label>
-        <select id="facingBuildingDist" onchange="updatePrecision()">
-          <option value="3">接近（〜5m）</option>
-          <option value="10">近い（5〜15m）</option>
-          <option value="22" selected>普通（15〜30m）</option>
-          <option value="40">遠い（30m〜）</option>
-        </select>
+      <div id="c-add-panel" style="display:none;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:14px;padding:16px;margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:12px;">追加する方觓を選んでください</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="c-add-dir-card" id="c-add-southeast" onclick="cAddSpecificDir('southeast','↗','南東',this)"><span class="c-add-arrow">↗</span><span class="c-add-name">南東</span></div>
+          <div class="c-add-dir-card" id="c-add-southwest" onclick="cAddSpecificDir('southwest','↙','南西',this)"><span class="c-add-arrow">↙</span><span class="c-add-name">南西</span></div>
+          <div class="c-add-dir-card" id="c-add-east" onclick="cAddSpecificDir('east','→','東',this)"><span class="c-add-arrow">→</span><span class="c-add-name">東</span></div>
+          <div class="c-add-dir-card" id="c-add-west" onclick="cAddSpecificDir('west','←','西',this)"><span class="c-add-arrow">←</span><span class="c-add-name">西</span></div>
+          <div class="c-add-dir-card" id="c-add-north" onclick="cAddSpecificDir('north','↓','北',this)"><span class="c-add-arrow">↓</span><span class="c-add-name">北</span></div>
+        </div>
+        <button onclick="cToggleAddPanel()" style="width:100%;margin-top:12px;background:none;border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:8px;font-size:12px;color:#666;cursor:pointer;">閉じる</button>
       </div>
-    </div>
 
-    <div class="sub-sec">
-      <div class="sub-sec-title">南側の建物<span class="opt">任意</span></div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.7;background:rgba(91,200,245,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
-        ☀️ 太陽は常に<strong style="color:var(--white);">南の空</strong>を通ります。そのため、<strong style="color:var(--white);">部屋の向きに関わらず</strong>南側の建物が日照に最も影響します。北向きの部屋でも南側の建物は重要です。
-      </div>
-      <label>南側にある建物の高さ</label>
-      <select id="southBuildingHeight" onchange="onSouthBuildingChange()">
-        <option value="0">なし</option>
-        <option value="7">低い（1〜2階 / 〜7m）</option>
-        <option value="15">中程度（3〜5階 / 〜15m）</option>
-        <option value="30">高い（6〜10階 / 〜30m）</option>
-        <option value="40">とても高い（11階以上 / 30m〜）</option>
-      </select>
-      <div id="southDistRow">
-        <label>南側建物までの距離</label>
-        <select id="southBuildingDist" onchange="updatePrecision()">
-          <option value="3">接近（〜5m）</option>
-          <option value="10">近い（5〜15m）</option>
-          <option value="22" selected>普通（15〜30m）</option>
-          <option value="40">遠い（30m〜）</option>
-        </select>
-      </div>
-      <div class="error-msg" id="buildingError"></div>
     </div>
   </div>
 
-  <!-- ── STEP 3B: 設置面情報（モードB） ── -->
-  <div class="sec" id="step2BCard" style="display:none;">
-    <div class="sec-head">
-      <span class="sec-num">STEP 3</span>
-      <span class="sec-title">⚙️ <em>設置面</em>の情報</span>
+  
+
+  <div id="errorBox" style="display:none;margin:0 20px;padding:12px;background:#FFF3F3;border:1px solid rgba(220,50,50,0.2);border-radius:8px;font-size:12px;color:#C00;"></div>
+  <div style="padding:20px 20px 32px;"><button id="calcBtn" onclick="runCalculation()" style="width:100%;background:#1A1A1A;color:#fff;font-size:15px;font-weight:700;padding:16px;border-radius:8px;border:none;cursor:pointer;letter-spacing:-.2px;">☀️ 日照率を算出する</button><p style="text-align:center;margin-top:10px;font-size:11px;color:#666;">入力した情報をもとに1年分の日照を計算します</p></div>
+
+  <!-- Results -->
+  <div id="results" style="display:none">
+    <div class="score-card">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding-bottom:8px">
+        <div>
+          <div style="font-size:11px;color:#666;margin-bottom:4px;font-family:'DM Mono',monospace;letter-spacing:2px">PROPERTY SCORE</div>
+          <div style="display:flex;align-items:baseline;gap:2px">
+            <span id="scoreNum" style="font-size:52px;font-weight:900;letter-spacing:-3px;line-height:1;color:#1A1A1A">--</span>
+            <span style="font-size:18px;font-weight:400;color:#666">%</span>
+          </div>
+        </div>
+        <div id="peakMonthBlock" style="display:none;text-align:right;flex-shrink:0;margin-bottom:6px">
+          <div style="font-size:10px;color:#666;margin-bottom:4px">最も日照が多い月</div>
+          <div id="peak-month-text" style="font-size:18px;font-weight:800;color:#F5A623;letter-spacing:-0.5px"></div>
+        </div>
+      </div>
+      <div id="scoreText" style="font-size:13px;color:var(--gray);line-height:1.8;white-space:pre-wrap"></div>
+      <div id="resultPrecisionBadge" class="result-precision"></div>
     </div>
-    <p class="sec-sub">設置角度と向きで発電量・日射量が大きく変わります。</p>
-
-    <div class="illust-box">
-      <svg width="320" height="150" viewBox="0 0 320 150">
-        <!-- 地面 -->
-        <rect x="0" y="130" width="320" height="20" fill="#1a3a5a" rx="2"/>
-        <!-- パネル（傾き30°） -->
-        <polygon points="80,130 160,130 200,65 120,65" fill="rgba(91,200,245,0.15)" stroke="rgba(91,200,245,0.5)" stroke-width="1.5"/>
-        <!-- パネルセル -->
-        <line x1="133" y1="65" x2="93" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <line x1="147" y1="65" x2="107" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <line x1="161" y1="65" x2="121" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <line x1="175" y1="65" x2="135" y2="130" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <line x1="120" y1="81" x2="200" y2="81" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <line x1="110" y1="98" x2="190" y2="98" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <line x1="100" y1="115" x2="180" y2="115" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <!-- 太陽 -->
-        <circle cx="265" cy="35" r="22" fill="rgba(255,184,0,0.12)"/>
-        <circle cx="265" cy="35" r="14" fill="#FFB800"/>
-        <!-- 光線 -->
-        <line x1="250" y1="48" x2="175" y2="82" stroke="rgba(255,184,0,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
-        <!-- 傾き角度弧 -->
-        <path d="M160,130 L195,130" stroke="rgba(255,184,0,0.5)" stroke-width="1" fill="none"/>
-        <path d="M185,130 Q183,112 175,100" stroke="rgba(255,184,0,0.5)" stroke-width="1" fill="none"/>
-        <text x="192" y="122" fill="#FFB800" font-size="11" font-family="sans-serif">30°</text>
-        <!-- コンパス -->
-        <circle cx="270" cy="115" r="25" fill="rgba(91,200,245,0.05)" stroke="rgba(91,200,245,0.2)" stroke-width="1"/>
-        <text x="270" y="97" text-anchor="middle" fill="rgba(91,200,245,0.6)" font-size="9" font-family="sans-serif">N</text>
-        <text x="288" y="119" text-anchor="middle" fill="rgba(91,200,245,0.6)" font-size="9" font-family="sans-serif">E</text>
-        <text x="270" y="143" text-anchor="middle" fill="#FFB800" font-size="9" font-weight="bold" font-family="sans-serif">S</text>
-        <text x="252" y="119" text-anchor="middle" fill="rgba(91,200,245,0.6)" font-size="9" font-family="sans-serif">W</text>
-        <line x1="270" y1="100" x2="270" y2="138" stroke="rgba(255,184,0,0.4)" stroke-width="1.5"/>
-        <polygon points="270,100 267,108 273,108" fill="rgba(255,184,0,0.6)"/>
-      </svg>
-      <div class="i-title">パネルの<em>角度と向き</em>で日射量が最大化できる</div>
-      <div class="i-desc">真南（方位角180°）・緯度に近い傾き角が最適です。<strong>最適角度は自動で計算・提案</strong>されます。</div>
+    <div class="result-card" id="windowBarsCard">
+      <div style="font-size:12px;font-weight:700;margin-bottom:12px">窓別スコア</div>
+      <div id="windowBars"></div>
     </div>
-
-    <div class="row2">
-      <div>
-        <label>設置面の傾き（0°=水平 / 90°=垂直）<span class="req">★必須</span></label>
-        <input type="number" id="tiltAngle" min="0" max="90" value="30" onchange="updatePrecision()">
-      </div>
-      <div>
-        <label>方位角（真南=180°）<span class="req">★必須</span></label>
-        <input type="number" id="facingAzimuth" min="0" max="360" value="180" onchange="updatePrecision()">
-      </div>
+    <div class="result-card">
+      <div style="font-size:12px;font-weight:700;margin-bottom:12px">月別×時間帯ヒートマップ</div>
+      <div id="heatmapTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div style="overflow-x:auto"><div id="heatmapTable"></div></div>
     </div>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:14px;">方位角: 0°=北 / 90°=東 / 180°=南 / 270°=西</p>
-    <label>地形<span class="opt">任意</span></label>
-    <select id="terrain" onchange="updatePrecision()" style="max-width:360px;">
-      <option value="flat">平地</option>
-      <option value="slope_s">南向き斜面（日当たり良好）</option>
-      <option value="slope_n">北向き斜面</option>
-      <option value="coastal">沿岸（雲少なめ補正）</option>
-      <option value="mountain">山間（雲多め補正）</option>
-    </select>
-  </div>
+    <div class="disclaimer">&#9888;&#65039; この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。</div>
 
-  <!-- ── STEP 4: 写真 ── -->
-  <div class="sec">
-    <div class="sec-head">
-      <span class="sec-num">STEP 4</span>
-      <span class="sec-title">📷 <em>空の写真</em>をアップロード<span class="opt">任意</span></span>
-    </div>
-    <p class="sec-sub">各方向の空に向けて撮影した写真をアップロードすると精度が上がります。なくても計算できます。</p>
+    <div class="next-steps-card">
+      <div class="next-steps-title">&#128203; この結果をどうしますか？</div>
+      <div class="next-steps-btns">
 
-    <div class="illust-box">
-      <div style="position:relative;width:200px;height:200px;max-width:calc(100vw - 80px);max-height:calc(100vw - 80px);">
-        <svg width="200" height="200" viewBox="0 0 200 200" style="position:absolute;top:0;left:0;width:100%;height:100%;">
-          <circle cx="100" cy="100" r="90" stroke="rgba(91,200,245,0.15)" stroke-width="1.5" fill="rgba(0,0,0,0.2)"/>
-          <line x1="10" y1="100" x2="190" y2="100" stroke="rgba(91,200,245,0.08)" stroke-width="1"/>
-          <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(91,200,245,0.08)" stroke-width="1"/>
-          <line x1="100" y1="100" x2="100" y2="172" stroke="rgba(255,184,0,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/>
-          <text x="100" y="22" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">N</text>
-          <text x="178" y="104" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">E</text>
-          <text x="100" y="192" text-anchor="middle" fill="#FFB800" font-size="10" font-weight="bold" font-family="sans-serif">S ★</text>
-          <text x="10" y="104" fill="rgba(91,200,245,0.5)" font-size="10" font-family="sans-serif">W</text>
-          <circle cx="100" cy="100" r="5" fill="#34D399" opacity="0.8"/>
-        </svg>
-        <div style="position:absolute;left:50%;top:76%;transform:translate(-50%,-50%);">
-          <div style="width:52px;height:52px;border-radius:11px;border:2px solid #FFB800;background:rgba(255,184,0,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;animation:glow2 2s ease-in-out infinite;">📷<div style="font-size:9px;color:#FFB800;font-weight:700;">南 ★</div></div>
-        </div>
-        <div style="position:absolute;left:77%;top:50%;transform:translate(-50%,-50%);">
-          <div style="width:42px;height:42px;border-radius:9px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;">📷<div style="font-size:8px;color:#4a6a8a;">東</div></div>
-        </div>
-        <div style="position:absolute;left:23%;top:50%;transform:translate(-50%,-50%);">
-          <div style="width:42px;height:42px;border-radius:9px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;">📷<div style="font-size:8px;color:#4a6a8a;">西</div></div>
-        </div>
-        <div style="position:absolute;left:50%;top:23%;transform:translate(-50%,-50%);">
-          <div style="width:42px;height:42px;border-radius:9px;border:1.5px solid rgba(91,200,245,0.25);background:rgba(15,32,64,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;">📷<div style="font-size:8px;color:#4a6a8a;">北</div></div>
-        </div>
+        <button class="next-btn" onclick="document.getElementById('step1').scrollIntoView({behavior:'smooth'})">
+          <span class="next-btn-icon">✏️</span>
+          <div>
+            <div>修正する</div>
+            <div class="next-btn-sub">この画面のまま修正できます</div>
+          </div>
+        </button>
+        <button class="next-btn" onclick="resetAll()">
+          <span class="next-btn-icon">&#128260;</span>
+          <div>
+            <div>最初からやり直す</div>
+            <div class="next-btn-sub">入力をリセットして再計算</div>
+          </div>
+        </button>
+        <button class="next-btn" onclick="openScreenshot()">
+          <span class="next-btn-icon">&#128248;</span>
+          <div>
+            <div>結果をスクリーンショット用に表示する</div>
+            <div class="next-btn-sub">シンプルな画面に切り替えて保存できます</div>
+          </div>
+        </button>
+        <button class="next-btn" onclick="copyResultUrl()">
+          <span class="next-btn-icon">&#128279;</span>
+          <div>
+            <div>結果URLをコピーする</div>
+            <div class="next-btn-sub">同じURLを開くと同じ結果が再現されます（写真以外）</div>
+          </div>
+        </button>
       </div>
-      <style>@keyframes glow2{0%,100%{box-shadow:0 0 0 0 rgba(255,184,0,0.3);}50%{box-shadow:0 0 0 10px rgba(255,184,0,0);}}</style>
-      <div class="i-title">空の写真から<em>遮蔽物マップ</em>を作る</div>
-      <div class="i-desc">東西南北に向けて空を撮影すると<strong>どの方角・高さに障害物があるか</strong>が検出できます。特に南側が年間日照に最も影響します。</div>
-    </div>
-
-    <button class="guide-toggle-btn" onclick="togglePhotoGuide()" id="guideToggleBtn">📷 撮影ガイドを見る ▼</button>
-    <div id="photoGuide" style="display:none;margin-bottom:14px;">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:14px;color:var(--muted);line-height:1.9;">
-        <strong style="color:var(--white);">撮影のコツ</strong><br>
-        ・スマホをやや上向き（45°）で方角に向けて撮影<br>
-        ・建物の上端と空が両方写るよう調整してください<br>
-        ・空が全体の30%以上写ること（室内からの撮影はNG）<br>
-        ・魚眼写真は南スロットにアップロード（全方位カバー）
-      </div>
-    </div>
-
-    <div class="photo-grid">
-      <!-- 南（2列幅） -->
-      <div class="photo-slot key" id="slotS" onclick="triggerDirUpload('S')" ondrop="handleDirDrop(event,'S')" ondragover="event.preventDefault()" style="grid-column:span 2;">
-        <div id="uploadAreaS">
-          <div class="slot-icon" id="slotIconS">📷</div>
-          <div class="slot-dir">南</div>
-          <div class="slot-key-badge">★ 最重要・必須</div>
-        </div>
-        <div id="previewS" style="display:none;">
-          <img id="previewImgS" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px;">
-          <div class="analysis-badge" id="badgeS">未解析（計算時に自動解析）</div>
-          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('S')">削除</button>
-        </div>
-      </div>
-      <input type="file" id="fileS" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'S')">
-
-      <!-- 東 -->
-      <div class="photo-slot" id="slotE" onclick="triggerDirUpload('E')" ondrop="handleDirDrop(event,'E')" ondragover="event.preventDefault()">
-        <div id="uploadAreaE"><div class="slot-icon" id="slotIconE">📷</div><div class="slot-dir">東</div><div class="slot-optional">任意</div></div>
-        <div id="previewE" style="display:none;">
-          <img id="previewImgE" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:5px;">
-          <div class="analysis-badge" id="badgeE" style="font-size:10px;"></div>
-          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('E')">削除</button>
-        </div>
-      </div>
-      <input type="file" id="fileE" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'E')">
-
-      <!-- 西 -->
-      <div class="photo-slot" id="slotW" onclick="triggerDirUpload('W')" ondrop="handleDirDrop(event,'W')" ondragover="event.preventDefault()">
-        <div id="uploadAreaW"><div class="slot-icon" id="slotIconW">📷</div><div class="slot-dir">西</div><div class="slot-optional">任意</div></div>
-        <div id="previewW" style="display:none;">
-          <img id="previewImgW" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:5px;">
-          <div class="analysis-badge" id="badgeW" style="font-size:10px;"></div>
-          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('W')">削除</button>
-        </div>
-      </div>
-      <input type="file" id="fileW" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'W')">
-
-      <!-- 北 -->
-      <div class="photo-slot" id="slotN" onclick="triggerDirUpload('N')" ondrop="handleDirDrop(event,'N')" ondragover="event.preventDefault()">
-        <div id="uploadAreaN"><div class="slot-icon" id="slotIconN">📷</div><div class="slot-dir">北</div><div class="slot-optional">任意</div></div>
-        <div id="previewN" style="display:none;">
-          <img id="previewImgN" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:5px;">
-          <div class="analysis-badge" id="badgeN" style="font-size:10px;"></div>
-          <button class="rm-btn" onclick="event.stopPropagation();removeDirPhoto('N')">削除</button>
-        </div>
-      </div>
-      <input type="file" id="fileN" accept="image/*" class="hidden-input" onchange="handleDirFile(event,'N')">
     </div>
   </div>
-
-  <!-- ── STEP 5: 周辺環境（モードA のみ） ── -->
-  <div class="sec" id="step4Card">
-    <div class="sec-head">
-      <span class="sec-num">STEP 5</span>
-      <span class="sec-title">🌿 <em>周辺環境</em>を教える<span class="opt">任意</span></span>
-    </div>
-    <p class="sec-sub">写真では検出しにくい情報を補足してください。精度がさらに上がります。</p>
-
-    <div class="illust-box">
-      <svg width="300" height="155" viewBox="0 0 300 155">
-        <defs>
-          <radialGradient id="sky-open2" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#87CEEB" stop-opacity="0.9"/>
-            <stop offset="55%" stop-color="#4AB8F5" stop-opacity="0.7"/>
-            <stop offset="80%" stop-color="#1a3a5a" stop-opacity="0.8"/>
-            <stop offset="100%" stop-color="#0a1e34" stop-opacity="1"/>
-          </radialGradient>
-          <radialGradient id="sky-closed3" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#5BC8F5" stop-opacity="0.6"/>
-            <stop offset="30%" stop-color="#3a8ab5" stop-opacity="0.4"/>
-            <stop offset="55%" stop-color="#1a3a5a" stop-opacity="0.9"/>
-            <stop offset="100%" stop-color="#0a1e34" stop-opacity="1"/>
-          </radialGradient>
-        </defs>
-        <!-- 左：開けた場所 -->
-        <circle cx="75" cy="68" r="55" fill="#0a1e34" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
-        <circle cx="75" cy="68" r="55" fill="url(#sky-open2)" opacity="0.8"/>
-        <text x="75" y="136" text-anchor="middle" fill="#FFB800" font-size="15" font-weight="bold" font-family="sans-serif">80%</text>
-        <text x="75" y="148" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="9" font-family="sans-serif">開けた場所</text>
-        <!-- 矢印 -->
-        <text x="150" y="72" text-anchor="middle" fill="rgba(91,200,245,0.4)" font-size="22" font-family="sans-serif">→</text>
-        <!-- 右：囲まれた場所 -->
-        <circle cx="225" cy="68" r="55" fill="url(#sky-closed3)" opacity="0.9"/>
-        <rect x="170" y="48" width="28" height="75" fill="#1a2a3a" rx="2"/>
-        <rect x="252" y="30" width="28" height="93" fill="#1a2a3a" rx="2"/>
-        <circle cx="225" cy="68" r="55" fill="none" stroke="rgba(91,200,245,0.2)" stroke-width="1.5"/>
-        <text x="225" y="136" text-anchor="middle" fill="rgba(90,120,140,1)" font-size="15" font-weight="bold" font-family="sans-serif">20%</text>
-        <text x="225" y="148" text-anchor="middle" fill="rgba(91,200,245,0.5)" font-size="9" font-family="sans-serif">囲まれた場所</text>
-      </svg>
-      <div class="i-title">空の<em>見え率</em>が日照率に直結する</div>
-      <div class="i-desc">写真から空が占める割合（Sky View Factor）を算出。<strong>樹木・地形</strong>の補足情報でさらに精度が上がります。</div>
-    </div>
-
-    <input type="checkbox" id="cbTrees" class="hidden-input" onchange="onTreesChange()">
-    <input type="checkbox" id="cbSlope" class="hidden-input" onchange="onSlopeChange()">
-    <input type="checkbox" id="cbOpen"  class="hidden-input" onchange="updatePrecision()">
-
-    <div class="check-group">
-      <div class="check-item" onclick="toggleCb(this,'cbTrees')">
-        <div class="check-box">✓</div>
-        <div><div class="check-text">🌳 南側に大きな樹木がある（高さ5m以上）</div><div class="check-sub">落葉樹は春〜秋に−15%の遮蔽補正が入ります</div></div>
-      </div>
-      <div class="check-item" onclick="toggleCb(this,'cbSlope')">
-        <div class="check-box">✓</div>
-        <div><div class="check-text">⛰️ 斜面・傾斜地に建っている</div><div class="check-sub">山の中腹など地形が遮蔽物になるケース</div></div>
-      </div>
-      <div class="check-item" onclick="toggleCb(this,'cbOpen')">
-        <div class="check-box">✓</div>
-        <div><div class="check-text">🌊 周囲が開けている（田畑・海沿いなど）</div><div class="check-sub">遮蔽物が少ないため日照率が高めに算出されます</div></div>
-      </div>
-    </div>
-
-    <div id="slopeDirRow" style="display:none;">
-      <label>斜面の向き</label>
-      <select id="slopeDir">
-        <option value="S">南向き斜面（日当たり良好）</option>
-        <option value="N">北向き斜面</option>
-        <option value="E">東向き斜面（朝に有利）</option>
-        <option value="W">西向き斜面（午後に有利）</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- ── 計算ボタン ── -->
-  <div class="sec" style="text-align:center;">
-    <button class="btn-calc" id="calcBtn" onclick="runCalculation()">☀ 日照率を計算する</button>
-  </div>
-
-  <!-- ── RESULTS ── -->
-  <div id="results">
-
-    <div id="resultsA">
-      <div class="res-card">
-        <h2>🗺 月別×時間帯 日照ヒートマップ</h2>
-        <div class="heatmap-a-wrap">
-          <table class="heatmap-a-table" id="heatmapATable"></table>
-        </div>
-        <div class="legend-row">
-          <span><span class="legend-dot" style="background:#FF8C00;"></span>◎ 日照あり（≥70%）</span>
-          <span><span class="legend-dot" style="background:#FFD580;"></span>○ 概ね日照（40〜70%）</span>
-          <span><span class="legend-dot" style="background:#C0C0C0;"></span>△ 日照少（15〜40%）</span>
-          <span><span class="legend-dot" style="background:#606060;"></span>✕ 日照なし（＜15%）</span>
-        </div>
-        <div class="mode-a-summary" id="modeASummary"></div>
-        <div id="correctionNotes" style="font-size:14px;color:var(--muted);margin-bottom:12px;"></div>
-        <div class="caveat">⚠️ この結果は参考値です。実際の日照は気象・樹木・地形により異なります（誤差±20〜30%）</div>
-      </div>
-    </div>
-
-    <div id="resultsB" style="display:none;">
-      <div class="res-card">
-        <h2>⚡ ソーラー・農業 日照解析結果</h2>
-        <div class="summary-grid">
-          <div class="kpi-card"><div class="val" id="kpiBHours">--</div><div class="unit">h/年</div><div class="lbl">年間推定日照時間</div></div>
-          <div class="kpi-card"><div class="val" id="kpiBestMonth">--</div><div class="unit">月</div><div class="lbl">最も日射量が多い月</div></div>
-          <div class="kpi-card"><div class="val" id="kpiBRad">--</div><div class="unit">kWh/m²/年 相当</div><div class="lbl">年間積算日射量（相対値）</div></div>
-        </div>
-        <div class="optimal-card">
-          <div class="oc-title">💡 最適設置角度の提案</div>
-          <div class="optimal-row" id="optimalRow"></div>
-        </div>
-        <h3 style="font-size:16px;color:var(--muted);margin-bottom:10px;">月別積算日射量（気象補正あり）</h3>
-        <div class="chart-wrap"><canvas id="modeBChart"></canvas></div>
-        <div id="correctionNotesB" style="font-size:14px;color:var(--muted);margin-bottom:12px;"></div>
-        <div class="caveat">⚠️ この結果は参考値です。実際の日照は気象・樹木・地形により異なります（誤差±20〜30%）</div>
-      </div>
-    </div>
-
-  </div><!-- /results -->
 
 </div><!-- /container -->
 
-<div class="hm-tooltip" id="hmTooltip"></div>
+<!-- Screenshot overlay -->
+<div class="ss-overlay" id="ssOverlay">
+  <button class="ss-back" onclick="closeScreenshot()" style="position:fixed;top:16px;left:16px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;z-index:1001;">← 戻る</button>
+  <button class="ss-close" onclick="closeScreenshot()">&#x2715; 閉じる</button>
+  <div id="ssContent" style="max-width:600px;margin:0 auto;"></div>
+</div>
+
+<!-- Copy URL toast -->
+<div class="copy-toast" id="copyToast">&#128279; URLをコピーしました</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="photoLightbox" onclick="closePhotoLightbox()">
+  <button class="lightbox-close" onclick="closePhotoLightbox()">&#x2715;</button>
+  <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+</div>
 
 <script>
-"use strict";
+// ============================================================
+// State
+// ============================================================
+var windowStates = [];
+var selectedYoto = '';
+var selectedMode = 'A';
 
-let currentLat  = null;
-let currentLng  = null;
-let googleMap   = null;
-let mapMarker   = null;
-let modeBChart  = null;
-let currentMode = 'A';
+var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0 };
+var SIZE_MULT = { '小':0.85, '中':1.0, '大':1.1 };
+var SAMPLE_DAYS = [1, 8, 15, 22];
+var TIME_SLOTS = [6, 8, 10, 12, 14, 16];
+var TIME_LABELS = ['6-8時','8-10時','10-12時','12-14時','14-16時','16-18時'];
+var MONTH_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
-const dirPhotos = { S: null, E: null, W: null, N: null };
-
-// ── モード切り替え ──
-function switchMode(mode) {
-  currentMode = mode;
-  document.getElementById('modeCardA').classList.toggle('selected', mode === 'A');
-  document.getElementById('modeCardB').classList.toggle('selected', mode === 'B');
-  document.getElementById('step2ACard').style.display = mode === 'A' ? '' : 'none';
-  document.getElementById('step2BCard').style.display = mode === 'B' ? '' : 'none';
-  document.getElementById('step4Card').style.display  = mode === 'A' ? '' : 'none';
-  document.getElementById('results').style.display = 'none';
-
-  const explain = document.getElementById('mode-explain');
-  if (mode === 'A') {
-    explain.innerHTML = '🏠 <strong style="color:var(--white);">不動産モード</strong>：曇りや雨を除いた「晴れた日に何時間日が入るか」を計算。部屋選びの参考値に最適です。';
-  } else {
-    explain.innerHTML = '☀️ <strong style="color:var(--white);">ソーラー・農業モード</strong>：気象庁データを加えた積算日射量を算出。年間・月別グラフと最適設置角度を提案します。';
-  }
-  updatePrecision();
-}
-
-const DIR_LABEL = { SE: '南東', SW: '南西', E: '東', W: '西' };
-
-function selRoomDir(el, val) {
-  el.closest('.card-select').querySelectorAll('.sel-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('roomDir').value = val;
-  updateFacingBuildingSection(val);
-  updatePrecision();
-}
-
-function updateFacingBuildingSection(dir) {
-  const section = document.getElementById('facingBuildingSection');
-  if (!DIR_LABEL[dir]) { section.style.display = 'none'; return; }
-  const d = DIR_LABEL[dir];
-  section.style.display = '';
-  document.getElementById('facingBuildingTitle').innerHTML = `${d}側の建物<span class="opt">任意</span>`;
-  document.getElementById('facingBuildingHeightLabel').textContent = `${d}側にある建物の高さ`;
-  document.getElementById('facingBuildingDistLabel').textContent = `${d}側の建物までの距離`;
-}
-
-function selWindowSize(el, val) {
-  el.closest('.card-select').querySelectorAll('.sel-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('windowSize').value = val;
-  updatePrecision();
-}
-
-function onFloorSlide(val) {
-  document.getElementById('floor-val').textContent = val;
-  document.getElementById('floorInput').value = val;
-  document.getElementById('heightInput').value = parseInt(val) * 3;
-  updatePrecision();
-}
-
-function toggleCb(el, cbId) {
-  el.classList.toggle('checked');
-  const cb = document.getElementById(cbId);
-  if (cb) {
-    cb.checked = el.classList.contains('checked');
-    if (cbId === 'cbTrees') onTreesChange();
-    else if (cbId === 'cbSlope') onSlopeChange();
-    else updatePrecision();
-  }
-}
-
-// ── Google Maps ──
-function loadGoogleMaps() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) { showErr('mapError', 'APIキーを入力してください'); return; }
-  const old = document.getElementById('gmapsScript');
-  if (old) old.remove();
-  const s = document.createElement('script');
-  s.id = 'gmapsScript';
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=onGoogleMapsReady`;
-  s.async = true;
-  s.onerror = () => showErr('mapError', 'Google Maps APIの読み込みに失敗しました。');
-  hideErr('mapError');
-  document.head.appendChild(s);
-}
-
-window.onGoogleMapsReady = function () {
-  const mapDiv = document.getElementById('map');
-  mapDiv.innerHTML = '';
-  const center = currentLat != null ? { lat: currentLat, lng: currentLng } : { lat: 35.6762, lng: 139.6503 };
-  googleMap = new google.maps.Map(mapDiv, { center, zoom: 15, disableDefaultUI: true, zoomControl: true });
-  googleMap.addListener('click', e => setLocation(e.latLng.lat(), e.latLng.lng()));
-  if (currentLat != null) placeMarker(currentLat, currentLng);
-  const ac = new google.maps.places.Autocomplete(document.getElementById('addressInput'));
-  ac.addListener('place_changed', () => {
-    const place = ac.getPlace();
-    if (place.geometry) {
-      const lat = place.geometry.location.lat(), lng = place.geometry.location.lng();
-      setLocation(lat, lng); googleMap.panTo({ lat, lng });
-    }
-  });
+var PHOTO_TAB_MAP = {
+  '南':  { left:'南東', center:'南',   right:'南西' },
+  '南東':{ left:'東',   center:'南東', right:'南'   },
+  '南西':{ left:'南',   center:'南西', right:'西'   },
+  '東':  { left:'北東', center:'東',   right:'南東' },
+  '西':  { left:'南西', center:'西',   right:'北西' },
+  '北':  { left:'北西', center:'北',   right:'北東' },
 };
 
-function geocodeAddress() {
-  const address = document.getElementById('addressInput').value.trim();
-  if (!address) return;
-  if (typeof google === 'undefined') { showErr('locationError', 'Google Maps APIが読み込まれていません。'); return; }
-  new google.maps.Geocoder().geocode({ address }, (results, status) => {
-    if (status === 'OK') {
-      const loc = results[0].geometry.location;
-      setLocation(loc.lat(), loc.lng());
-      if (googleMap) googleMap.panTo({ lat: loc.lat(), lng: loc.lng() });
-    } else showErr('locationError', '住所が見つかりませんでした');
-  });
+// Stored heatmaps for tab switching
+var storedHeatmaps = [];
+
+// ============================================================
+// XSS escape
+// ============================================================
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
 
-// ── 地点 ──
-function setLocation(lat, lng) {
-  currentLat = lat; currentLng = lng;
-  document.getElementById('latInput').value = lat.toFixed(6);
-  document.getElementById('lngInput').value = lng.toFixed(6);
-  document.getElementById('locationNote').textContent = `✓ 選択中: 緯度 ${lat.toFixed(5)}, 経度 ${lng.toFixed(5)}`;
-  hideErr('locationError');
-  if (googleMap) placeMarker(lat, lng);
+// ============================================================
+// SVG Guide illustrations
+// ============================================================
+function svgGuide1() {
+  // 格子窓 + スマホを構えた人物シルエット（背後から）
+  return '<svg width="80" height="90" viewBox="0 0 80 90">'
+    // === 窓外の景色（薄い建物シルエット） ===
+    + '<rect x="0" y="0" width="80" height="56" fill="#EAF4FD"/>'
+    + '<rect x="9" y="30" width="12" height="24" rx="1" fill="rgba(80,100,130,0.16)"/>'
+    + '<rect x="23" y="36" width="8" height="18" rx="1" fill="rgba(80,100,130,0.10)"/>'
+    + '<rect x="44" y="27" width="14" height="27" rx="1" fill="rgba(80,100,130,0.16)"/>'
+    + '<rect x="60" y="34" width="9" height="20" rx="1" fill="rgba(80,100,130,0.12)"/>'
+    // === 窓枠（太め・4分割格子） ===
+    + '<rect x="3" y="2" width="74" height="52" rx="3" fill="none" stroke="#1A1A1A" stroke-width="3"/>'
+    + '<line x1="3" y1="27" x2="77" y2="27" stroke="#1A1A1A" stroke-width="3"/>'
+    + '<line x1="40" y1="2" x2="40" y2="54" stroke="#1A1A1A" stroke-width="3"/>'
+    // 十字中心のキャップ（厚みを表現）
+    + '<rect x="37" y="24" width="6" height="6" fill="#1A1A1A"/>'
+    // === アンバーの窓台 ===
+    + '<rect x="0" y="52" width="80" height="6" fill="#F5A623"/>'
+    // === 人物シルエット（背後から） ===
+    // 頭
+    + '<circle cx="40" cy="68" r="7" fill="#1A1A1A"/>'
+    // 体（肩〜腰）
+    + '<path d="M26,75 Q33,72 40,73 Q47,72 54,75 L51,86 L29,86 Z" fill="#1A1A1A"/>'
+    // 右腕・スマホを窓に向けて掲げる
+    + '<line x1="54" y1="75" x2="65" y2="63" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round"/>'
+    + '<rect x="63" y="57" width="7" height="11" rx="1" fill="#F5A623" stroke="#D4880F" stroke-width="1.5"/>'
+    // 左腕
+    + '<line x1="26" y1="75" x2="16" y2="82" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round"/>'
+    // === ✓バッジ ===
+    + '<circle cx="71" cy="11" r="9" fill="#10B981"/>'
+    + '<text x="68" y="15.5" font-size="11" fill="#fff" font-weight="bold">\u2713</text>'
+    + '</svg>';
+}
+
+function svgGuide2() {
+  // スマホ側面を45°に傾けた図 + オレンジの角度弧
+  return '<svg width="80" height="90" viewBox="0 0 80 90">'
+    // === スマホ側面（縦長・45°傾き）===
+    // rotate(-45)でCCW → 上端が右上方向に傾く
+    + '<g transform="rotate(-45 36 68)">'
+    // 本体
+    + '<rect x="28" y="30" width="16" height="38" rx="3" fill="#E8E8E8" stroke="#1A1A1A" stroke-width="2.5"/>'
+    // スクリーン（空と建物が写っている）
+    + '<rect x="30" y="32" width="12" height="27" rx="1" fill="#B8D8F0"/>'
+    // 空エリア（上）
+    + '<rect x="30" y="32" width="12" height="10" rx="1" fill="#7EC8E3"/>'
+    // 太陽
+    + '<circle cx="38" cy="37" r="3" fill="#F5A623"/>'
+    // 建物
+    + '<rect x="31" y="47" width="4" height="11" rx="1" fill="rgba(50,70,110,0.5)"/>'
+    + '<rect x="37" y="49" width="3" height="9" rx="1" fill="rgba(50,70,110,0.4)"/>'
+    // カメラレンズ（背面）
+    + '<circle cx="36" cy="64" r="2.5" fill="#555" stroke="#333" stroke-width="0.5"/>'
+    + '</g>'
+    // === 地面ライン ===
+    + '<line x1="8" y1="76" x2="68" y2="76" stroke="rgba(0,0,0,0.2)" stroke-width="1.5"/>'
+    // === 垂直基準線（点線）===
+    + '<line x1="36" y1="58" x2="36" y2="76" stroke="rgba(0,0,0,0.2)" stroke-width="1.5" stroke-dasharray="3,2"/>'
+    // === 45°角度弧（オレンジ）===
+    // 水平(0°)から45°上まで、中心(36,76)、半径18
+    + '<path d="M54,76 A18,18 0 0,0 48.7,63.3" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round"/>'
+    // 45°ラベル
+    + '<text x="52" y="71" font-size="10" fill="#F5A623" font-weight="bold">45\u00b0</text>'
+    // === ✓バッジ ===
+    + '<circle cx="71" cy="11" r="9" fill="#10B981"/>'
+    + '<text x="68" y="15.5" font-size="11" fill="#fff" font-weight="bold">\u2713</text>'
+    + '</svg>';
+}
+
+function svgGuide3() {
+  // NG例：真上に向けない → 空だけ写っても意味がない
+  return '<svg width="80" height="90" viewBox="0 0 80 90">'
+    // === スマホ側面（垂直・真上を向く）===
+    + '<rect x="31" y="14" width="16" height="34" rx="3" fill="#E8E8E8" stroke="#1A1A1A" stroke-width="2.5"/>'
+    // スクリーン（空だけ写っている = 青一色）
+    + '<rect x="33" y="16" width="12" height="24" rx="1" fill="#87CEEB"/>'
+    // 太陽（空だけ = 建物が見えない）
+    + '<circle cx="39" cy="22" r="4" fill="#FFD700"/>'
+    // カメラレンズ
+    + '<circle cx="39" cy="44" r="2.5" fill="#555" stroke="#333" stroke-width="0.5"/>'
+    // 上向き矢印（赤）
+    + '<line x1="39" y1="12" x2="39" y2="4" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>'
+    + '<polygon points="34.5,7.5 43.5,7.5 39,2" fill="#EF4444"/>'
+    // 地面ライン
+    + '<line x1="8" y1="56" x2="72" y2="56" stroke="rgba(0,0,0,0.2)" stroke-width="1.5"/>'
+    // 手（スマホを持っている）
+    + '<line x1="39" y1="48" x2="39" y2="56" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round"/>'
+    // === 大きな赤❌ ===
+    + '<line x1="18" y1="62" x2="60" y2="88" stroke="#EF4444" stroke-width="5" stroke-linecap="round" opacity="0.9"/>'
+    + '<line x1="60" y1="62" x2="18" y2="88" stroke="#EF4444" stroke-width="5" stroke-linecap="round" opacity="0.9"/>'
+    + '</svg>';
+}
+
+// ============================================================
+// Init
+// ============================================================
+(function init() {
+  windowStates = [makeDefaultWindow(0)];
+  renderAllWindows();
+  updatePrecision();
+
+  restoreFromHash();
+  // ペーストボックス: 各種形式に対応して緯度・経度を自動分割
+  var latInput = document.getElementById('lat');
+  var lngInput = document.getElementById('lng');
+  var pasteBox = document.getElementById('pasteInput');
+
+  var plusCodeErrorEl = document.getElementById('plusCodeError');
+
+  function isPlusCode(text) {
+    return /^[23456789CFGHJMPQRVWX]{4,8}\+[0-9]{2}/i.test(text.trim());
+  }
+
+  function parseLatLng(text) {
+    var trimmed = text.trim();
+    if (!trimmed) {
+      if (plusCodeErrorEl) plusCodeErrorEl.style.display = 'none';
+      return;
+    }
+    if (isPlusCode(trimmed)) {
+      if (plusCodeErrorEl) plusCodeErrorEl.style.display = 'block';
+      return;
+    }
+    if (plusCodeErrorEl) plusCodeErrorEl.style.display = 'none';
+    var cleaned = trimmed.replace(/[()（）]/g, '');
+    var parts = cleaned.split(/[,\s]+/);
+    if (parts.length >= 2) {
+      var lat = parseFloat(parts[0]);
+      var lng = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        latInput.value = lat;
+        lngInput.value = lng;
+        pasteBox.value = '';
+        pasteBox.placeholder = '\u7def\u5ea6\u30fb\u7d4c\u5ea6\u3092\u81ea\u52d5\u5165\u529b\u3057\u307e\u3057\u305f \u2713';
+        setTimeout(function() { pasteBox.placeholder = '\u4f8b\uff1a35.6909483, 139.7302033'; }, 2000);
+        updatePrecision();
+      }
+    }
+  }
+
+  // ============================================================
+  // Use-case selection
+  // ============================================================
+  if (pasteBox) {
+    pasteBox.addEventListener('paste', function() {
+      setTimeout(function() { parseLatLng(pasteBox.value); }, 50);
+    });
+    pasteBox.addEventListener('input', function() {
+      parseLatLng(pasteBox.value);
+    });
+  }
+})();
+
+function makeDefaultWindow(i) {
+  return {
+    name: (typeof selectedUsecase !== 'undefined' && selectedUsecase === '建築前リサーチ' ? '方觓' : '窓') + (i + 1),
+    dir: '\u5357',
+    size: '\u4e2d',
+    surroundings: [],
+    bldH: 0,
+    bldDist: 10,
+    photos: { left: null, center: null, right: null },
+    svf: { left: null, center: null, right: null },
+    activeTab: 'center'
+  };
+}
+
+// ============================================================
+// Render upload pane
+// ============================================================
+// ============================================================
+// Render 3-direction photo cards
+// ============================================================
+function renderPhotoCards(i, w) {
+  var tabs = PHOTO_TAB_MAP[w.dir] || PHOTO_TAB_MAP['\u5357'];
+  var bldHOptions = [
+    [0, '\u306a\u3057 (0m)'],
+    [7, '\u4f4e\u3044 1-2\u968e (7m)'],
+    [15, '\u4e2d 3-5\u968e (15m)'],
+    [30, '\u9ad8\u3044 6-10\u968e (30m)'],
+    [40, '\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a (40m)']
+  ].map(function(item) {
+    return '<option value="' + item[0] + '"' + (w.bldH == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+  }).join('');
+  var bldDistOptions = [
+    [3, '\u63a5\u8fd1\uff5e5m'],
+    [10, '\u8fd1\u3044 5-15m'],
+    [22, '\u666e\u901a 15-30m'],
+    [40, '\u9060\u3044 30m\uff5e']
+  ].map(function(item) {
+    return '<option value="' + item[0] + '"' + (w.bldDist == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+  }).join('');
+  var html = '<div class="dir-photo-grid">';
+  ['left','center','right'].forEach(function(tabKey) {
+    var lbl = tabs[tabKey];
+    var hasP = w.photos[tabKey] !== null;
+    var svfText = w.svf[tabKey] !== null ? '\u7a7a\u306e\u958b\u53e3\u7387: ' + Math.round(w.svf[tabKey] * 100) + '%' : '';
+    var cls = 'dir-card' + (hasP ? ' has-photo' : '');
+    html += '<div class="' + cls + '">';
+    // Label
+    html += '<div class="dir-card-label">' + escHtml(lbl) + (hasP ? ' <span class="dir-card-check">\u2713</span>' : '') + '</div>';
+    // Upload buttons (always visible)
+    html += '<input type="file" id="fi-add-' + i + '-' + tabKey + '" accept="image/*" style="display:none" onchange="handlePhoto(' + i + ',\'' + tabKey + '\',this)">'
+      + '<div class="dir-card-btns">'
+      + '<label class="dir-card-btn dir-card-btn-full" for="fi-add-' + i + '-' + tabKey + '">\ud83d\udcf7 \u5199\u771f\u3092\u8ffd\u52a0</label>'
+      + '</div>';
+    // Thumbnail + delete after upload
+    if (hasP) {
+      html += '<div class="dir-card-preview">'
+        + '<img class="dir-card-thumb" src="' + escHtml(w.photos[tabKey]) + '" onclick="openPhotoLightbox(this.src)">';
+      if (svfText) html += '<div class="dir-card-svf">' + svfText + '</div>';
+      html += '<button class="dir-card-del" onclick="deletePhoto(' + i + ',\'' + tabKey + '\')">&times; \u524a\u9664</button>'
+        + '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 南（正面）の建物入力
+  html += '<div style="margin:10px 0;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
+    + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066</div>'
+    + '<label style="font-size:11px;">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
+    + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=parseFloat(this.value);updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\')">' + bldHOptions + '</select>'
+    + '<div id="bld-dist-win-' + i + '" style="display:' + (w.bldH > 0 ? '' : 'none') + '">'
+    + '<label style="font-size:11px;">\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
+    + '<select style="width:100%;" onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);updatePrecision()">' + bldDistOptions + '</select>'
+    + '</div>'
+    + '</div>';
+
+  // Shared guide below all cards
+  html += '<div class="dir-guide-shared">'
+    + '<div class="shooting-guide-wrap">'
+    + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
+    + '<img src="shooting-guide.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
+    + '</div>'
+    + '<p class="photo-guide-desc" id="photo-guide-text"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;"><li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li><li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u4f7f\u7528\u306f\u7cbe\u5ea6\u5411\u4e0a</li><li>\u6674\u5929\u6642\u306e\u64ae\u5f71\u3092\u63a8\u5968\uff08\u66c7\u308a\u30fb\u96e8\u5929\u3067\u3082\u8a08\u7b97\u53ef\u80fd\uff09</li><li>\u7a93\u308f\u304f\u304c\u5199\u3089\u306a\u3044\u3088\u3046\u306b</li><li>\u5411\u304b\u3044\u306e\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK</li><li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066OK</li></ul></p>'
+    + '</div>';
+  return html;
+}
+
+function deletePhoto(i, tabKey) {
+  windowStates[i].photos[tabKey] = null;
+  windowStates[i].svf[tabKey] = null;
+  updatePrecision();
+  renderAllWindows();
+}
+
+// ============================================================
+// Render window card
+// ============================================================
+// Surrounding checkboxes helper
+// ============================================================
+function renderSurroundingCheckboxes(i, selected) {
+  var surr = selected || [];
+  var options = [
+    { val: 'evergreen',  label: '\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09', tag: null },
+    { val: 'deciduous',  label: '\u6a39\u6728\uff08\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b\uff09', tag: '\u2192 \u51ac+15%\u88dc\u6b63' },
+    { val: 'pole',       label: '\u96fb\u67f1\u30fb\u96fb\u7dda', tag: null },
+    { val: 'signboard',  label: '\u770b\u677f\u30fb\u5e83\u544a\u677f', tag: '\u2192 \u9065\u853d\u3068\u3057\u3066\u8a08\u7b97' },
+    { val: 'wall',       label: '\u96a3\u63a5\u3059\u308b\u5efa\u7269\u306e\u58c1\u9762\uff08\u771f\u6a2a\uff09', tag: '\u2192 \u9065\u853d\u3068\u3057\u3066\u8a08\u7b97' },
+    { val: 'none',       label: '\u4e0a\u8a18\u306b\u8a72\u5f53\u3059\u308b\u3082\u306e\u306f\u5199\u3063\u3066\u3044\u306a\u3044', tag: null }
+  ];
+  return options.map(function(opt) {
+    var checked = (opt.val === 'none')
+      ? (surr.length === 0 || surr.indexOf('none') !== -1) ? 'checked' : ''
+      : surr.indexOf(opt.val) !== -1 ? 'checked' : '';
+    var tagHtml = opt.tag ? '<span class="photo-check-tag warn">' + opt.tag + '</span>' : '';
+    return '<label class="photo-check-item">'
+      + '<input type="checkbox" class="photo-check-box" value="' + opt.val + '" ' + checked
+      + ' onchange="toggleSurrounding(' + i + ',this.value,this.checked)">'
+      + '<span class="photo-check-text">' + opt.label + '</span>'
+      + tagHtml
+      + '</label>';
+  }).join('');
+}
+
+// ============================================================
+// Use-case config
+// ============================================================
+
+function toggleSurrounding(winIdx, val, checked) {
+  var w = windowStates[winIdx];
+  if (!Array.isArray(w.surroundings)) w.surroundings = [];
+  if (val === 'none') {
+    w.surroundings = checked ? ['none'] : [];
+  } else {
+    // remove 'none' if something real is checked
+    var noneIdx = w.surroundings.indexOf('none');
+    if (noneIdx !== -1) w.surroundings.splice(noneIdx, 1);
+    var existing = w.surroundings.indexOf(val);
+    if (checked && existing === -1) w.surroundings.push(val);
+    if (!checked && existing !== -1) w.surroundings.splice(existing, 1);
+  }
+  renderAllWindows();
+}
+
+// ============================================================
+function renderWindowCard(w, i) {
+  var dirs = ['\u5357','\u5357\u6771','\u5357\u897f','\u6771','\u897f','\u5317'];
+  var dirBtns = dirs.map(function(d) {
+    return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + d + '</button>';
+  }).join('');
+
+  var sizes = ['\u5c0f','\u4e2d','\u5927'];
+  var sizeBtns = sizes.map(function(s) {
+    return '<button class="size-btn' + (w.size === s ? ' active' : '') + '" onclick="setWinSize(' + i + ',\'' + s + '\')">' + s + '</button>';
+  }).join('');
+
+
+  var delBtn = i > 0 ? '<button class="del-btn" onclick="deleteWindow(' + i + ')">\u524a\u9664</button>' : '';
+
+  return '<div class="window-card" id="win-card-' + i + '">'
+    + '<div class="window-card-hdr">'
+    + '<input class="win-name-input" value="' + escHtml(w.name) + '" onchange="windowStates[' + i + '].name=this.value" aria-label="\u7a93\u306e\u540d\u524d">'
+    + delBtn
+    + '</div>'
+
+    + '<label>\u5411\u304d\uff08\u7a93\u304c\u9762\u3057\u3066\u3044\u308b\u65b9\u89d2\uff09</label>'
+    + '<div class="dir-grid">' + dirBtns + '</div>'
+
+    + '<label>\u7a93\u306e\u30b5\u30a4\u30ba</label>'
+    + '<div class="size-grid">' + sizeBtns + '</div>'
+
+    + '<label>\u7a93\u304b\u3089\u306e\u5199\u771f\uff083\u65b9\u89d2\uff09</label>'
+    + renderPhotoCards(i, w)
+
+    + '<div class="photo-check-section">'
+    + '<p class="photo-check-label">\u5199\u3063\u3066\u3044\u308b\u3082\u306e\u3092\u5168\u3066\u9078\u3093\u3067\u304f\u3060\u3055\u3044<span class="photo-check-opt">\uff08\u8907\u6570\u9078\u62e4\u53ef\uff09</span></p>'
+    + '<div class="photo-check-items">'
+    + renderSurroundingCheckboxes(i, w.surroundings)
+    + '</div>'
+    + '</div>'
+
+    + '</div>';
+}
+
+// ============================================================
+// Render all windows
+// ============================================================
+function renderAllWindows() {
+  var container = document.getElementById('windowsContainer');
+  container.innerHTML = windowStates.map(function(w, i) { return renderWindowCard(w, i); }).join('');
+}
+
+// ============================================================
+// Re-render single window card
+// ============================================================
+function rerenderWindow(i) {
+  var el = document.getElementById('win-card-' + i);
+  if (!el) return;
+  var tmp = document.createElement('div');
+  tmp.innerHTML = renderWindowCard(windowStates[i], i);
+  el.parentNode.replaceChild(tmp.firstElementChild, el);
+}
+
+// ============================================================
+// Direction set
+// ============================================================
+function setWinDir(i, dir) {
+  windowStates[i].dir = dir;
+  rerenderWindow(i);
   updatePrecision();
 }
 
-function placeMarker(lat, lng) {
-  if (mapMarker) mapMarker.setMap(null);
-  mapMarker = new google.maps.Marker({ position: { lat, lng }, map: googleMap });
+// ============================================================
+// Size set
+// ============================================================
+function setWinSize(i, size) {
+  windowStates[i].size = size;
+  rerenderWindow(i);
 }
 
-function applyManualCoords() {
-  const lat = parseFloat(document.getElementById('latInput').value);
-  const lng = parseFloat(document.getElementById('lngInput').value);
-  if (isNaN(lat) || isNaN(lng)) { showErr('locationError', '有効な緯度・経度を入力してください'); return; }
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) { showErr('locationError', '緯度は-90〜90、経度は-180〜180'); return; }
-  setLocation(lat, lng);
-}
-
-// ── 精度インジケーター ──
-function updatePrecision() {
-  let score = 0;
-  if (currentLat !== null && currentLng !== null) score += 25;
-
-  if (currentMode === 'A') {
-    const floor = parseInt(document.getElementById('floorInput').value);
-    if (!isNaN(floor) && floor >= 1) score += 15;
-    const southH = parseInt(document.getElementById('southBuildingHeight').value) || 0;
-    if (southH > 0) score += 10;
-    const roomDir = document.getElementById('roomDir').value;
-    if (roomDir) score += 10;
-    if (dirPhotos.S !== null) score += 20;
-    let extra = 0;
-    if (dirPhotos.E !== null) extra++;
-    if (dirPhotos.W !== null) extra++;
-    if (dirPhotos.N !== null) extra++;
-    score += Math.min(3, extra) * 4;
-    const cbTrees = document.getElementById('cbTrees');
-    const cbSlope = document.getElementById('cbSlope');
-    const cbOpen  = document.getElementById('cbOpen');
-    if ((cbTrees && cbTrees.checked)||(cbSlope && cbSlope.checked)||(cbOpen && cbOpen.checked)) score += 8;
-    const ws = document.getElementById('windowSize').value;
-    if (ws && ws !== 'medium') score += 4;
-  } else {
-    const tilt = parseFloat(document.getElementById('tiltAngle').value);
-    const az   = parseFloat(document.getElementById('facingAzimuth').value);
-    if (!isNaN(tilt)) score += 20;
-    if (!isNaN(az))   score += 15;
-    if (dirPhotos.S !== null) score += 15;
-    let extra = 0;
-    if (dirPhotos.E !== null) extra++;
-    if (dirPhotos.W !== null) extra++;
-    if (dirPhotos.N !== null) extra++;
-    score += Math.min(3, extra) * 5;
-    const terrain = document.getElementById('terrain').value;
-    if (terrain && terrain !== 'flat') score += 10;
-  }
-
-  const fill = document.getElementById('precisionFill');
-  const label = document.getElementById('precisionLabel');
-  const scoreEl = document.getElementById('precisionScore');
-  fill.style.width = Math.min(100, score) + '%';
-  scoreEl.textContent = score + ' pt';
-  if (score < 40) {
-    fill.style.background = '#ef4444'; label.style.color = '#ef4444'; label.textContent = '低';
-  } else if (score < 70) {
-    fill.style.background = '#f59e0b'; label.style.color = '#f59e0b'; label.textContent = '中';
-  } else {
-    fill.style.background = '#22c55e'; label.style.color = '#22c55e'; label.textContent = '高';
+// ============================================================
+// Photo tab switch
+// ============================================================
+function switchPhotoTab(i, tabKey) {
+  windowStates[i].activeTab = tabKey;
+  ['left','center','right'].forEach(function(t) {
+    var exp = document.getElementById('dcexp-' + i + '-' + t);
+    if (exp) exp.style.display = t === tabKey ? '' : 'none';
+  });
+  var card = document.getElementById('win-card-' + i);
+  if (card) {
+    var cards = card.querySelectorAll('.dir-card');
+    var keys = ['left','center','right'];
+    cards.forEach(function(el, idx) { el.classList.toggle('active-card', keys[idx] === tabKey); });
   }
 }
 
-// ── 写真ガイド ──
-function togglePhotoGuide() {
-  const guide = document.getElementById('photoGuide');
-  const btn   = document.getElementById('guideToggleBtn');
-  if (guide.style.display === 'none') {
-    guide.style.display = 'block'; btn.textContent = '📷 撮影ガイドを閉じる ▲';
-  } else {
-    guide.style.display = 'none'; btn.textContent = '📷 撮影ガイドを見る ▼';
-  }
-}
 
-// ── 写真アップロード ──
-function triggerDirUpload(dir) { document.getElementById('file' + dir).click(); }
-function handleDirDrop(e, dir) {
-  e.preventDefault();
-  const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
-  if (file) loadDirFile(file, dir);
-}
-function handleDirFile(e, dir) { if (e.target.files[0]) loadDirFile(e.target.files[0], dir); e.target.value = ''; }
-function loadDirFile(file, dir) {
-  const reader = new FileReader();
-  reader.onload = ev => {
-    dirPhotos[dir] = { dataUrl: ev.target.result, fov: 90, result: null };
-    renderDirSlot(dir); updatePrecision();
+// ============================================================
+// Handle photo upload + SVF analysis
+// ============================================================
+function handlePhoto(i, tabKey, input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    windowStates[i].photos[tabKey] = dataUrl;
+    windowStates[i].activeTab = tabKey;
+    var img = new Image();
+    img.onload = function() {
+      windowStates[i].svf[tabKey] = analyzeSVF(img);
+      updatePrecision();
+      renderAllWindows();
+    };
+    img.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
-function removeDirPhoto(dir) { dirPhotos[dir] = null; renderDirSlot(dir); updatePrecision(); }
 
-function renderDirSlot(dir) {
-  const photo    = dirPhotos[dir];
-  const slotEl   = document.getElementById('slot' + dir);
-  const iconEl   = document.getElementById('slotIcon' + dir);
-  const uploadEl = document.getElementById('uploadArea' + dir);
-  const prevEl   = document.getElementById('preview' + dir);
-  if (photo) {
-    if (slotEl) slotEl.classList.add('uploaded');
-    if (iconEl) iconEl.textContent = '✅';
-    if (uploadEl) uploadEl.style.display = 'none';
-    if (prevEl) { prevEl.style.display = 'block'; document.getElementById('previewImg' + dir).src = photo.dataUrl; }
-    const badge = document.getElementById('badge' + dir);
-    if (badge) badge.textContent = photo.result ? `✓ 解析完了: 空可視率 ${photo.result.svf.toFixed(0)}%` : '未解析（計算時に自動解析）';
-  } else {
-    if (slotEl) slotEl.classList.remove('uploaded');
-    if (iconEl) iconEl.textContent = '📷';
-    if (uploadEl) uploadEl.style.display = '';
-    if (prevEl) prevEl.style.display = 'none';
+// ============================================================
+// Analyze SVF (Sky View Factor) from image
+// ============================================================
+function analyzeSVF(img) {
+  var canvas = document.getElementById('analyzeCanvas');
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, 64, 64);
+  var data = ctx.getImageData(0, 0, 64, 64).data;
+  var skyPixels = 0;
+  var total = 64 * 64;
+  for (var y = 0; y < 64; y++) {
+    for (var x = 0; x < 64; x++) {
+      var p = y * 64 + x;
+      var r = data[p * 4];
+      var g = data[p * 4 + 1];
+      var b = data[p * 4 + 2];
+      var vPos = y / 64;
+      var isBlueSky = b > 100 && b > r + 10 && b > g * 0.85;
+      var isOvercast = vPos < 0.6
+        && r > 150 && g > 150 && b > 150
+        && r < 245 && g < 245 && b < 245
+        && Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
+      var isWhiteWall = vPos > 0.4
+        && r > 220 && g > 220 && b > 220
+        && Math.abs(r - b) < 10 && Math.abs(r - g) < 10;
+      if (!isWhiteWall && (isBlueSky || isOvercast)) skyPixels++;
+    }
   }
+  return skyPixels / total;
 }
 
-function getDirPhotoList() {
-  const dirMapping = { S: 180, E: 90, W: 270, N: 0 };
-  return Object.entries(dirPhotos).filter(([, p]) => p !== null).map(([dir, p]) => ({ ...p, facingDeg: dirMapping[dir] }));
+// ============================================================
+// Add / Delete window
+// ============================================================
+function addWindow() {
+  var i = windowStates.length;
+  windowStates.push(makeDefaultWindow(i));
+  renderAllWindows();
+  updatePrecision();
 }
 
-// ── 画像解析 ──
-function analyzePhoto(photo) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const MAXPX = 800;
-      const scale = Math.min(1, MAXPX / Math.max(img.naturalWidth, img.naturalHeight));
-      const W = Math.round(img.naturalWidth * scale), H = Math.round(img.naturalHeight * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = H;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, W, H);
-      const { data } = ctx.getImageData(0, 0, W, H);
-      const obstruction = new Float32Array(360).fill(0);
-      let skyPixels = 0;
-
-      function isSky(r, g, b) {
-        const lum = 0.299*r + 0.587*g + 0.114*b;
-        if (lum > 200) return true;
-        if (lum > 120 && b > r * 1.05 && b > g * 0.95) return true;
-        if (lum > 165 && Math.max(Math.abs(r-g), Math.abs(g-b), Math.abs(r-b)) < 35) return true;
-        return false;
-      }
-
-      const isFisheye = (photo.facingDeg === -1 || photo.fov >= 360);
-      if (isFisheye) {
-        const cx = W/2, cy = H/2, maxR = Math.min(W, H)/2;
-        for (let azDeg = 0; azDeg < 360; azDeg++) {
-          const azRad = azDeg * Math.PI / 180;
-          let obstElev = 0;
-          for (let rFrac = 0.98; rFrac >= 0.02; rFrac -= 0.02) {
-            const r = rFrac * maxR;
-            const px = Math.round(cx + r * Math.sin(azRad)), py = Math.round(cy - r * Math.cos(azRad));
-            if (px < 0 || px >= W || py < 0 || py >= H) continue;
-            const i = (py * W + px) * 4;
-            if (isSky(data[i], data[i+1], data[i+2])) { skyPixels++; obstElev = Math.max(0, 90 * (1 - rFrac) - 2); break; }
-          }
-          obstruction[azDeg] = obstElev;
-        }
-      } else {
-        const vFov = photo.fov * (H / W);
-        for (let x = 0; x < W; x++) {
-          const hAngle = ((x / (W - 1)) - 0.5) * photo.fov;
-          const azimuth = ((photo.facingDeg + hAngle) % 360 + 360) % 360;
-          const azSector = Math.round(azimuth) % 360;
-          let boundaryRow = H;
-          for (let y = H - 1; y >= 0; y--) {
-            const i = (y * W + x) * 4;
-            if (isSky(data[i], data[i+1], data[i+2])) { skyPixels++; boundaryRow = y; }
-          }
-          const boundaryElev = ((1 - boundaryRow / H) - 0.5) * vFov;
-          obstruction[azSector] = Math.max(obstruction[azSector], Math.max(0, boundaryElev));
-        }
-      }
-      const rawSvf = (skyPixels / (W * H)) * 100;
-      const svf = Math.min(100, isFisheye ? rawSvf : rawSvf * 1.8);
-      resolve({ obstruction, svf });
-    };
-    img.src = photo.dataUrl;
+function deleteWindow(i) {
+  windowStates.splice(i, 1);
+  // Rename remaining windows sequentially
+  windowStates.forEach(function(w, idx) {
+    w.name = '窓' + (idx + 1);
   });
+  renderAllWindows();
+  updatePrecision();
 }
 
-function mergeObstructions(analyzedPhotos) {
-  const merged = new Float32Array(360).fill(0);
-  for (const p of analyzedPhotos) {
-    if (!p.result) continue;
-    for (let az = 0; az < 360; az++) merged[az] = Math.max(merged[az], p.result.obstruction[az]);
+// ============================================================
+// Yoto (用途) / Mode selection
+// ============================================================
+function selYoto(el, val) {
+  selectedYoto = val;
+  document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+function selMode(el, mode) {
+  selectedMode = mode;
+  document.querySelectorAll('.mode-card').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+// ============================================================
+// Precision bar
+// ============================================================
+function toggleBldDist(selectEl, distId) {
+  var el = document.getElementById(distId);
+  if (el) el.style.display = parseFloat(selectEl.value) > 0 ? '' : 'none';
+}
+
+function updatePrecision() {
+  var score = 0;
+
+  // 緯度経度入力完了: +20pt
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+  if (!isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0) score += 20;
+
+  // 階数入力: +10pt
+  var fl = parseInt(document.getElementById('floor').value);
+  if (!isNaN(fl) && fl >= 1) score += 10;
+
+  // 窓の方角選択（1窓につき+10pt）
+  windowStates.forEach(function(w) {
+    if (w.dir) score += 10;
+
+    // 写真アップ（1枚につき+10pt）
+    ['left','center','right'].forEach(function(k) {
+      if (w.photos[k]) score += 10;
+    });
+
+    // 建物の高さ・距離入力: +5pt
+    if (w.bldH > 0 || w.bldDist !== 10) score += 5;
+
+    // 補足情報（木・障害物）選択: +5pt
+    if (w.surroundings && w.surroundings.length > 0 && w.surroundings[0] !== 'none') score += 5;
+  });
+
+  score = Math.min(100, score);
+
+  document.getElementById('precisionFill').style.width = score + '%';
+  document.getElementById('precisionScore').textContent = score + ' pt';
+
+  var lbl = document.getElementById('precisionLabel');
+  var fill = document.getElementById('precisionFill');
+  if (score >= 61) {
+    lbl.textContent = '\u9ad8'; lbl.style.color = '#10B981';
+    fill.style.background = '#10B981';
+  } else if (score >= 31) {
+    lbl.textContent = '\u4e2d'; lbl.style.color = '#f59e0b';
+    fill.style.background = '#f59e0b';
+  } else {
+    lbl.textContent = '\u4f4e'; lbl.style.color = '#ef4444';
+    fill.style.background = '#ef4444';
   }
-  return merged;
 }
 
-function obstructionAt(map, azimuthDeg) {
-  return map[Math.round(((azimuthDeg % 360) + 360) % 360)] || 0;
+// ============================================================
+// Obstruction map helpers
+// ============================================================
+function buildObstructionMap(floorNum, bldH, bldDist) {
+  var map = new Float32Array(360);
+  var measurementH = (floorNum - 1) * 3;
+  var heightDiff = bldH - measurementH;
+  if (heightDiff > 0) {
+    var angle = Math.atan2(heightDiff, bldDist) * 180 / Math.PI;
+    for (var az = 135; az <= 225; az++) {
+      map[az % 360] = Math.max(map[az % 360], angle);
+    }
+  }
+  return map;
 }
 
-// ── 建物遮蔽・斜面補正 ──
-function applyBuildingObstruction(obstMap, measurementHeightM, southBuildingH, southBuildingDistM) {
-  if (southBuildingH <= 0) return obstMap;
-  const heightDiff = southBuildingH - measurementHeightM;
-  if (heightDiff <= 0) return obstMap;
-  const angle = Math.atan2(heightDiff, southBuildingDistM) * (180 / Math.PI);
-  const result = new Float32Array(obstMap);
-  // 太陽は常に南の空を通る → 南エリア（135°〜225°）に遮蔽を適用
-  for (let az = 135; az <= 225; az++) result[az] = Math.max(result[az], angle);
+function applyWindowObstruction(obstMap, winBldH, winBldDist, winDirStr, floorNum) {
+  var result = new Float32Array(obstMap);
+  var measurementH = (floorNum - 1) * 3;
+  var heightDiff = winBldH - measurementH;
+  if (heightDiff > 0) {
+    var angle = Math.atan2(heightDiff, winBldDist) * 180 / Math.PI;
+    var centerAz = DIR_AZ[winDirStr] !== undefined ? DIR_AZ[winDirStr] : 180;
+    for (var offset = -60; offset <= 60; offset++) {
+      var az = ((centerAz + offset) + 360) % 360;
+      result[az] = Math.max(result[az], angle);
+    }
+  }
   return result;
 }
 
-function applyFacingBuildingObstruction(obstMap, measurementHeightM, facingBuildingH, facingBuildingDistM, roomDir) {
-  if (facingBuildingH <= 0) return obstMap;
-  const heightDiff = facingBuildingH - measurementHeightM;
-  if (heightDiff <= 0) return obstMap;
-  const angle = Math.atan2(heightDiff, facingBuildingDistM) * (180 / Math.PI);
-  const dirAz = { SE: 135, SW: 225, E: 90, W: 270 };
-  const centerAz = dirAz[roomDir];
-  if (centerAz === undefined) return obstMap;
-  const result = new Float32Array(obstMap);
-  for (let daz = -60; daz <= 60; daz++) {
-    const az = ((centerAz + daz) % 360 + 360) % 360;
+function applySVFtoMap(obstMap, svfVal) {
+  var result = new Float32Array(obstMap);
+  var angle = (1 - svfVal) * 30;
+  for (var az = 0; az < 360; az++) {
     result[az] = Math.max(result[az], angle);
   }
   return result;
 }
 
-function applySlopeCorrection(obstMap, slopeDir) {
-  const result = new Float32Array(obstMap);
-  const ANGLE = 8;
-  const config = {
-    S: { boost: [[135,225]], reduce: [] },
-    N: { boost: [], reduce: [[135,225]] },
-    E: { boost: [[45,135]], reduce: [[225,315]] },
-    W: { boost: [[225,315]], reduce: [[45,135]] },
-  };
-  const cfg = config[slopeDir];
-  if (!cfg) return result;
-  for (const [from, to] of cfg.boost)  for (let az = from; az <= to; az++) result[az] = Math.max(0, result[az] - ANGLE);
-  for (const [from, to] of cfg.reduce) for (let az = from; az <= to; az++) result[az] = Math.min(89, result[az] + ANGLE);
-  return result;
-}
+// ============================================================
+// Calculate heatmap for one window
+// ============================================================
+function calcWindowHeatmap(w, floorNum) {
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
 
-// ── 太陽軌道計算 ──
-const SAMPLE_DAYS = [1, 8, 15, 22];
-const STEP_MIN    = 30;
+  var windowAz = DIR_AZ[w.dir] !== undefined ? DIR_AZ[w.dir] : 180;
+  var selfH = (floorNum - 1) * 3; // 階の床面高さ\uff08ユーザ公式: 1F=0m, 2F=3m...\uff09
 
-function calculateModeAHeatmap(lat, lng, obstMap, roomDir) {
-  const ROOM_AZ = { S: 180, SE: 135, SW: 225, E: 90, W: 270 };
-  const ARC = 80;
-  const centerAz = ROOM_AZ[roomDir] ?? 180;
-  const solarUtcOffset = lng / 15;
-  const slotDefs = [[6,8],[8,10],[10,12],[12,14],[14,16],[16,18]];
-  const result = Array.from({ length: 12 }, () =>
-    Array.from({ length: 6 }, () => ({ sunshine: 0, potential: 0, elevSum: 0, azSum: 0, azCount: 0 }))
-  );
-  for (let month = 0; month < 12; month++) {
-    for (const day of SAMPLE_DAYS) {
-      for (let localMin = 6*60; localMin < 18*60; localMin += STEP_MIN) {
-        const localHour = Math.floor(localMin / 60);
-        const slotIdx = slotDefs.findIndex(([s, e]) => localHour >= s && localHour < e);
-        if (slotIdx < 0) continue;
-        const utcTotalMin  = localMin - solarUtcOffset * 60;
-        const utcDayOffset = Math.floor(utcTotalMin / 1440);
-        const utcMinOfDay  = ((utcTotalMin % 1440) + 1440) % 1440;
-        const date = new Date(Date.UTC(2023, month, day + utcDayOffset, Math.floor(utcMinOfDay/60), utcMinOfDay%60));
-        const pos    = SunCalc.getPosition(date, lat, lng);
-        const altDeg = pos.altitude * (180 / Math.PI);
-        if (altDeg < 0.5) continue;
-        const azDeg = ((pos.azimuth * (180 / Math.PI)) + 180 + 360) % 360;
-        let angleDiff = Math.abs(azDeg - centerAz);
-        if (angleDiff > 180) angleDiff = 360 - angleDiff;
-        if (angleDiff > ARC) continue;
-        result[month][slotIdx].potential++;
-        result[month][slotIdx].elevSum += altDeg;
-        result[month][slotIdx].azSum   += azDeg;
-        result[month][slotIdx].azCount++;
-        if (altDeg > obstructionAt(obstMap, azDeg)) result[month][slotIdx].sunshine++;
-      }
+  // 遮蔽仰角\uff1a建物数式
+  var formulaObst = null;
+  if (w.bldH > 0) {
+    var hDiff = w.bldH - selfH;
+    if (hDiff > 0) {
+      formulaObst = Math.atan2(hDiff, w.bldDist) * 180 / Math.PI;
     }
   }
-  return result;
+
+  // 遮蔽仰角\uff1a写真SVF
+  var photoObst = null;
+  var svfVals = [w.svf.center, w.svf.left, w.svf.right].filter(function(v) { return v !== null; });
+  if (svfVals.length > 0) {
+    var meanSvf = svfVals.reduce(function(a, b) { return a + b; }, 0) / svfVals.length;
+    photoObst = (1 - meanSvf) * 30;
+  }
+
+  // 遮蔽仰角の合成
+  var obstBase = 0;
+  if (formulaObst !== null && photoObst !== null) {
+    obstBase = (formulaObst + photoObst) / 2;
+  } else if (formulaObst !== null) {
+    obstBase = formulaObst;
+  } else if (photoObst !== null) {
+    obstBase = photoObst;
+  }
+
+  // 追加遮蔽\uff08看板・隣接壁\uff09
+  var surrList = w.surroundings || [];
+  if (surrList.indexOf('signboard') !== -1) obstBase = Math.max(obstBase, 8);
+  if (surrList.indexOf('wall') !== -1) obstBase = Math.max(obstBase, 20);
+
+  var matrix = [];
+
+  for (var m = 0; m < 12; m++) {
+    var row = [];
+    for (var t = 0; t < 6; t++) {
+
+      // 月の15日を10分刻びでサンプリング
+      var sunlit = 0;
+      var total = 0;
+
+      for (var dt = 0; dt < 120; dt += 10) {
+        var date = new Date(2024, m, 15, TIME_SLOTS[t], dt, 0);
+        var pos = SunCalc.getPosition(date, lat, lng);
+        var altDeg = pos.altitude * 180 / Math.PI;
+        total++; // 日没前後もカウント\uff08元からカウント\uff09
+
+        if (altDeg <= 0) continue; // 地平線以下
+
+        var azDeg = ((pos.azimuth * 180 / Math.PI) + 180 + 360) % 360;
+        var azDiff = Math.abs(azDeg - windowAz);
+        if (azDiff > 180) azDiff = 360 - azDiff;
+        if (azDiff > 90) continue; // 窓の視野外
+
+        // 方位角による遮蔽仰角のテーパー
+        // 窓正面\uff080°\uff09で最大、窓縁\uff0890°\uff09で遮蔽なし
+        var edgeFactor = Math.cos(azDiff * Math.PI / 180);
+        var obstAngle = obstBase * edgeFactor;
+
+        if (altDeg > obstAngle) sunlit++;
+      }
+
+      var val = total > 0 ? sunlit / total : 0;
+
+      // 落葉樹補正\uff08冬は透達率アップ\uff09
+      if (surrList.indexOf('deciduous') !== -1 && [0,1,2,10,11].indexOf(m) !== -1) {
+        val = Math.min(1, val + 0.15);
+      }
+      val = Math.min(1, val);
+      row.push(val);
+    }
+    matrix.push(row);
+  }
+  return matrix;
+}
+// ============================================================
+// Run calculation
+// ============================================================
+function runCalculation() {
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+  if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+    showError('\u7def\u5ea6\u30fb\u7d4c\u5ea6\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\uff08STEP 1\uff09');
+    document.getElementById('step1')?.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  var floorNum = parseInt(document.getElementById('floor').value) || 1;
+  hideError();
+
+  var btn = document.getElementById('calcBtn');
+  btn.textContent = '\u8a08\u7b97\u4e2d...';
+  btn.disabled = true;
+
+  setTimeout(function() {
+    try {
+      var heatmaps = windowStates.map(function(w) { return calcWindowHeatmap(w, floorNum); });
+      var windowScores = heatmaps.map(function(hm) {
+        var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+        return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
+      });
+      var propertyScore = windowScores.reduce(function(a, b) { return a + b; }, 0) / windowScores.length;
+      storedHeatmaps = heatmaps;
+      displayResults(propertyScore, windowScores, heatmaps);
+    } catch(e) {
+      showError('\u8a08\u7b97\u4e2d\u306b\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f: ' + e.message);
+    }
+    btn.textContent = '\u2600 \u65e5\u7167\u7387\u3092\u8a08\u7b97\u3059\u308b';
+    btn.disabled = false;
+  }, 50);
 }
 
-function calculateModeBData(lat, lng, obstMap, tiltDeg, facingAzDeg) {
-  const solarUtcOffset = lng / 15;
-  const tiltRad = tiltDeg * Math.PI / 180;
-  const cosT = Math.cos(tiltRad), sinT = Math.sin(tiltRad);
-  const facingRad = facingAzDeg * Math.PI / 180;
-  const jmaSap = [0.36,0.41,0.47,0.52,0.55,0.47,0.43,0.50,0.40,0.38,0.31,0.32];
-  const jmaFuk = [0.53,0.50,0.53,0.57,0.56,0.35,0.47,0.54,0.42,0.55,0.57,0.54];
-  function weatherFactor(month, lat) {
-    const t = Math.max(0, Math.min(1, (lat - 33) / 10));
-    return jmaFuk[month] * (1 - t) + jmaSap[month] * t;
+// ============================================================
+// Display results
+// ============================================================
+function displayResults(score, winScores, heatmaps) {
+  var resultsEl = document.getElementById('results');
+  resultsEl.style.display = 'block';
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  document.getElementById('scoreNum').textContent = Math.round(score);
+  document.getElementById('scoreText').textContent = getScoreText(score);
+
+  // 精度インジケーター
+  var precScore = parseInt(document.getElementById('precisionScore').textContent) || 0;
+  var badge = document.getElementById('resultPrecisionBadge');
+  if (badge) {
+    var precLabel, precBg, precColor;
+    if (precScore >= 80) {
+      precLabel = '\u7b97\u51fa\u7cbe\u5ea6: \u9ad8'; precBg = 'rgba(16,185,129,0.1)'; precColor = '#10B981';
+    } else if (precScore >= 50) {
+      precLabel = '\u7b97\u51fa\u7cbe\u5ea6: \u4e2d'; precBg = 'rgba(245,166,35,0.12)'; precColor = '#D4880F';
+    } else {
+      precLabel = '\u7b97\u51fa\u7cbe\u5ea6: \u4f4e'; precBg = 'rgba(239,68,68,0.1)'; precColor = '#EF4444';
+    }
+    badge.textContent = precLabel;
+    badge.style.background = precBg;
+    badge.style.color = precColor;
+    badge.style.border = '1px solid ' + precColor;
   }
-  const monthlyRad = new Array(12).fill(0);
-  const monthlySunHr = new Array(12).fill(0);
-  for (let month = 0; month < 12; month++) {
-    let radSum = 0, sunCount = 0, potCount = 0;
-    for (const day of SAMPLE_DAYS) {
-      for (let localMin = 0; localMin < 1440; localMin += STEP_MIN) {
-        const utcTotalMin  = localMin - solarUtcOffset * 60;
-        const utcDayOffset = Math.floor(utcTotalMin / 1440);
-        const utcMinOfDay  = ((utcTotalMin % 1440) + 1440) % 1440;
-        const date = new Date(Date.UTC(2023, month, day + utcDayOffset, Math.floor(utcMinOfDay/60), utcMinOfDay%60));
-        const pos    = SunCalc.getPosition(date, lat, lng);
-        const altDeg = pos.altitude * (180 / Math.PI);
-        if (altDeg < 0.5) continue;
-        const azDeg  = ((pos.azimuth * (180 / Math.PI)) + 180 + 360) % 360;
-        const altRad = pos.altitude;
-        const azRad  = azDeg * Math.PI / 180;
-        const sx = Math.sin(azRad) * Math.cos(altRad);
-        const sy = Math.cos(azRad) * Math.cos(altRad);
-        const sz = Math.sin(altRad);
-        const nx = sinT * Math.sin(facingRad);
-        const ny = sinT * Math.cos(facingRad);
-        const nz = cosT;
-        const incFactor = Math.max(0, sx*nx + sy*ny + sz*nz);
-        if (incFactor <= 0) continue;
-        potCount++;
-        if (altDeg > obstructionAt(obstMap, azDeg)) { sunCount++; radSum += incFactor; }
+
+  var barsHtml = winScores.map(function(s, i) {
+    var name = escHtml(windowStates[i].name);
+    var pct = Math.round(s);
+    return '<div class="win-bar">'
+      + '<div class="win-bar-meta"><span>' + name + '</span><span style="font-family:\'DM Mono\',monospace;font-weight:700">' + pct + '%</span></div>'
+      + '<div class="win-bar-track"><div class="win-bar-fill" style="width:' + pct + '%"></div></div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('windowBars').innerHTML = barsHtml;
+
+  var tabsContainer = document.getElementById('heatmapTabs');
+  var tabsHtml = '<button class="hm-tab active" id="hmt-agg" onclick="switchHeatmapTab(\'agg\')">\u7269\u4ef6\u5168\u4f53</button>';
+  windowStates.forEach(function(w, i) {
+    tabsHtml += '<button class="hm-tab" id="hmt-' + i + '" onclick="switchHeatmapTab(' + i + ')">' + escHtml(w.name) + '</button>';
+  });
+  tabsContainer.innerHTML = tabsHtml;
+
+  var aggMatrix = computeAggHeatmap(heatmaps);
+  renderHeatmapTable(aggMatrix);
+}
+
+function computeAggHeatmap(heatmaps) {
+  var agg = [];
+  for (var m = 0; m < 12; m++) {
+    agg.push(new Array(6).fill(0));
+  }
+  heatmaps.forEach(function(hm) {
+    for (var m = 0; m < 12; m++) {
+      for (var t = 0; t < 6; t++) {
+        agg[m][t] += hm[m][t];
       }
     }
-    const wf = weatherFactor(month, lat);
-    monthlyRad[month]   = radSum * wf * (STEP_MIN / 60);
-    monthlySunHr[month] = potCount > 0 ? (sunCount / potCount) * getDaylightHours(lat, month) * wf : 0;
+  });
+  var n = heatmaps.length || 1;
+  for (var m = 0; m < 12; m++) {
+    for (var t = 0; t < 6; t++) {
+      agg[m][t] = Math.min(1, agg[m][t] / n);
+    }
   }
-  return { monthlyRad, monthlySunHr };
+  return agg;
 }
 
-function getDaylightHours(lat, month) {
-  const latRad = lat * Math.PI / 180;
-  const dayOfYear = [15,46,75,105,135,166,196,227,258,288,319,349][month];
-  const decl = -23.45 * Math.cos(2 * Math.PI * (dayOfYear + 10) / 365) * Math.PI / 180;
-  const cosHA = -Math.tan(latRad) * Math.tan(decl);
-  if (cosHA >= 1) return 0;
-  if (cosHA <= -1) return 24;
-  return 2 * Math.acos(cosHA) * (180 / Math.PI) / 15;
-}
-
-function findOptimalTilt(lat, lng, obstMap, facingAzDeg) {
-  let bestTilt = 0, bestRad = -1;
-  for (let t = 0; t <= 75; t += 5) {
-    const { monthlyRad } = calculateModeBData(lat, lng, obstMap, t, facingAzDeg);
-    const total = monthlyRad.reduce((a,b) => a+b, 0);
-    if (total > bestRad) { bestRad = total; bestTilt = t; }
+function switchHeatmapTab(tabId) {
+  document.querySelectorAll('.hm-tab').forEach(function(b) { b.classList.remove('active'); });
+  var matrix;
+  if (tabId === 'agg') {
+    document.getElementById('hmt-agg').classList.add('active');
+    matrix = computeAggHeatmap(storedHeatmaps);
+  } else {
+    var idx = parseInt(tabId);
+    var btn = document.getElementById('hmt-' + idx);
+    if (btn) btn.classList.add('active');
+    matrix = storedHeatmaps[idx];
   }
-  return bestTilt;
+  renderHeatmapTable(matrix);
 }
 
-// ── ヒートマップ描画 ──
-function hmCellStyle(rate) {
-  if (rate === null || rate === undefined) return { bg: '#263348', mark: '—' };
-  if (rate >= 70) return { bg: '#FF8C00', mark: '◎' };
-  if (rate >= 40) return { bg: '#FFD580', mark: '○' };
-  if (rate >= 15) return { bg: '#C0C0C0', mark: '△' };
-  return { bg: '#606060', mark: '✕' };
+// ============================================================
+// Heatmap color scale
+// ============================================================
+function getHeatColor(val) {
+  var pct = Math.round(val * 100);
+  if (pct >= 90) return '#E8420A';
+  if (pct >= 70) return '#F06020';
+  if (pct >= 50) return '#F5A623';
+  if (pct >= 35) return '#F5BC50';
+  if (pct >= 15) return '#F5D080';
+  if (pct > 0)   return '#F5E8B0';
+  return 'transparent';
 }
 
-function renderModeAHeatmap(hmData, hasTrees) {
-  const months     = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  const slotLabels = ['6-8時','8-10時','10-12時','12-14時','14-16時','16-18時'];
-  const table = document.getElementById('heatmapATable');
-  let html = '<thead><tr><th></th>';
-  for (const sl of slotLabels) html += `<th>${sl}</th>`;
+
+// ============================================================
+// Render heatmap table
+// ============================================================
+function renderHeatmapTable(matrix) {
+  var html = '<table class="heatmap-table"><thead><tr><th class="hm-row-label"></th>';
+  TIME_LABELS.forEach(function(lbl) {
+    html += '<th>' + escHtml(lbl) + '</th>';
+  });
   html += '</tr></thead><tbody>';
 
-  const adjustedData = hmData.map((monthData, m) =>
-    monthData.map(cell => {
-      if (cell.potential === 0) return cell;
-      let rate = (cell.sunshine / cell.potential) * 100;
-      if (hasTrees && m >= 3 && m <= 9) rate *= 0.85;
-      return { ...cell, rate };
-    })
-  );
-
-  for (let m = 0; m < 12; m++) {
-    html += `<tr><td class="month-label">${months[m]}</td>`;
-    for (let s = 0; s < 6; s++) {
-      const cell = adjustedData[m][s];
-      const rate = cell.potential > 0 ? (cell.rate ?? (cell.sunshine / cell.potential * 100)) : null;
-      const { bg, mark } = hmCellStyle(rate);
-      const avgElev = cell.azCount > 0 ? (cell.elevSum / cell.azCount).toFixed(1) : '—';
-      const avgAz   = cell.azCount > 0 ? (cell.azSum   / cell.azCount).toFixed(1) : '—';
-      const rateStr = rate !== null ? rate.toFixed(0) + '%' : '—';
-      const tip = `data-tip="${months[m]} ${slotLabels[s]} | 日照率:${rateStr} | 仰角:${avgElev}° 方位:${avgAz}°"`;
-      html += `<td class="hm-cell" style="background:${bg};" ${tip}>${mark}</td>`;
+  for (var m = 0; m < 12; m++) {
+    html += '<tr><td class="hm-row-label hm-mn">' + escHtml(MONTH_LABELS[m]) + '</td>';
+    for (var t = 0; t < 6; t++) {
+      var val = matrix[m][t];
+      var bg = getHeatColor(val);
+      var lightCls = val < 0.35 ? ' light' : '';
+      var pct = val > 0.01 ? Math.round(val * 100) + '%' : '';
+      html += '<td><div class="hm-cell' + lightCls + '" style="background:' + bg + '" title="' + Math.round(val*100) + '%">' + pct + '</div></td>';
     }
     html += '</tr>';
   }
-  html += '</tbody>';
-  table.innerHTML = html;
 
-  const tooltip = document.getElementById('hmTooltip');
-  table.querySelectorAll('.hm-cell').forEach(td => {
-    td.addEventListener('mouseenter', () => { tooltip.textContent = td.dataset.tip; tooltip.style.display = 'block'; });
-    td.addEventListener('mousemove', e => { tooltip.style.left = (e.clientX + 14) + 'px'; tooltip.style.top = (e.clientY - 36) + 'px'; });
-    td.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
-  });
-
-  return adjustedData;
+  html += '</tbody></table>';
+  html += '<div class="hm-legend">'
+    + '<span class="hm-leg-item" style="background:#E8420A;color:#fff">\u3068\u3066\u3082\u826f\u3044</span>'
+    + '<span class="hm-leg-item" style="background:#F5A623;color:#fff">\u826f\u3044</span>'
+    + '<span class="hm-leg-item" style="background:#F5D080;color:#555">\u666e\u901a</span>'
+    + '<span class="hm-leg-item" style="background:#F5F4F0;color:#666;border:1px solid #DDD">\u306a\u3057</span>'
+    + '</div>';
+  html += '<p class="hm-desc">\u5404\u30de\u30b9\u306f\u305d\u306e\u6642\u9593\u5e2f\uff082\u6642\u9593\uff09\u306e\u65e5\u7167\u7387\u3092\u793a\u3057\u3066\u3044\u307e\u3059\u3002</p>';
+  document.getElementById('heatmapTable').innerHTML = html;
+  calcPeakMonth(matrix);
 }
 
-function renderModeASummary(adjustedData) {
-  const slotLabels = ['6-8時','8-10時','10-12時','12-14時','14-16時','16-18時'];
-  const slotAnnual = Array.from({ length: 6 }, (_, s) => {
-    let sum = 0, cnt = 0;
-    for (let m = 0; m < 12; m++) {
-      const c = adjustedData[m][s];
-      if (c.potential > 0) { sum += c.rate ?? (c.sunshine / c.potential * 100); cnt++; }
-    }
-    return cnt > 0 ? sum / cnt : 0;
-  });
-  const ranked = slotAnnual.map((v,i) => ({ idx: i, val: v })).sort((a,b) => b.val - a.val);
-
-  function seasonMark(months_idx) {
-    let sum = 0, cnt = 0;
-    for (const m of months_idx) for (let s = 0; s < 6; s++) {
-      const c = adjustedData[m][s];
-      if (c.potential > 0) { sum += c.rate ?? (c.sunshine / c.potential * 100); cnt++; }
-    }
-    const avg = cnt > 0 ? sum / cnt : 0;
-    if (avg >= 65) return { mark: '◎', color: '#FF8C00', label: '日照良好' };
-    if (avg >= 45) return { mark: '○', color: '#FFD580', label: '概ね良好' };
-    if (avg >= 25) return { mark: '△', color: '#C0C0C0', label: 'やや少ない' };
-    return { mark: '✕', color: '#555', label: '日照不足' };
+// ============================================================
+// Peak month calculation
+// ============================================================
+function calcPeakMonth(matrix) {
+  var months = ['1\u6708','2\u6708','3\u6708','4\u6708','5\u6708','6\u6708','7\u6708','8\u6708','9\u6708','10\u6708','11\u6708','12\u6708'];
+  var monthlyAvg = [];
+  for (var m = 0; m < 12; m++) {
+    var sum = 0;
+    for (var t = 0; t < 6; t++) { sum += matrix[m][t]; }
+    monthlyAvg.push(sum / 6);
   }
-
-  let totalSum = 0, totalCnt = 0;
-  for (let m = 0; m < 12; m++) for (let s = 0; s < 6; s++) {
-    const c = adjustedData[m][s];
-    if (c.potential > 0) { totalSum += c.rate ?? (c.sunshine/c.potential*100); totalCnt++; }
+  var max = Math.max.apply(null, monthlyAvg);
+  var peaks = [];
+  for (var i = 0; i < 12; i++) {
+    if (monthlyAvg[i] >= max * 0.9) peaks.push(months[i]);
   }
-  const score = Math.round(Math.min(100, (totalCnt > 0 ? totalSum/totalCnt : 0) * 1.1));
-  const winter = seasonMark([11,0,1]);
-  const summer = seasonMark([5,6,7]);
-
-  document.getElementById('modeASummary').innerHTML = `
-    <div class="summary-info-card">
-      <div class="s-title">🏆 年間日照トップ3 時間帯</div>
-      <div class="s-val">${ranked.slice(0,3).map((r,i) => `<span style="color:var(--sun)">${i+1}位</span> ${slotLabels[r.idx]} <small style="color:var(--muted)">${r.val.toFixed(0)}%</small><br>`).join('')}</div>
-    </div>
-    <div class="summary-info-card">
-      <div class="s-title">❄ 冬（12〜2月）の評価</div>
-      <div class="s-val"><span style="font-size:1.3rem;font-weight:700;color:${winter.color}">${winter.mark}</span> ${winter.label}</div>
-    </div>
-    <div class="summary-info-card">
-      <div class="s-title">☀ 夏（6〜8月）の評価</div>
-      <div class="s-val"><span style="font-size:1.3rem;font-weight:700;color:${summer.color}">${summer.mark}</span> ${summer.label}</div>
-    </div>
-    <div class="summary-info-card" style="text-align:center;">
-      <div class="s-title">🌟 総合日照スコア</div>
-      <div class="s-score">${score}</div>
-      <div style="font-size:11px;color:var(--muted);">/ 100点</div>
-    </div>
-  `;
-}
-
-function renderModeBChart(monthlyRad) {
-  if (modeBChart) { modeBChart.destroy(); modeBChart = null; }
-  const ctx = document.getElementById('modeBChart').getContext('2d');
-  modeBChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
-      datasets: [{
-        label: '積算日射量（相対値）',
-        data: monthlyRad.map(v => Math.round(v * 10) / 10),
-        backgroundColor: monthlyRad.map(v => {
-          const max = Math.max(...monthlyRad);
-          const t = max > 0 ? v / max : 0;
-          return `rgba(${Math.round(50+t*205)},${Math.round(50+t*90)},${Math.round(10+t*30)},0.85)`;
-        }),
-        borderRadius: 4,
-      }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.parsed.y.toFixed(1)}` } } },
-      scales: {
-        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#4a6a8a' } },
-        x: { grid: { display: false }, ticks: { color: '#4a6a8a' } },
-      },
-    },
-  });
-}
-
-function renderModeBResults(data, tiltDeg, facingAzDeg, optimalTilt) {
-  const { monthlyRad, monthlySunHr } = data;
-  const annualHours = monthlySunHr.reduce((a,b) => a+b, 0);
-  const annualRad   = monthlyRad.reduce((a,b) => a+b, 0);
-  const bestMonth   = monthlyRad.indexOf(Math.max(...monthlyRad)) + 1;
-  document.getElementById('kpiBHours').textContent    = Math.round(annualHours);
-  document.getElementById('kpiBestMonth').textContent = bestMonth;
-  document.getElementById('kpiBRad').textContent      = Math.round(annualRad * 1.2);
-  const diff = optimalTilt - tiltDeg;
-  const diffStr = diff === 0 ? '最適です' : (diff > 0 ? `+${diff}° 傾けると改善` : `${diff}° 減らすと改善`);
-  document.getElementById('optimalRow').innerHTML = `
-    <div class="optimal-item"><div class="oi-label">現在の設置角</div><div class="oi-val">${tiltDeg}<span class="oi-unit">°</span></div></div>
-    <div class="optimal-item"><div class="oi-label">推奨設置角</div><div class="oi-val" style="color:var(--green)">${optimalTilt}<span class="oi-unit">°</span></div><div class="oi-note">${diffStr}</div></div>
-    <div class="optimal-item"><div class="oi-label">設置方位角</div><div class="oi-val">${facingAzDeg}<span class="oi-unit">°</span></div><div class="oi-note">真南=180°が最適</div></div>
-  `;
-  renderModeBChart(monthlyRad);
-}
-
-// ── UI ハンドラ ──
-function onTreesChange() { updatePrecision(); }
-function onSlopeChange() {
-  document.getElementById('slopeDirRow').style.display = document.getElementById('cbSlope').checked ? '' : 'none';
-  updatePrecision();
-}
-function onFacingBuildingChange() {
-  updatePrecision();
-}
-function onSouthBuildingChange() {
-  hideErr('buildingError');
-  updatePrecision();
-}
-
-// ── 計算フロー ──
-async function runCalculation() {
-  if (currentLat === null || currentLng === null) {
-    document.getElementById('locationError').textContent = '地点を設定してください（STEP 1 で緯度・経度を入力）';
-    document.getElementById('locationError').style.display = 'block';
-    document.getElementById('latInput').scrollIntoView({ behavior: 'smooth' });
-    return;
-  }
-
-
-  const btn = document.getElementById('calcBtn');
-  btn.disabled = true; btn.textContent = '計算中…';
-
-  try {
-    const photoList = getDirPhotoList();
-    for (const p of photoList) { if (!p.result) p.result = await analyzePhoto(p); }
-    for (const dir of ['S','E','W','N']) {
-      if (dirPhotos[dir] && dirPhotos[dir].result) {
-        const badge = document.getElementById('badge' + dir);
-        if (badge) badge.textContent = `✓ 解析完了: 空可視率 ${dirPhotos[dir].result.svf.toFixed(0)}%`;
-      }
-    }
-
-    let obstMap = mergeObstructions(photoList);
-
-    if (currentMode === 'A') {
-      const floor          = Math.max(1, parseInt(document.getElementById('floorInput').value) || 1);
-      const heightM        = parseFloat(document.getElementById('heightInput').value) || floor * 3;
-      const southBuildingH = parseInt(document.getElementById('southBuildingHeight').value) || 0;
-      const southBuildingDist = parseFloat(document.getElementById('southBuildingDist') ? document.getElementById('southBuildingDist').value : 22) || 22;
-      const roomDir        = document.getElementById('roomDir').value;
-      const facingBuildingH    = parseInt(document.getElementById('facingBuildingHeight').value) || 0;
-      const facingBuildingDist = parseFloat(document.getElementById('facingBuildingDist') ? document.getElementById('facingBuildingDist').value : 22) || 22;
-      const hasTrees       = document.getElementById('cbTrees').checked;
-      const hasSlope       = document.getElementById('cbSlope').checked;
-      const slopeDir       = document.getElementById('slopeDir').value;
-
-      obstMap = applyBuildingObstruction(obstMap, heightM, southBuildingH, southBuildingDist);
-      obstMap = applyFacingBuildingObstruction(obstMap, heightM, facingBuildingH, facingBuildingDist, roomDir);
-      if (hasSlope) obstMap = applySlopeCorrection(obstMap, slopeDir);
-
-      const hmData = calculateModeAHeatmap(currentLat, currentLng, obstMap, roomDir);
-      const adjustedData = renderModeAHeatmap(hmData, hasTrees);
-      renderModeASummary(adjustedData);
-
-      const notes = [];
-      if (southBuildingH > 0) {
-        const diffH = Math.max(0, southBuildingH - heightM);
-        const ang = Math.round(Math.atan2(diffH, southBuildingDist) * 180 / Math.PI);
-        notes.push(`南側建物遮蔽補正（仰角 ${ang}°）`);
-      }
-      if (facingBuildingH > 0 && DIR_LABEL[roomDir]) {
-        const diffH = Math.max(0, facingBuildingH - heightM);
-        const ang = Math.round(Math.atan2(diffH, facingBuildingDist) * 180 / Math.PI);
-        notes.push(`${DIR_LABEL[roomDir]}側建物遮蔽補正（仰角 ${ang}°）`);
-      }
-      if (hasSlope) notes.push(`斜面補正（${document.querySelector('#slopeDir option:checked').text}）`);
-      if (hasTrees) notes.push('樹木補正（4〜10月 −15%）');
-      document.getElementById('correctionNotes').innerHTML = notes.length
-        ? '適用した補正: ' + notes.map(n => `<span class="corr-badge">${n}</span>`).join('') : '';
-
-      document.getElementById('resultsA').style.display = '';
-      document.getElementById('resultsB').style.display = 'none';
-
-    } else {
-      const tiltDeg     = parseFloat(document.getElementById('tiltAngle').value) || 30;
-      const facingAzDeg = parseFloat(document.getElementById('facingAzimuth').value) || 180;
-      const terrain     = document.getElementById('terrain').value;
-      let terrainFactor = 1.0;
-      if (terrain === 'slope_s') terrainFactor = 1.05;
-      if (terrain === 'slope_n') terrainFactor = 0.92;
-      if (terrain === 'coastal') terrainFactor = 1.08;
-      if (terrain === 'mountain') terrainFactor = 0.88;
-
-      const data = calculateModeBData(currentLat, currentLng, obstMap, tiltDeg, facingAzDeg);
-      data.monthlyRad   = data.monthlyRad.map(v => v * terrainFactor);
-      data.monthlySunHr = data.monthlySunHr.map(v => v * terrainFactor);
-
-      const optimalTilt = findOptimalTilt(currentLat, currentLng, obstMap, facingAzDeg);
-      renderModeBResults(data, tiltDeg, facingAzDeg, optimalTilt);
-
-      const notes = [];
-      if (terrain !== 'flat') notes.push(`地形補正（${document.querySelector('#terrain option:checked').text} ×${terrainFactor.toFixed(2)}）`);
-      document.getElementById('correctionNotesB').innerHTML = notes.length
-        ? '適用した補正: ' + notes.map(n => `<span class="corr-badge">${n}</span>`).join('') : '';
-
-      document.getElementById('resultsA').style.display = 'none';
-      document.getElementById('resultsB').style.display = '';
-    }
-
-    const resultsEl = document.getElementById('results');
-    resultsEl.style.display = 'block';
-    resultsEl.scrollIntoView({ behavior: 'smooth' });
-
-  } catch (err) {
-    console.error(err);
-    alert(`エラー: ${err.message}`);
-  } finally {
-    btn.disabled = false; btn.textContent = '☀ 日照率を計算する';
+  var el = document.getElementById('peak-month-text');
+  var block = document.getElementById('peakMonthBlock');
+  if (el && block) {
+    el.textContent = peaks.join('\u30fb');
+    block.style.display = peaks.length > 0 ? 'block' : 'none';
   }
 }
 
-// ── ユーティリティ ──
-function showErr(id, msg) { const el = document.getElementById(id); if (el) { el.textContent = msg; el.style.display = 'block'; } }
-function hideErr(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+// ============================================================
+// Score text
+// ============================================================
+function getScoreText(score) {
+  if (selectedUsecase === '建築前リサーチ') {
+    var fl = document.getElementById('constructionFloors');
+    var floors = fl ? fl.value : '';
+    var ft = floors ? floors + '階建ての場合、' : '';
+    if (score >= 75) return ft + '日照が豊富な建設予定地です。冬も暖かく、明るい建物になりそうです。夏の日差し対策も設計に組み込むと快適な環境になります。この土地、あなたの計画に合いそうですか？';
+    if (score >= 60) return ft + 'ほどよくバランスの取れた日当たりが見込めます。年間を通じて快適な建物になりそうです。この土地、あなたの計画に合いそうですか？';
+    if (score >= 40) return ft + '日照はやや控えめです。設計時に窓の配置や吹き抜けを工夫すると明るさを確保しやすくなります。この土地、あなたの計画に合いそうですか？';
+    return ft + '日照が少ない環境です。天窓や照明計画を設計段階から検討することをお勧めします。この土地、あなたの計画に合いそうですか？';
+  }
+  var level = score >= 75 ? 'high' : score >= 60 ? 'mid' : score >= 40 ? 'low' : 'vlow';
+  var base = {
+    high: '日照が豊富な物件です。冬は暖かく洗濯物もよく乾きます。夏の暑さや家具の日焼けへの対策が必要になる場面があります。この部屋、あなたに合いそうですか？',
+    mid:  'ほどよくバランスの取れた日当たりです。季節を問わず快適に過ごしやすく、電気代も押さえやすい環境です。この部屋、あなたに合いそうですか？',
+    low:  '日照は控えめです。夏は涼しく過ごせますが、冬は暖房が必要になる場面が増えます。この部屋、あなたに合いそうですか？',
+    vlow: '日照が少ない環境です。夏の猛暑対策には有利ですが、冬の寒さと湿気対策が重要です。この部屋、あなたに合いそうですか？'
+  }[level];
+  var suffix = getYotoComment(level);
+  return base + (suffix ? '\n' + suffix : '');
+}
 
-// ── モーダル ──
-function openHowItWorks() {
-  const modal = document.getElementById('howModal');
-  const iframe = document.getElementById('howIframe');
-  if (!iframe.src || iframe.src === window.location.href) iframe.src = 'sunny_how_it_works.html';
-  modal.classList.add('open');
+function getYotoComment(level) {
+  var map = {
+    living:  { high: '明るく快適なリビングになりそうです。', mid: 'リビングとして十分な日照です。', low: 'リビングには日照がやや少なめです。照明での補完をお勧めします。', vlow: 'リビングには日照がやや少なめです。照明での補完をお勧めします。' },
+    bedroom: { high: '日差しが強めです。遮光カーテンで睡眠の質を守ることをお勧めします。特に夏の朝は室温が上がりやすいです。', mid: '寝室として快適な日照量です。', low: '朝の日差しが少なく、ゆっくり休める寝室になりそうです。', vlow: '朝の日差しが少なく、ゆっくり休める寝室になりそうです。' },
+    study:   { high: '画面への映り込みに注意が必要です。ブラインドでの調整をお勧めします。', mid: '作業しやすい自然光の環境です。', low: '直射光が少なく、画面が見やすい作業環境になりそうです。', vlow: '直射光が少なく、画面が見やすい作業環境になりそうです。' },
+    kids:    { high: '明るく元気な子ども部屋になりそうです。夏の暑さ対策は必要です。', mid: '子ども部屋として適切な日照です。', low: '日照がやや少なめです。照明を明るめにすることをお勧めします。', vlow: '日照がやや少なめです。照明を明るめにすることをお勧めします。' },
+    kitchen: { high: '明るいキッチンになりそうです。夏は食材の保存に注意してください。', mid: '明るく使いやすいキッチンになりそうです。', low: '日照は少なめですが、キッチンには適した涼しさです。', vlow: '日照は少なめですが、キッチンには適した涼しさです。' },
+    balcony: { high: '洗濯物がよく乾き、植物の育成にも適した日照環境です。夏は直射日光が強くなるため、日除けの検討をお勧めします。', mid: '洗濯物が十分乾く日照量です。ベランダとして快適に活用できます。', low: '日照はやや控えめです。洗濯物は乾きにくい場合があります。', vlow: '日照が少なく、洗濯物の乾燥や植物の育成には工夫が必要です。' },
+    sunroom: { high: 'サンルームとして理想的な日照です。ただし夏は室温が上がりすぎる可能性があるため、換気・遮熱対策が重要です。', mid: 'サンルームとして十分な日照です。年間を通じて快適に使えそうです。', low: 'サンルームとしてはやや日照が少なめです。冬は寒く感じる場合があります。', vlow: 'サンルームとしては日照が不足気味です。明るさの補完が必要になる場合があります。' }
+  };
+  if (!selectedYoto || selectedYoto === 'other' || !map[selectedYoto]) return '';
+  return map[selectedYoto][level] || '';
+}
+
+// ============================================================
+// Error helpers
+// ============================================================
+function showError(msg) {
+  var el = document.getElementById('errorBox');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+// ============================================================
+// Modal
+// ============================================================
+function openHowModal() {
+  var iframe = document.getElementById('howIframe');
+  if (iframe.src.indexOf('sunny_how_it_works.html') === -1) iframe.src = 'sunny_how_it_works.html';
+  document.getElementById('howModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-function closeHowItWorks(e) {
-  if (e && e.target !== document.getElementById('howModal')) return;
+function closeHowModal() {
   document.getElementById('howModal').classList.remove('open');
   document.body.style.overflow = '';
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHowItWorks(null); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeHowModal(); closePhotoLightbox(); closeScreenshot(); } });
 
-// ── 初期化 ──
-document.getElementById('southDistRow').style.display = 'none';
-updatePrecision();
+// ============================================================
+// Photo lightbox
+// ============================================================
+function openPhotoLightbox(src) {
+  if (!src) return;
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('photoLightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePhotoLightbox() {
+  document.getElementById('photoLightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ============================================================
+// 結果アクション
+// ============================================================
+function resetAll() {
+  if (!confirm('入力内容をリセットします。よろしいですか？')) return;
+  document.getElementById('lat').value = '';
+  document.getElementById('lng').value = '';
+  document.getElementById('address').value = '';
+  document.getElementById('floor').value = '1';
+  selectedYoto = '';
+  document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) { b.classList.remove('active'); });
+  windowStates = [makeDefaultWindow(0)];
+  renderAllWindows();
+  storedHeatmaps = [];
+  document.getElementById('results').style.display = 'none';
+  updatePrecision();
+  window.location.hash = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openScreenshot() {
+  var score = document.getElementById('scoreNum').textContent;
+  var text = document.getElementById('scoreText').textContent;
+  var hmHtml = document.getElementById('heatmapTable').innerHTML;
+  var addr = document.getElementById('address').value;
+
+  var html = '<div class="ss-hint">📸 この画面をスクリーンショットして保存できます</div>';
+  if (addr) html += '<div style="font-size:12px;color:#6B7280;margin-bottom:16px;">📍 ' + escHtml(addr) + '</div>';
+  html += '<div class="ss-label">PROPERTY SCORE</div>';
+  html += '<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:12px;">';
+  html += '<span class="ss-score-big">' + score + '</span>';
+  html += '<span style="font-size:32px;font-weight:700;color:#6B7280">%</span></div>';
+  html += '<div class="ss-text">' + escHtml(text) + '</div>';
+  html += '<hr class="ss-sep">';
+  html += '<div style="font-size:12px;font-weight:700;margin-bottom:12px;">月別×時間帯ヒートマップ</div>';
+  html += '<div style="overflow-x:auto">' + hmHtml + '</div>';
+  html += '<p style="font-size:11px;color:#9CA3AF;margin-top:20px;line-height:1.7;">⚠️ この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。</p>';
+
+  document.getElementById('ssContent').innerHTML = html;
+  document.getElementById('ssOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeScreenshot() {
+  document.getElementById('ssOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function copyResultUrl() {
+  var data = {
+    lat: document.getElementById('lat').value,
+    lng: document.getElementById('lng').value,
+    address: document.getElementById('address').value,
+    floor: document.getElementById('floor').value,
+    yoto: selectedYoto,
+    windows: windowStates.map(function(w) {
+      return { name: w.name, dir: w.dir, size: w.size, surroundings: w.surroundings || [], bldH: w.bldH, bldDist: w.bldDist };
+    })
+  };
+  window.location.hash = encodeURIComponent(JSON.stringify(data));
+  var url = window.location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(showCopyToast);
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    showCopyToast();
+  }
+}
+
+function showCopyToast() {
+  var t = document.getElementById('copyToast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ============================================================
+// URL hash からの復元
+// ============================================================
+function restoreFromHash() {
+  var hash = window.location.hash.slice(1);
+  if (!hash) return;
+  try {
+    var data = JSON.parse(decodeURIComponent(hash));
+    if (data.lat) document.getElementById('lat').value = data.lat;
+    if (data.lng) document.getElementById('lng').value = data.lng;
+    if (data.address) document.getElementById('address').value = data.address;
+    if (data.floor) document.getElementById('floor').value = data.floor;
+    if (data.yoto) {
+      selectedYoto = data.yoto;
+      document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('onclick').indexOf("'" + data.yoto + "'") !== -1);
+      });
+    }
+    if (data.windows && data.windows.length > 0) {
+      windowStates = data.windows.map(function(w, i) {
+        var def = makeDefaultWindow(i);
+        return Object.assign(def, { name: w.name || def.name, dir: w.dir || '南', size: w.size || '中', surroundings: Array.isArray(w.surroundings) ? w.surroundings : [], bldH: parseFloat(w.bldH) || 0, bldDist: parseFloat(w.bldDist) || 10 });
+      });
+      renderAllWindows();
+    }
+    updatePrecision();
+  } catch(e) { /* 無効なhashは無視 */ }
+}
+
+// Phase 2: Google Maps API（住所検索・地図クリック）
+// Phase 2: 間取り図アップロード → Claude APIで窓・方角を自動解析
+// Phase 3: Claude API（診断結果の自然言語生成・パーソナライズ）
+</script>
+
+<script>
+// 用途選択UI
+let selectedUsecase = '居住・不動産';
+
+const usecaseConfig = {
+  '居住・不動産': {
+    step2Title: '物件・部屋の情報',
+    step3Title: '窓ごとの周辺環境',
+    step3Guide: '窓枚が写らないように窓の外に向け',
+    hasWindow: true,
+    weatherCorrection: false,
+    focusSeason: '冬',
+    outputType: 'heatmap',
+    descriptionTone: 'residential'
+  },
+  '建築前リサーチ': {
+    step2Title: '建設予定地の情報',
+    step3Title: '周辺の遮蔽環境',
+    step3Guide: '建設予定地の中央に立って',
+    hasWindow: false,
+    weatherCorrection: false,
+    focusSeason: '冬',
+    outputType: 'heatmap+floors',
+    extraFeature: 'floorSimulator',
+    descriptionTone: 'construction'
+  },
+  '農業・園芸': {
+    step2Title: '農地・栅培場所の情報',
+    step3Title: '周辺の遮蔽環境',
+    step3Guide: '農地・畑の中央に立って',
+    hasWindow: false,
+    weatherCorrection: true,
+    focusSeason: '春～秋',
+    outputType: 'monthly-graph',
+    descriptionTone: 'agriculture'
+  },
+  'ソーラー・エネルギー': {
+    step2Title: '設置場所の情報',
+    step3Title: '周辺の遮蔽環境',
+    step3Guide: '設置予定の屋根・屋上に立って',
+    hasWindow: false,
+    weatherCorrection: true,
+    focusSeason: '年間',
+    outputType: 'solar-radiation',
+    descriptionTone: 'solar'
+  },
+  '商業・施設': {
+    step2Title: '施設・スペースの情報',
+    step3Title: '周辺の遮蔽環境',
+    step3Guide: '対象スペースの中央に立って',
+    hasWindow: false,
+    weatherCorrection: false,
+    focusSeason: '営業時間帯',
+    outputType: 'heatmap',
+    descriptionTone: 'commercial'
+  }
+};
+
+function getCurrentConfig() {
+  return usecaseConfig[selectedUsecase];
+}
+
+document.querySelectorAll('.usecase-card').forEach(function(card) {
+  card.addEventListener('click', function() {
+    document.querySelectorAll('.usecase-card').forEach(function(c) {
+      c.classList.remove('active');
+    });
+    card.classList.add('active');
+    selectedUsecase = card.dataset.usecase;
+      updateStep2();
+  });
+});
+
+function updateStep2() {
+  const config = getCurrentConfig();
+  const step2Title = document.querySelector('#step2 .step-title');
+  if (step2Title) step2Title.textContent = config.step2Title;
+  const residential = document.getElementById('step2-residential');
+  const construction = document.getElementById('step2-construction');
+  if (selectedUsecase === '建築前リサーチ') {
+    if (residential) residential.style.display = 'none';
+    if (construction) construction.style.display = 'block';
+  } else {
+    if (residential) residential.style.display = 'block';
+    if (construction) construction.style.display = 'none';
+  }
+  updateStep3();
+}
+
+function updateStep3() {
+  var isConstruction = selectedUsecase === '建築前リサーチ';
+  var step3Title = document.querySelector('#step3 .step-title');
+  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の位置と周辺環境';
+  document.querySelectorAll('.guide-caption-1').forEach(function(el) {
+    el.textContent = isConstruction ? '更地の中央に立つ' : '窓の前に立つ';
+  });
+  var guideText = document.getElementById('photo-guide-text');
+  var guideItems = '<li>スマホは横向きで45°上向きで撮影</li>'
+    + '<li>超広角カメラ（0.5×）使用は精度向上</li>'
+    + '<li>晴天時の撮影を推奨（曇り・雨天でも計算可能）</li>'
+    + '<li>窓わくが写らないように</li>'
+    + '<li>向かいの建物が高くて空が写らなくてもOK</li>'
+    + '<li>太陽は写らなくてOK</li>';
+  if (guideText) guideText.innerHTML = guideItems;
+  var disclaimer = document.getElementById('construction-disclaimer');
+  if (disclaimer) disclaimer.style.display = isConstruction ? 'block' : 'none';
+  var guideSection = document.getElementById('construction-guide-section');
+  if (guideSection) {
+    guideSection.innerHTML = '<div class="dir-guide-shared">'
+      + '<div class="shooting-guide-wrap">'
+      + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
+      + '<img src="shooting-guide.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
+      + '</div>'
+      + '<p class="photo-guide-desc"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;">'
+      + '<li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li>'
+      + '<li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u4f7f\u7528\u306f\u7cbe\u5ea6\u5411\u4e0a</li>'
+      + '<li>\u6674\u5929\u6642\u306e\u64ae\u5f71\u3092\u63a8\u5968\uff08\u66c7\u308a\u30fb\u96e8\u5929\u3067\u3082\u8a08\u7b97\u53ef\u80fd\uff09</li>'
+      + '<li>\u7a93\u308f\u304f\u304c\u5199\u3089\u306a\u3044\u3088\u3046\u306b</li>'
+      + '<li>\u5411\u304b\u3044\u306e\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK</li>'
+      + '<li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066OK</li>'
+      + '</ul></p></div>';
+  }
+  var wc = document.getElementById('windowsContainer');
+  var awb = document.getElementById('addWindowBtn');
+  var sc = document.getElementById('step3-construction');
+  if (isConstruction) {
+    if (wc) wc.style.display = 'none';
+    if (awb) awb.style.display = 'none';
+    if (sc) sc.style.display = 'block';
+  } else {
+    if (wc) wc.style.display = '';
+    if (awb) awb.style.display = '';
+    if (sc) sc.style.display = 'none';
+    renderAllWindows();
+  }
+}
+function selectCard(el, group) {
+  const parent = el.closest('.card-row') || el.closest('.dir-g');
+  if (parent) {
+    parent.querySelectorAll('.sel-card, .dc').forEach(function(c) {
+      c.classList.remove('active');
+    });
+  }
+  el.classList.add('active');
+}
+
+function startWithUsecase() {
+  document.getElementById('step1').scrollIntoView({ behavior: 'smooth' });
+}
+
+
+// -- Construction STEP3 JS --
+const cExtraDirs = [
+  { key:'southwest', arrow:'↖', name:'南西' },
+  { key:'east',      arrow:'→', name:'東' },
+  { key:'west',      arrow:'←', name:'西' },
+  { key:'north',     arrow:'↓', name:'北' },
+];
+let cAddedDirs = [];
+let cState = { south:{bldH:0,bldDist:10,surroundings:[]}, southeast:{bldH:0,bldDist:10,surroundings:[]}, southwest:{bldH:0,bldDist:10,surroundings:[]}, east:{bldH:0,bldDist:10,surroundings:[]}, west:{bldH:0,bldDist:10,surroundings:[]}, north:{bldH:0,bldDist:10,surroundings:[]} };
+function cToggleCheck(key, val, checked) {
+  if (!cState[key]) cState[key] = {bldH:0,bldDist:10,surroundings:[]};
+  const s = cState[key].surroundings;
+  if (checked) { if (!s.includes(val)) s.push(val); }
+  else { cState[key].surroundings = s.filter(v => v !== val); }
+}
+
+function cHandlePhoto(input, dir) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const wrap = document.getElementById('c-photo-' + dir);
+    wrap.innerHTML = '<div class="c-photo-done">'
+      + '<img src="' + e.target.result + '"/>'
+      + '<div class="c-photo-rate">空の開口率：解析中...</div>'
+      + '<div class="c-photo-change" onclick="document.getElementById(\'c-file-' + dir + '-2\').click()">✓ 写真登録済み　[変更]</div>'
+      + '<input type="file" accept="image/*" id="c-file-' + dir + '-2" style="display:none;" onchange="cHandlePhoto(this,\'' + dir + '\')">'  
+      + '</div>';
+    const doneBadge = document.getElementById('c-done-' + dir);
+    if (doneBadge) doneBadge.style.display = 'flex';
+    const block = document.getElementById('c-block-' + dir);
+    if (block) block.classList.add('active');
+    cAnalyzeSky(e.target.result, dir);
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function cAnalyzeSky(dataUrl, dir) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const { width, height } = canvas;
+    const data = ctx.getImageData(0, 0, width, height).data;
+    let skyPixels = 0;
+    const total = width * height;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2];
+        const vPos = y / height;
+        const isBlueSky = b > 100 && b > r + 10 && b > g * 0.85;
+        const isOvercast = vPos < 0.6
+          && r > 150 && g > 150 && b > 150
+          && r < 245 && g < 245 && b < 245
+          && Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
+        const isWhiteWall = vPos > 0.4
+          && r > 220 && g > 220 && b > 220
+          && Math.abs(r - b) < 10 && Math.abs(r - g) < 10;
+        if (!isWhiteWall && (isBlueSky || isOvercast)) skyPixels++;
+      }
+    }
+    const rate = Math.round((skyPixels / total) * 100);
+    const rateEl = document.querySelector('#c-photo-' + dir + ' .c-photo-rate');
+    if (rateEl) rateEl.textContent = '空の開口率：' + rate + '% 検出';
+  };
+  img.src = dataUrl;
+}
+
+function cSelect(el, groupId) {
+  document.getElementById(groupId).querySelectorAll('.c-sel').forEach(function(c) { c.classList.remove('on'); });
+  el.classList.add('on');
+}
+
+function cToggle(dir) {
+  const body = document.getElementById('c-body-' + dir);
+  const chevron = document.getElementById('c-chevron-' + dir);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.classList.toggle('open', !isOpen);
+}
+
+function cToggleAddPanel() {
+  const panel = document.getElementById('c-add-panel');
+  if (!panel) return;
+  panel.style.display = panel.style.display !== 'none' ? 'none' : 'block';
+}
+
+function cAddSpecificDir(key, arrow, name, el) {
+  if (cAddedDirs.includes(key)) return;
+  cAddedDirs.push(key);
+  el.classList.add('added');
+  el.innerHTML = '<span style="font-size:12px;">✓</span><span class="c-add-name" style="color:#666;">' + name + ' 追加済み</span>';
+  const container = document.getElementById('c-extra-dirs');
+  const block = document.createElement('div');
+  block.className = 'c-dir-block';
+  block.id = 'c-block-' + key;
+  const heightOpts = ['なし','低(1-2階)','中(3-5階)','高(6-10階)','超高(10階～)'];
+  const distOpts = ['～5m','5～15m','15～30m','30m～'];
+  const hBtns = heightOpts.map(function(t,i) { return '<div class="c-sel'+(i===0?' on':'')+'" onclick="cSelect(this,\'c-h-'+key+'\')">' + t + '</div>'; }).join('');
+  const dBtns = distOpts.map(function(t,i) { return '<div class="c-sel'+(i===0?' on':'')+'" onclick="cSelect(this,\'c-d-'+key+'\')">' + t + '</div>'; }).join('');
+  block.innerHTML =
+    '<div class="c-dir-head">'
+    + '<span class="c-dir-arrow">' + arrow + '</span>'
+    + '<span class="c-dir-name">' + name + '</span>'
+    + '<span class="c-opt-badge">任意</span>'
+    + '<span class="c-done-badge" id="c-done-' + key + '" style="display:none;">✓ 登録済み</span>'
+    + '<button onclick="cRemoveDir(\''+key+'\')" style="background:none;border:none;color:#777;cursor:pointer;font-size:18px;padding:0;margin-left:auto;">×</button>'
+    + '</div>'
+    + '<div class="c-dir-body" id="c-body-' + key + '">'
+    + '<div class="c-photo-wrap" id="c-photo-' + key + '">'
+    + '<div class="c-photo-empty" onclick="document.getElementById(\'c-file-'+key+'\').click()">'
+    + '<div class="c-photo-cam">📷</div>'
+    + '<div class="c-photo-txt">写真を追加</div>'
+    + '<div class="c-photo-sub">タップしてカメラ起動またはファイル選択</div>'
+    + '</div>'
+    + '<input type="file" accept="image/*" id="c-file-' + key + '" style="display:none;" onchange="cHandlePhoto(this,\'' + key + '\')">'  
+    + '</div>'
+    + '<div class="photo-check-section">'
+    + '<p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>'
+    + '<div class="photo-check-items">'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="none" checked onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">上記に該当するものは写っていない</span></label>'
+    + '</div></div>'
+    + (key === 'south'
+      ? '<div style="margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
+        + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066</div>'
+        + '<div class="c-field-label">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f</span></div>'
+        + '<select class="finput" onchange="cState[\'south\'].bldH=parseFloat(this.value);toggleBldDist(this,\'c-bld-dist-south-dyn\')" style="margin-bottom:8px;">'
+        + '<option value="0">\u306a\u3057\uff080m\uff09</option>'
+        + '<option value="7">\u4f4e\u3044 1-2\u968e\uff087m\uff09</option>'
+        + '<option value="15">\u4e2d 3-5\u968e\uff0815m\uff09</option>'
+        + '<option value="30">\u9ad8\u3044 6-10\u968e\uff0830m\uff09</option>'
+        + '<option value="40">\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a\uff0840m\uff09</option>'
+        + '</select>'
+        + '<div id="c-bld-dist-south-dyn" style="display:none">'
+        + '<div class="c-field-label">\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f</span></div>'
+        + '<select class="finput" onchange="cState[\'south\'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">'
+        + '<option value="3">\u63a5\u8fd1 \uff5e5m</option>'
+        + '<option value="10" selected>\u8fd1\u3044 5-15m</option>'
+        + '<option value="22">\u666e\u901a 15-30m</option>'
+        + '<option value="40">\u9060\u3044 30m\uff5e</option>'
+        + '</select>'
+        + '</div>'
+        + '</div>'
+      : '')
+    + '</div>';
+  container.appendChild(block);
+  const panel = document.getElementById('c-add-panel');
+  if (panel) panel.style.display = 'none';
+  if (cAddedDirs.length >= 5) {
+    const addBtn = document.querySelector('.c-add-dir-btn');
+    if (addBtn) addBtn.style.display = 'none';
+  }
+}
+
+function cRemoveDir(key) {
+  cAddedDirs = cAddedDirs.filter(function(d) { return d !== key; });
+  const block = document.getElementById('c-block-' + key);
+  if (block) block.remove();
+  const addCard = document.getElementById('c-add-' + key);
+  if (addCard) {
+    addCard.classList.remove('added');
+    const arrowMap = { southeast:'↗', southwest:'↙', east:'→', west:'←', north:'↓' };
+    const nameMap  = { southeast:'南東', southwest:'南西', east:'東', west:'西', north:'北' };
+    addCard.innerHTML = '<span class="c-add-arrow">' + (arrowMap[key]||'') + '</span><span class="c-add-name">' + (nameMap[key]||key) + '</span>';
+  }
+  const addBtn = document.querySelector('.c-add-dir-btn');
+  if (addBtn) addBtn.style.display = 'flex';
+}
 </script>
 </body>
 </html>
