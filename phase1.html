@@ -635,6 +635,7 @@
         <button class="sel-card" onclick="selYoto(this,'kids')">👶 子ども部屋</button>
         <button class="sel-card" onclick="selYoto(this,'kitchen')">🍳 キッチン・ダイニング</button>
         <button class="sel-card" onclick="selYoto(this,'balcony')">🏡 ベランダ・バルコニー</button>
+        <button class="sel-card" onclick="selYoto(this,'rooftop')">🏠 ルーフバルコニー</button>
         <button class="sel-card" onclick="selYoto(this,'sunroom')">🌿 サンルーム</button>
         <button class="sel-card" onclick="selYoto(this,'other')">📦 その他</button>
       </div>
@@ -1798,18 +1799,15 @@ function getScoreText(score) {
 }
 
 function getSolarAltitudeComment() {
-  if (!lastSeasonScores) return '';
-  var s = lastSeasonScores;
-  var max = Math.max(s.spring, s.summer, s.autumn, s.winter);
-  var min = Math.min(s.spring, s.summer, s.autumn, s.winter);
-  if (min === s.summer) {
-    return '夏は太陽が高い位置を通るため、屋根や庇に遮られて室内への日差しが減る傾向があります。南向き物件に共通する特徴です。';
+  var indoor = ['living', 'bedroom', 'study', 'kids', 'kitchen', 'sunroom'];
+  if (indoor.indexOf(selectedYoto) !== -1) {
+    return '夏は太陽が高い位置を通るため、屋根や庇に遮られて室内への日差しが減る傾向があります。冬は太陽が低い軌道を通るため、南向きの窓から日差しが深く差し込みます。';
   }
-  if (max === s.winter || s.winter > s.summer) {
-    return '冬は太陽が低い軌道を通るため、南向きの窓から日差しが深く差し込みます。暖房効率が上がりやすい特性です。';
+  if (selectedYoto === 'balcony') {
+    return 'バルコニーは庇が前に迫り出していないため、室内と比べて日差しが入りやすい構造です。ただし上階の床が天井になるため、真上からの日光は遮られる場合があります。';
   }
-  if (max === s.summer) {
-    return '夏に日照が多い物件です。東・西向きの窓は太陽高度に関わらず日が入りやすい特徴があります。';
+  if (selectedYoto === 'rooftop') {
+    return 'ルーフバルコニーは完全開放のため、夏の高い太陽でも遮るものがなく、季節を問わず直射日光が入ります。夏場の熱対策（日除け・打ち水など）を検討してください。';
   }
   return '';
 }
@@ -1821,7 +1819,8 @@ function getYotoComment(level) {
     study:   { high: '画面への映り込みに注意が必要です。ブラインドでの調整をお勧めします。', mid: '作業しやすい自然光の環境です。', low: '直射光が少なく、画面が見やすい作業環境になりそうです。', vlow: '直射光が少なく、画面が見やすい作業環境になりそうです。' },
     kids:    { high: '明るく元気な子ども部屋になりそうです。夏の暑さ対策は必要です。', mid: '子ども部屋として適切な日照です。', low: '日照がやや少なめです。照明を明るめにすることをお勧めします。', vlow: '日照がやや少なめです。照明を明るめにすることをお勧めします。' },
     kitchen: { high: '明るいキッチンになりそうです。夏は食材の保存に注意してください。', mid: '明るく使いやすいキッチンになりそうです。', low: '日照は少なめですが、キッチンには適した涼しさです。', vlow: '日照は少なめですが、キッチンには適した涼しさです。' },
-    balcony: { high: '洗濯物がよく乾き、植物の育成にも適した日照環境です。夏は直射日光が強くなるため、日除けの検討をお勧めします。', mid: '洗濯物が十分乾く日照量です。ベランダとして快適に活用できます。', low: '日照はやや控えめです。洗濯物は乾きにくい場合があります。', vlow: '日照が少なく、洗濯物の乾燥や植物の育成には工夫が必要です。' },
+    balcony: { high: '洗濯物がよく乾き、植物の育成にも適した日照環境です。夏は日差しが強くなるため、日除けの検討をお勧めします。', mid: '洗濯物が十分乾く日照量です。ベランダとして快適に活用できます。', low: '日照はやや控えめです。洗濯物は乾きにくい場合があります。', vlow: '日照が少なく、洗濯物の乾燥や植物の育成には工夫が必要です。' },
+    rooftop: { high: '日照が豊富なルーフバルコニーです。植物の育成や洗濯物乾燥に最適ですが、夏の暑さ対策が重要です。', mid: 'ルーフバルコニーとして十分な日照です。年間を通じて活用しやすい環境です。', low: '日照はやや控えめです。上階の構造物による影響を確認してください。', vlow: '日照が少なめです。ルーフバルコニーとしては日照条件がやや厳しい環境です。' },
     sunroom: { high: 'サンルームとして理想的な日照です。ただし夏は室温が上がりすぎる可能性があるため、換気・遮熱対策が重要です。', mid: 'サンルームとして十分な日照です。年間を通じて快適に使えそうです。', low: 'サンルームとしてはやや日照が少なめです。冬は寒く感じる場合があります。', vlow: 'サンルームとしては日照が不足気味です。明るさの補完が必要になる場合があります。' }
   };
   if (!selectedYoto || selectedYoto === 'other' || !map[selectedYoto]) return '';
