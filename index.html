@@ -764,24 +764,24 @@
       </div>
       <div style="display:flex;justify-content:space-around;background:rgba(0,0,0,0.04);border-radius:12px;padding:10px;margin-bottom:12px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:16px">🌸</span>
+          <span style="font-size:20px">🌸</span>
           <span style="font-size:11px;color:#666;font-weight:600">春</span>
-          <span id="seasonValSpring" style="font-size:14px;font-weight:800;color:#1A1A1A">--%</span>
+          <span id="seasonValSpring" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:16px">☀️</span>
+          <span style="font-size:20px">☀️</span>
           <span style="font-size:11px;color:#666;font-weight:600">夏</span>
-          <span id="seasonValSummer" style="font-size:14px;font-weight:800;color:#1A1A1A">--%</span>
+          <span id="seasonValSummer" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:16px">🍂</span>
+          <span style="font-size:20px">🍂</span>
           <span style="font-size:11px;color:#666;font-weight:600">秋</span>
-          <span id="seasonValAutumn" style="font-size:14px;font-weight:800;color:#1A1A1A">--%</span>
+          <span id="seasonValAutumn" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:16px">❄️</span>
+          <span style="font-size:20px">❄️</span>
           <span style="font-size:11px;color:#666;font-weight:600">冬</span>
-          <span id="seasonValWinter" style="font-size:14px;font-weight:800;color:#1A1A1A">--%</span>
+          <span id="seasonValWinter" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
       </div>
       <div id="scoreText" style="font-size:13px;color:var(--gray);line-height:1.8;white-space:pre-wrap"></div>
@@ -1735,16 +1735,18 @@ function calcPeakMonth(matrix) {
     for (var t = 0; t < 6; t++) { sum += matrix[m][t]; }
     monthlyAvg.push(sum / 6);
   }
-  var max = Math.max.apply(null, monthlyAvg);
-  var peaks = [];
-  for (var i = 0; i < 12; i++) {
-    if (monthlyAvg[i] >= max * 0.9) peaks.push(months[i]);
-  }
+  var top2Months = monthlyAvg
+    .map(function(val, i) { return { month: i + 1, val: val }; })
+    .sort(function(a, b) { return b.val - a.val; })
+    .slice(0, 2)
+    .sort(function(a, b) { return a.month - b.month; })
+    .map(function(m) { return m.month + '月'; })
+    .join('\u30fb');
   var el = document.getElementById('peak-month-text');
   var block = document.getElementById('peakMonthBlock');
   if (el && block) {
-    el.textContent = peaks.join('\u30fb');
-    block.style.display = peaks.length > 0 ? 'block' : 'none';
+    el.textContent = top2Months;
+    block.style.display = 'block';
   }
 }
 
