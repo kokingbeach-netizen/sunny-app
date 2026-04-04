@@ -627,17 +627,11 @@
     <div id="step2-residential">
       <label>階数</label>
       <input type="number" id="floor" value="1" min="1" max="50" style="max-width:160px;" oninput="updatePrecision()">
-      <label style="margin-top:12px">この部屋の用途 <span style="font-size:11px;font-weight:400;color:var(--gray)">任意・解説文の精度が上がります</span></label>
+      <label style="margin-top:12px">この部屋の用途<span class="req">★必須</span></label>
       <div class="card-row" id="yotoCards">
-        <button class="sel-card" onclick="selYoto(this,'living')">🛋 リビング</button>
-        <button class="sel-card" onclick="selYoto(this,'bedroom')">🛏 寝室</button>
-        <button class="sel-card" onclick="selYoto(this,'study')">💼 仕事部屋</button>
-        <button class="sel-card" onclick="selYoto(this,'kids')">👶 子ども部屋</button>
-        <button class="sel-card" onclick="selYoto(this,'kitchen')">🍳 キッチン・ダイニング</button>
-        <button class="sel-card" onclick="selYoto(this,'balcony')">🏡 ベランダ・バルコニー</button>
-        <button class="sel-card" onclick="selYoto(this,'rooftop')">🏠 ルーフバルコニー</button>
-        <button class="sel-card" onclick="selYoto(this,'sunroom')">🌿 サンルーム</button>
-        <button class="sel-card" onclick="selYoto(this,'other')">📦 その他</button>
+        <button class="sel-card" onclick="selYoto(this,'living')">🛋 室内（リビング・寝室など）</button>
+        <button class="sel-card" onclick="selYoto(this,'balcony')">🏠 ベランダ・バルコニー</button>
+        <button class="sel-card" onclick="selYoto(this,'rooftop')">🏡 ルーフバルコニー</button>
       </div>
     </div>
 
@@ -745,7 +739,7 @@
   
 
   <div id="errorBox" style="display:none;margin:0 20px;padding:12px;background:#FFF3F3;border:1px solid rgba(220,50,50,0.2);border-radius:8px;font-size:12px;color:#C00;"></div>
-  <div style="padding:20px 20px 32px;"><button id="calcBtn" onclick="runCalculation()" style="width:100%;background:#1A1A1A;color:#fff;font-size:15px;font-weight:700;padding:16px;border-radius:8px;border:none;cursor:pointer;letter-spacing:-.2px;">☀️ 日照率を算出する</button><p style="text-align:center;margin-top:10px;font-size:11px;color:#666;">入力した情報をもとに1年分の日照を計算します</p></div>
+  <div style="padding:20px 20px 32px;"><button id="calcBtn" onclick="runCalculation()" disabled style="width:100%;background:#9CA3AF;color:#fff;font-size:15px;font-weight:700;padding:16px;border-radius:8px;border:none;cursor:not-allowed;letter-spacing:-.2px;">☀️ 日照率を算出する</button><p id="calcValidationMsg" style="text-align:center;margin-top:8px;font-size:11px;color:#EF4444;">緯度・経度・窓の向き・用途を入力してください</p><p style="text-align:center;margin-top:6px;font-size:11px;color:#666;">入力した情報をもとに1年分の日照を計算します</p></div>
 
   <!-- Results -->
   <div id="results" style="display:none">
@@ -1236,7 +1230,7 @@ function renderWindowCard(w, i) {
     + delBtn
     + '</div>'
 
-    + '<label>\u5411\u304d\uff08\u7a93\u304c\u9762\u3057\u3066\u3044\u308b\u65b9\u89d2\uff09</label>'
+    + '<label>\u5411\u304d\uff08\u7a93\u304c\u9762\u3057\u3066\u3044\u308b\u65b9\u89d2\uff09<span class="req">\u2605\u5fc5\u9808</span></label>'
     + '<div class="dir-grid">' + dirBtns + '</div>'
 
     + '<label>\u7a93\u306e\u30b5\u30a4\u30ba</label>'
@@ -1389,6 +1383,7 @@ function selYoto(el, val) {
   selectedYoto = val;
   document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) { b.classList.remove('active'); });
   el.classList.add('active');
+  checkCalcReady();
 }
 
 function selMode(el, mode) {
@@ -1449,6 +1444,29 @@ function updatePrecision() {
   } else {
     lbl.textContent = '\u4f4e'; lbl.style.color = '#ef4444';
     fill.style.background = '#ef4444';
+  }
+  checkCalcReady();
+}
+
+// ============================================================
+// Calculation button validation
+// ============================================================
+function checkCalcReady() {
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+  var hasLatLng = !isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0;
+  var hasYoto = selectedYoto !== '';
+  var hasDir = windowStates.length > 0 && windowStates.every(function(w) { return !!w.dir; });
+  var ready = hasLatLng && hasYoto && hasDir;
+  var btn = document.getElementById('calcBtn');
+  var msg = document.getElementById('calcValidationMsg');
+  if (btn) {
+    btn.disabled = !ready;
+    btn.style.background = ready ? '#1A1A1A' : '#9CA3AF';
+    btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+  }
+  if (msg) {
+    msg.style.display = ready ? 'none' : 'block';
   }
 }
 
@@ -1534,6 +1552,20 @@ function calcWindowHeatmap(w, floorNum) {
   if (surrList.indexOf('signboard') !== -1) obstBase = Math.max(obstBase, 8);
   if (surrList.indexOf('wall') !== -1) obstBase = Math.max(obstBase, 20);
 
+  // DEBUG LOG
+  console.log('[calcWindowHeatmap]', {
+    window: w.name,
+    lat: lat, lng: lng,
+    dir: w.dir, windowAz: windowAz,
+    floorNum: floorNum, selfH: selfH,
+    bldH: w.bldH, bldDist: w.bldDist,
+    formulaObst: formulaObst,
+    svfVals: svfVals, photoObst: photoObst,
+    obstBase: obstBase,
+    surroundings: surrList,
+    selectedYoto: selectedYoto
+  });
+
   var matrix = [];
 
   for (var m = 0; m < 12; m++) {
@@ -1555,7 +1587,8 @@ function calcWindowHeatmap(w, floorNum) {
         var azDeg = ((pos.azimuth * 180 / Math.PI) + 180 + 360) % 360;
         var azDiff = Math.abs(azDeg - windowAz);
         if (azDiff > 180) azDiff = 360 - azDiff;
-        if (azDiff > 90) continue; // 窓の視野外
+        // rooftopは360°全方向から日光を受けるのでazimuthフィルタをスキップ
+        if (selectedYoto !== 'rooftop' && azDiff > 90) continue; // 窓の視野外
 
         // 方位角による遮蔽仰角のテーパー
         // 窓正面\uff080°\uff09で最大、窓縁\uff0890°\uff09で遮蔽なし
