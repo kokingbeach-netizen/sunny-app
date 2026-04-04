@@ -859,6 +859,7 @@
 var windowStates = [];
 var selectedYoto = '';
 var selectedMode = 'A';
+var lastSeasonScores = null;
 
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0 };
 var SIZE_MULT = { '小':0.85, '中':1.0, '大':1.1 };
@@ -1738,6 +1739,7 @@ function calcSeasonScores(matrix) {
   var summer = Math.round((monthlyAvg[5] + monthlyAvg[6] + monthlyAvg[7]) / 3 * 100);
   var autumn = Math.round((monthlyAvg[8] + monthlyAvg[9] + monthlyAvg[10]) / 3 * 100);
   var winter = Math.round((monthlyAvg[11] + monthlyAvg[0] + monthlyAvg[1]) / 3 * 100);
+  lastSeasonScores = { spring: spring, summer: summer, autumn: autumn, winter: winter };
   document.getElementById('seasonValSpring').textContent = spring + '%';
   document.getElementById('seasonValSummer').textContent = summer + '%';
   document.getElementById('seasonValAutumn').textContent = autumn + '%';
@@ -1790,8 +1792,26 @@ function getScoreText(score) {
     low:  '日照は控えめです。夏は涼しく過ごせますが、冬は暖房が必要になる場面が増えます。',
     vlow: '日照が少ない環境です。夏の猛暑対策には有利ですが、冬の寒さと湿気対策が重要です。'
   }[level];
+  var solar = getSolarAltitudeComment();
   var suffix = getYotoComment(level);
-  return base + (suffix ? '\n' + suffix : '');
+  return base + (solar ? '\n' + solar : '') + (suffix ? '\n' + suffix : '');
+}
+
+function getSolarAltitudeComment() {
+  if (!lastSeasonScores) return '';
+  var s = lastSeasonScores;
+  var max = Math.max(s.spring, s.summer, s.autumn, s.winter);
+  var min = Math.min(s.spring, s.summer, s.autumn, s.winter);
+  if (min === s.summer) {
+    return '夏は太陽が高い位置を通るため、屋根や庇に遮られて室内への日差しが減る傾向があります。南向き物件に共通する特徴です。';
+  }
+  if (max === s.winter || s.winter > s.summer) {
+    return '冬は太陽が低い軌道を通るため、南向きの窓から日差しが深く差し込みます。暖房効率が上がりやすい特性です。';
+  }
+  if (max === s.summer) {
+    return '夏に日照が多い物件です。東・西向きの窓は太陽高度に関わらず日が入りやすい特徴があります。';
+  }
+  return '';
 }
 
 function getYotoComment(level) {
