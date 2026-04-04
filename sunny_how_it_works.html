@@ -481,6 +481,147 @@ body {
   </div>
 </section>
 
+<!-- ② Input (moved) -->
+<section class="hw-section">
+  <h2 class="hw-h2"><span class="hw-underline">あなたの家の情報</span></h2>
+  <p class="hw-body">
+    あなたが入力する3つの情報で、<br>
+    遮蔽仰角が計算できます。
+  </p>
+  <ul class="input-list">
+    <li class="input-item">
+      <div class="input-icon">🏢</div>
+      <div class="input-body">
+        <div class="input-title">向かいの建物の高さ</div>
+        <div class="input-desc">太陽を遮る建物の高さ。これが高いほど遮蔽仰角が大きくなります。</div>
+        <span class="input-badge">→ 計算式の分子</span>
+      </div>
+    </li>
+    <li class="input-item">
+      <div class="input-icon">🏠</div>
+      <div class="input-body">
+        <div class="input-title">自分の建物の階数</div>
+        <div class="input-desc">階数から自分の高さを計算（(階数−1)×3m）。高い階ほど遮蔽の影響が減ります。</div>
+        <span class="input-badge">→ 計算式の分子から引く</span>
+      </div>
+    </li>
+    <li class="input-item">
+      <div class="input-icon">📏</div>
+      <div class="input-body">
+        <div class="input-title">向かいの建物までの距離</div>
+        <div class="input-desc">建物が遠いほど遮蔽仰角は小さくなり、日照率が上がります。</div>
+        <span class="input-badge">→ 計算式の分母</span>
+      </div>
+    </li>
+    <li class="input-item">
+      <div class="input-icon">📷</div>
+      <div class="input-body">
+        <div class="input-title">窓からの写真</div>
+        <div class="input-desc">写真から空の見え率（Sky View Factor）を解析。より正確な遮蔽角度を推定します。</div>
+        <span class="input-badge">→ 数値入力と組み合わせて精度向上</span>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ③ Formula (moved) -->
+<section class="hw-section">
+  <h2 class="hw-h2"><span class="hw-underline">遮蔽物</span></h2>
+
+  <div class="accuracy-list" style="margin-bottom:20px;">
+
+    <div class="accuracy-item">
+      <div class="accuracy-icon">🌍</div>
+      <div class="accuracy-body">
+        <div class="accuracy-title">① 太陽の動き（SunCalc.js）</div>
+        <div class="accuracy-desc">
+          天文学的に確定した数値。どの日時・場所でも<strong style="color:var(--black)">誤差ゼロ</strong>。<br>
+          Sunnyが緯度経度から自動で計算します。
+        </div>
+      </div>
+    </div>
+
+    <div class="accuracy-item" style="border:1.5px solid rgba(245,166,35,0.3);">
+      <div class="accuracy-icon">🏢</div>
+      <div class="accuracy-body">
+        <div class="accuracy-title">② 遮蔽物の測定精度</div>
+        <div class="accuracy-desc">
+          向かいの建物の高さ・距離・写真の精度が結果に直結します。<br>
+          <strong style="color:var(--amber-dk)">ここが唯一の誤差の源です。</strong>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="hw-body-closing">
+    太陽は完璧に計算できます。<br>
+    だから精度を左右するのは、<br>
+    あなたが入力する遮蔽物の情報だけです。
+  </p>
+
+  <!-- Judge table -->
+  <div class="judge-card">
+    <div class="judge-card-header">
+      <div class="judge-card-title">時間帯・季節ごとの判定</div>
+      <div class="judge-card-sub">遮蔽仰角37°を超えるかどうかで判定（東京・1階・南向き・距離20mの例）</div>
+    </div>
+    <table class="judge-table">
+      <thead>
+        <tr>
+          <th>時刻</th>
+          <th>冬至の太陽</th>
+          <th>判定</th>
+          <th>夏至の太陽</th>
+          <th>判定</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>8時</td>
+          <td>18°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>45°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>10時</td>
+          <td>28°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>65°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>12時</td>
+          <td>31°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>78°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>14時</td>
+          <td>25°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>62°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>16時</td>
+          <td>10°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>40°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="judge-note">
+      この判定を30分刻み × 1年間 = 17,520回繰り返した結果が<br>
+      72マスのヒートマップになります。
+    </p>
+    <div style="height:12px"></div>
+  </div>
+</section>
+
 <!-- EXAMPLE section -->
 <div class="example-section">
   <div class="example-tag">EXAMPLE</div>
@@ -647,49 +788,6 @@ body {
   </div>
 </section>
 
-<!-- ④ Input -->
-<section class="hw-section">
-  <h2 class="hw-h2"><span class="hw-underline">あなたの家の情報</span></h2>
-  <p class="hw-body">
-    あなたが入力する3つの情報で、<br>
-    遮蔽仰角が計算できます。
-  </p>
-  <ul class="input-list">
-    <li class="input-item">
-      <div class="input-icon">🏢</div>
-      <div class="input-body">
-        <div class="input-title">向かいの建物の高さ</div>
-        <div class="input-desc">太陽を遮る建物の高さ。これが高いほど遮蔽仰角が大きくなります。</div>
-        <span class="input-badge">→ 計算式の分子</span>
-      </div>
-    </li>
-    <li class="input-item">
-      <div class="input-icon">🏠</div>
-      <div class="input-body">
-        <div class="input-title">自分の建物の階数</div>
-        <div class="input-desc">階数から自分の高さを計算（(階数−1)×3m）。高い階ほど遮蔽の影響が減ります。</div>
-        <span class="input-badge">→ 計算式の分子から引く</span>
-      </div>
-    </li>
-    <li class="input-item">
-      <div class="input-icon">📏</div>
-      <div class="input-body">
-        <div class="input-title">向かいの建物までの距離</div>
-        <div class="input-desc">建物が遠いほど遮蔽仰角は小さくなり、日照率が上がります。</div>
-        <span class="input-badge">→ 計算式の分母</span>
-      </div>
-    </li>
-    <li class="input-item">
-      <div class="input-icon">📷</div>
-      <div class="input-body">
-        <div class="input-title">窓からの写真</div>
-        <div class="input-desc">写真から空の見え率（Sky View Factor）を解析。より正確な遮蔽角度を推定します。</div>
-        <span class="input-badge">→ 数値入力と組み合わせて精度向上</span>
-      </div>
-    </li>
-  </ul>
-</section>
-
 <!-- ④-b Yoto -->
 <section class="hw-section">
   <div class="hw-tag">USE CASE</div>
@@ -765,104 +863,6 @@ body {
     </div>
   </div>
 
-</section>
-
-<!-- ⑤ Formula -->
-<section class="hw-section">
-  <h2 class="hw-h2"><span class="hw-underline">遮蔽物</span></h2>
-
-  <div class="accuracy-list" style="margin-bottom:20px;">
-
-    <div class="accuracy-item">
-      <div class="accuracy-icon">🌍</div>
-      <div class="accuracy-body">
-        <div class="accuracy-title">① 太陽の動き（SunCalc.js）</div>
-        <div class="accuracy-desc">
-          天文学的に確定した数値。どの日時・場所でも<strong style="color:var(--black)">誤差ゼロ</strong>。<br>
-          Sunnyが緯度経度から自動で計算します。
-        </div>
-      </div>
-    </div>
-
-    <div class="accuracy-item" style="border:1.5px solid rgba(245,166,35,0.3);">
-      <div class="accuracy-icon">🏢</div>
-      <div class="accuracy-body">
-        <div class="accuracy-title">② 遮蔽物の測定精度</div>
-        <div class="accuracy-desc">
-          向かいの建物の高さ・距離・写真の精度が結果に直結します。<br>
-          <strong style="color:var(--amber-dk)">ここが唯一の誤差の源です。</strong>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <p class="hw-body-closing">
-    太陽は完璧に計算できます。<br>
-    だから精度を左右するのは、<br>
-    あなたが入力する遮蔽物の情報だけです。
-  </p>
-
-  <!-- Judge table -->
-  <div class="judge-card">
-    <div class="judge-card-header">
-      <div class="judge-card-title">時間帯・季節ごとの判定</div>
-      <div class="judge-card-sub">遮蔽仰角37°を超えるかどうかで判定（東京・1階・南向き・距離20mの例）</div>
-    </div>
-    <table class="judge-table">
-      <thead>
-        <tr>
-          <th>時刻</th>
-          <th>冬至の太陽</th>
-          <th>判定</th>
-          <th>夏至の太陽</th>
-          <th>判定</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>8時</td>
-          <td>18°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>45°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>10時</td>
-          <td>28°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>65°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>12時</td>
-          <td>31°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>78°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>14時</td>
-          <td>25°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>62°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>16時</td>
-          <td>10°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>40°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="judge-note">
-      この判定を30分刻み × 1年間 = 17,520回繰り返した結果が<br>
-      72マスのヒートマップになります。
-    </p>
-    <div style="height:12px"></div>
-  </div>
 </section>
 
 <!-- ⑤-b Season -->
