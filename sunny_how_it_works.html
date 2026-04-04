@@ -779,85 +779,11 @@ body {
     この一点だけです。
   </p>
 
-  <!-- Cross-section SVG -->
-  <div class="svg-wrap">
-    <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg">
-      <rect width="340" height="210" fill="#FFFFFF" rx="12"/>
-
-      <!-- Title -->
-      <text x="170" y="18" text-anchor="middle" fill="#555" font-size="9" font-family="sans-serif">真横から見た断面図（昼12時・真南方向）</text>
-
-      <!-- Ground -->
-      <rect x="20" y="165" width="300" height="3" fill="#DDD" rx="1"/>
-
-      <!-- Building (south side, left) -->
-      <rect x="50" y="90" width="50" height="75" fill="#333" rx="2"/>
-      <!-- Window on building -->
-      <rect x="62" y="110" width="12" height="18" fill="#F5A623" rx="1" opacity="0.7"/>
-      <rect x="80" y="110" width="12" height="18" fill="#F5A623" rx="1" opacity="0.7"/>
-      <!-- Building label -->
-      <text x="75" y="85" text-anchor="middle" fill="#333" font-size="9" font-family="sans-serif" font-weight="bold">15m</text>
-      <line x1="104" y1="90" x2="104" y2="165" stroke="#777" stroke-width="1" stroke-dasharray="3 2"/>
-      <text x="110" y="130" fill="#666" font-size="8" font-family="sans-serif">南</text>
-
-      <!-- Person silhouette (right/north) -->
-      <circle cx="270" cy="145" r="6" fill="#555"/>
-      <line x1="270" y1="151" x2="270" y2="165" stroke="#555" stroke-width="2.5"/>
-      <line x1="270" y1="155" x2="263" y2="162" stroke="#555" stroke-width="2"/>
-      <line x1="270" y1="155" x2="277" y2="162" stroke="#555" stroke-width="2"/>
-      <line x1="270" y1="153" x2="263" y2="158" stroke="#555" stroke-width="2"/>
-      <line x1="270" y1="153" x2="277" y2="158" stroke="#555" stroke-width="2"/>
-      <text x="270" y="180" text-anchor="middle" fill="#666" font-size="8" font-family="sans-serif">北</text>
-
-      <!-- Distance line -->
-      <line x1="104" y1="172" x2="270" y2="172" stroke="#AAA" stroke-width="1" marker-start="url(#arr)" marker-end="url(#arr)"/>
-      <text x="187" y="182" text-anchor="middle" fill="#555" font-size="9" font-family="sans-serif">距離 20m</text>
-
-      <!-- Obstruction angle line (orange dashed) from person to building top -->
-      <line x1="270" y1="144" x2="100" y2="90" stroke="#F5A623" stroke-width="1.5" stroke-dasharray="5 3"/>
-      <!-- Angle arc -->
-      <path d="M 255 144 Q 248 136 252 130" fill="none" stroke="#F5A623" stroke-width="1.5"/>
-      <text x="242" y="128" fill="#F5A623" font-size="9" font-family="sans-serif" font-weight="bold">37°</text>
-
-      <!-- Summer sun (orange, above building) -->
-      <circle cx="80" cy="45" r="10" fill="#F5A623"/>
-      <line x1="80" y1="31" x2="80" y2="27" stroke="#F5A623" stroke-width="1.5"/>
-      <line x1="91" y1="36" x2="94" y2="33" stroke="#F5A623" stroke-width="1.5"/>
-      <line x1="93" y1="46" x2="97" y2="46" stroke="#F5A623" stroke-width="1.5"/>
-      <line x1="69" y1="36" x2="66" y2="33" stroke="#F5A623" stroke-width="1.5"/>
-      <!-- Summer sun beam to person -->
-      <line x1="88" y1="52" x2="263" y2="141" stroke="#F5A623" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
-      <!-- Summer badge -->
-      <rect x="190" y="38" width="110" height="20" fill="#10B981" rx="4"/>
-      <text x="245" y="52" text-anchor="middle" fill="white" font-size="9.5" font-family="sans-serif" font-weight="bold">夏至 → ✓ 日照あり</text>
-
-      <!-- Winter sun (grey, behind building) -->
-      <circle cx="45" cy="100" r="8" fill="#9CA3AF"/>
-      <!-- Winter badge -->
-      <rect x="14" y="56" width="122" height="20" fill="#6B7280" rx="4"/>
-      <text x="75" y="70" text-anchor="middle" fill="white" font-size="9.5" font-family="sans-serif" font-weight="bold">冬至 → × 建物に遮られる</text>
-
-      <!-- South label -->
-      <text x="170" y="200" text-anchor="middle" fill="#666" font-size="8.5" font-family="sans-serif">太陽は南の空を通る</text>
-    </svg>
-  </div>
-
-  <!-- Formula box -->
-  <div class="formula-box">
-    <div class="formula-title">遮蔽仰角の計算式</div>
-    <div class="formula-eq">θ = arctan（(向かいの建物の高さ − 自分の高さ) ÷ 距離）<br>自分の高さ = (階数 − 1) × 3m</div>
-    <div class="formula-example">
-      <strong>例：</strong> 南側15m・距離20m・1階（高さ0m）の場合<br>
-      θ = arctan（(15 − 0) ÷ 20）= arctan(0.75) ≈ 37°<br>
-      この37°が「日照の境界線」になります。
-    </div>
-  </div>
-
   <!-- Judge table -->
   <div class="judge-card">
     <div class="judge-card-header">
       <div class="judge-card-title">時間帯・季節ごとの判定</div>
-      <div class="judge-card-sub">太陽が37°を超えるかどうかで判定（東京・1階・南向き）</div>
+      <div class="judge-card-sub">遮蔽仰角37°を超えるかどうかで判定（東京・1階・南向き・距離20mの例）</div>
     </div>
     <table class="judge-table">
       <thead>
