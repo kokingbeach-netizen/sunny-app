@@ -762,26 +762,26 @@
           <div id="peak-month-text" style="font-size:18px;font-weight:800;color:#F5A623;letter-spacing:-0.5px"></div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-around;background:rgba(0,0,0,0.04);border-radius:12px;padding:10px;margin-bottom:12px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:20px">🌸</span>
-          <span style="font-size:11px;color:#666;font-weight:600">春</span>
-          <span id="seasonValSpring" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
+      <div style="display:flex;justify-content:space-around;background:rgba(0,0,0,0.04);border-radius:12px;padding:8px 4px;margin-bottom:12px;gap:2px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:22px">🌸</span>
+          <span style="font-size:15px;color:#666;font-weight:600">春</span>
+          <span id="seasonValSpring" style="font-size:22px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:20px">☀️</span>
-          <span style="font-size:11px;color:#666;font-weight:600">夏</span>
-          <span id="seasonValSummer" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:22px">☀️</span>
+          <span style="font-size:15px;color:#666;font-weight:600">夏</span>
+          <span id="seasonValSummer" style="font-size:22px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:20px">🍂</span>
-          <span style="font-size:11px;color:#666;font-weight:600">秋</span>
-          <span id="seasonValAutumn" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:22px">🍂</span>
+          <span style="font-size:15px;color:#666;font-weight:600">秋</span>
+          <span id="seasonValAutumn" style="font-size:22px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-          <span style="font-size:20px">❄️</span>
-          <span style="font-size:11px;color:#666;font-weight:600">冬</span>
-          <span id="seasonValWinter" style="font-size:18px;font-weight:800;color:#1A1A1A">--%</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:22px">❄️</span>
+          <span style="font-size:15px;color:#666;font-weight:600">冬</span>
+          <span id="seasonValWinter" style="font-size:22px;font-weight:800;color:#1A1A1A">--%</span>
         </div>
       </div>
       <div id="scoreText" style="font-size:13px;color:var(--gray);line-height:1.8;white-space:pre-wrap"></div>
@@ -1779,17 +1779,17 @@ function getScoreText(score) {
     var fl = document.getElementById('constructionFloors');
     var floors = fl ? fl.value : '';
     var ft = floors ? floors + '階建ての場合、' : '';
-    if (score >= 75) return ft + '日照が豊富な建設予定地です。冬も暖かく、明るい建物になりそうです。夏の日差し対策も設計に組み込むと快適な環境になります。この土地、あなたの計画に合いそうですか？';
-    if (score >= 60) return ft + 'ほどよくバランスの取れた日当たりが見込めます。年間を通じて快適な建物になりそうです。この土地、あなたの計画に合いそうですか？';
-    if (score >= 40) return ft + '日照はやや控えめです。設計時に窓の配置や吹き抜けを工夫すると明るさを確保しやすくなります。この土地、あなたの計画に合いそうですか？';
-    return ft + '日照が少ない環境です。天窓や照明計画を設計段階から検討することをお勧めします。この土地、あなたの計画に合いそうですか？';
+    if (score >= 75) return ft + '日照が豊富な建設予定地です。冬も暖かく、明るい建物になりそうです。夏の日差し対策も設計に組み込むと快適な環境になります。';
+    if (score >= 60) return ft + 'ほどよくバランスの取れた日当たりが見込めます。年間を通じて快適な建物になりそうです。';
+    if (score >= 40) return ft + '日照はやや控えめです。設計時に窓の配置や吹き抜けを工夫すると明るさを確保しやすくなります。';
+    return ft + '日照が少ない環境です。天窓や照明計画を設計段階から検討することをお勧めします。';
   }
   var level = score >= 75 ? 'high' : score >= 60 ? 'mid' : score >= 40 ? 'low' : 'vlow';
   var base = {
-    high: '日照が豊富な物件です。冬は暖かく洗濯物もよく乾きます。夏の暑さや家具の日焼けへの対策が必要になる場面があります。この部屋、あなたに合いそうですか？',
-    mid:  'ほどよくバランスの取れた日当たりです。季節を問わず快適に過ごしやすく、電気代も押さえやすい環境です。この部屋、あなたに合いそうですか？',
-    low:  '日照は控えめです。夏は涼しく過ごせますが、冬は暖房が必要になる場面が増えます。この部屋、あなたに合いそうですか？',
-    vlow: '日照が少ない環境です。夏の猛暑対策には有利ですが、冬の寒さと湿気対策が重要です。この部屋、あなたに合いそうですか？'
+    high: '日照が豊富な物件です。冬は暖かく洗濯物もよく乾きます。夏の暑さや家具の日焼けへの対策が必要になる場面があります。',
+    mid:  'ほどよくバランスの取れた日当たりです。季節を問わず快適に過ごしやすく、電気代も押さえやすい環境です。',
+    low:  '日照は控えめです。夏は涼しく過ごせますが、冬は暖房が必要になる場面が増えます。',
+    vlow: '日照が少ない環境です。夏の猛暑対策には有利ですが、冬の寒さと湿気対策が重要です。'
   }[level];
   var suffix = getYotoComment(level);
   return base + (suffix ? '\n' + suffix : '');
