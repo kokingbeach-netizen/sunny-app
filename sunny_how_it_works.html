@@ -478,69 +478,67 @@ body {
 </section>
 
 <!-- ② Input (moved) -->
-<section class="hw-section">
-  <div class="law-badge" style="margin-bottom:12px;font-size:14px;width:28px;height:28px;">2</div>
-  <h2 class="hw-h2"><span class="hw-underline">あなたの家の情報</span></h2>
-  <p class="hw-body">
-    日照率の計算に必要な情報は2つです。
-  </p>
-  <ul class="input-list">
-    <li class="input-item">
-      <div class="input-icon">🏠</div>
-      <div class="input-body">
-        <div class="input-title">自分の建物の階数</div>
-        <div class="input-desc">階数から自分の高さを計算（(階数−1)×3m）。高い階ほど遮蔽の影響が減ります。</div>
-        <span class="input-badge">→ 計算式の分子から引く</span>
-      </div>
-    </li>
-    <li class="input-item">
-      <div class="input-icon">📷</div>
-      <div class="input-body">
-        <div class="input-title">窓からの写真</div>
-        <div class="input-desc">写真から空の見え率（Sky View Factor）を解析。より正確な遮蔽角度を推定します。</div>
-        <span class="input-badge">→ 数値入力と組み合わせて精度向上</span>
-      </div>
-    </li>
-  </ul>
+<section class="hw-prologue" style="padding-top:0;">
+  <div style="max-width:480px;margin:0 auto;">
+    <div class="law-badge" style="margin-bottom:12px;font-size:14px;width:28px;height:28px;">2</div>
+    <h2 class="hw-h2"><span class="hw-underline">あなたの家の情報</span></h2>
+    <p class="hw-body">
+      日照率の計算に必要な情報は2つです。
+    </p>
+    <ul class="input-list">
+      <li class="input-item">
+        <div class="input-icon">🏠</div>
+        <div class="input-body">
+          <div class="input-title">自分の建物の階数</div>
+          <div class="input-desc">階数から自分の高さを計算（(階数−1)×3m）。高い階ほど遮蔽の影響が減ります。</div>
+          <span class="input-badge">→ 計算式の分子から引く</span>
+        </div>
+      </li>
+      <li class="input-item">
+        <div class="input-icon">📷</div>
+        <div class="input-body">
+          <div class="input-title">窓の向き・窓からの写真</div>
+          <div class="input-desc">写真から空の見え率（Sky View Factor）を解析。より正確な遮蔽角度を推定します。</div>
+          <span class="input-badge">→ 数値入力と組み合わせて精度向上</span>
+        </div>
+      </li>
+    </ul>
+  </div>
 </section>
 
 <!-- ③ Formula (moved) -->
-<section class="hw-section">
-  <div class="law-badge" style="margin-bottom:12px;font-size:14px;width:28px;height:28px;">3</div>
-  <h2 class="hw-h2"><span class="hw-underline">遮蔽物</span></h2>
-
-  <p class="hw-body">
-    周囲の遮蔽物について2つの情報が必要です。
-  </p>
-  <ul class="input-list" style="margin-bottom:20px;">
-    <li class="input-item">
-      <div class="input-icon">🏢</div>
-      <div class="input-body">
-        <div class="input-title">向かいの建物の高さ</div>
-        <div class="input-desc">太陽を遮る建物の高さ。これが高いほど遮蔽仰角が大きくなります。</div>
-        <span class="input-badge">→ 計算式の分子</span>
-      </div>
-    </li>
-    <li class="input-item">
-      <div class="input-icon">📏</div>
-      <div class="input-body">
-        <div class="input-title">向かいの建物までの距離</div>
-        <div class="input-desc">建物が遠いほど遮蔽仰角は小さくなり、日照率が上がります。</div>
-        <span class="input-badge">→ 計算式の分母</span>
-      </div>
-    </li>
-  </ul>
-
-
+<section class="hw-prologue" style="padding-top:0;">
+  <div style="max-width:480px;margin:0 auto;">
+    <div class="law-badge" style="margin-bottom:12px;font-size:14px;width:28px;height:28px;">3</div>
+    <h2 class="hw-h2"><span class="hw-underline">遮蔽物</span></h2>
+    <p class="hw-body">
+      周囲の遮蔽物について2つの情報が必要です。
+    </p>
+    <ul class="input-list" style="margin-bottom:24px;">
+      <li class="input-item">
+        <div class="input-icon">🏢</div>
+        <div class="input-body">
+          <div class="input-title">向かいの建物の高さ</div>
+          <div class="input-desc">太陽を遮る建物の高さ。これが高いほど遮蔽仰角が大きくなります。</div>
+          <span class="input-badge">→ 計算式の分子</span>
+        </div>
+      </li>
+      <li class="input-item">
+        <div class="input-icon">📏</div>
+        <div class="input-body">
+          <div class="input-title">向かいの建物までの距離</div>
+          <div class="input-desc">建物が遠いほど遮蔽仰角は小さくなり、日照率が上がります。</div>
+          <span class="input-badge">→ 計算式の分母</span>
+        </div>
+      </li>
+    </ul>
+    <p class="hw-body-closing">
+      Sunnyはこの「確実な太陽の動き」と<br>
+      あなたの家の「建物・窓の情報」、<br>
+      周囲の遮蔽物を掛け合わせて日照率を算出します。
+    </p>
+  </div>
 </section>
-
-<div style="max-width:480px;margin:0 auto;padding:0 20px 48px;">
-  <p class="hw-body-closing">
-    Sunnyはこの「確実な太陽の動き」と<br>
-    あなたの家の「建物・窓の情報」、<br>
-    周囲の遮蔽物を掛け合わせて日照率を算出します。
-  </p>
-</div>
 
 <!-- EXAMPLE section -->
 <div class="example-section">
