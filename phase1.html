@@ -1012,7 +1012,10 @@ function svgGuide3() {
     // 例: 35°41'35.2"N または 35°41'35.2"
     var m = str.match(/(\d+)[°＊]\s*(\d+)[\'′]\s*([\d.]+)[\"″]?\s*([NSEW])?/i);
     if (!m) return NaN;
-    var dec = parseFloat(m[1]) + parseFloat(m[2]) / 60 + parseFloat(m[3]) / 3600;
+    var d = parseFloat(m[1]), mn = parseFloat(m[2]), s = parseFloat(m[3]);
+    console.log('度:', d, '分:', mn, '秒:', s);
+    console.log('変換結果:', d + mn/60 + s/3600);
+    var dec = d + mn / 60 + s / 3600;
     if (m[4] && /[SW]/i.test(m[4])) dec = -dec;
     return dec;
   }
