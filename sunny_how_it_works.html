@@ -558,66 +558,6 @@ body {
     あなたが入力する遮蔽物の情報だけです。
   </p>
 
-  <!-- Judge table -->
-  <div class="judge-card">
-    <div class="judge-card-header">
-      <div class="judge-card-title">時間帯・季節ごとの判定</div>
-      <div class="judge-card-sub">遮蔽仰角37°を超えるかどうかで判定（東京・1階・南向き・距離20mの例）</div>
-    </div>
-    <table class="judge-table">
-      <thead>
-        <tr>
-          <th>時刻</th>
-          <th>冬至の太陽</th>
-          <th>判定</th>
-          <th>夏至の太陽</th>
-          <th>判定</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>8時</td>
-          <td>18°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>45°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>10時</td>
-          <td>28°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>65°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>12時</td>
-          <td>31°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>78°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>14時</td>
-          <td>25°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>62°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-        <tr>
-          <td>16時</td>
-          <td>10°</td>
-          <td class="judge-ng">✗ 日陰</td>
-          <td>40°</td>
-          <td class="judge-ok">✓ 日照</td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="judge-note">
-      この判定を30分刻み × 1年間 = 17,520回繰り返した結果が<br>
-      72マスのヒートマップになります。
-    </p>
-    <div style="height:12px"></div>
-  </div>
 </section>
 
 <div style="max-width:480px;margin:0 auto;padding:0 20px 48px;">
@@ -733,6 +673,67 @@ body {
       </div>
 
     </div>
+  </div>
+
+  <!-- Judge table (moved from 遮蔽物セクション) -->
+  <div class="judge-card" style="margin-top:16px;">
+    <div class="judge-card-header">
+      <div class="judge-card-title">時間帯・季節ごとの判定</div>
+      <div class="judge-card-sub">遮蔽仰角37°を超えるかどうかで判定（東京・1階・南向き・距離20mの例）</div>
+    </div>
+    <table class="judge-table">
+      <thead>
+        <tr>
+          <th>時刻</th>
+          <th>冬至の太陽</th>
+          <th>判定</th>
+          <th>夏至の太陽</th>
+          <th>判定</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>8時</td>
+          <td>18°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>45°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>10時</td>
+          <td>28°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>65°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>12時</td>
+          <td>31°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>78°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>14時</td>
+          <td>25°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>62°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+        <tr>
+          <td>16時</td>
+          <td>10°</td>
+          <td class="judge-ng">✗ 日陰</td>
+          <td>40°</td>
+          <td class="judge-ok">✓ 日照</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="judge-note">
+      この判定を30分刻み × 1年間 = 17,520回繰り返した結果が<br>
+      72マスのヒートマップになります。
+    </p>
+    <div style="height:12px"></div>
   </div>
 </div>
 
