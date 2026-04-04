@@ -1538,7 +1538,13 @@ function calcWindowHeatmap(w, floorNum) {
         var edgeFactor = Math.cos(azDiff * Math.PI / 180);
         var obstAngle = obstBase * edgeFactor;
 
-        if (altDeg > obstAngle) sunlit++;
+        var effectiveObstAngle = obstAngle;
+        if (selectedYoto === 'rooftop') {
+          effectiveObstAngle = 0;
+        } else if (selectedYoto === 'balcony' || selectedYoto === 'veranda') {
+          effectiveObstAngle = obstAngle * 0.5;
+        }
+        if (altDeg > effectiveObstAngle) sunlit++;
       }
 
       var val = total > 0 ? sunlit / total : 0;
