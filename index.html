@@ -1114,9 +1114,10 @@ function renderPhotoCards(i, w) {
   });
   html += '</div>';
 
-  // 南（正面）の建物入力
+  // 正面の建物入力
+  var bldLabel = (w.dir ? w.dir + '\u5074' : '\u6b63\u9762') + '\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066';
   html += '<div style="margin:10px 0;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
-    + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066</div>'
+    + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">' + escHtml(bldLabel) + '</div>'
     + '<label style="font-size:11px;">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
     + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=(this.value===\'\'?null:parseFloat(this.value));updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\')">' + bldHOptions + '</select>'
     + '<div id="bld-dist-win-' + i + '" style="display:' + (w.bldH > 0 ? '' : 'none') + '">'
