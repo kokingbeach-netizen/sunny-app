@@ -80,11 +80,6 @@
     /* Container */
     .container { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
 
-    /* Floating precision meter */
-    #floatPrecision { position: fixed; bottom: 20px; right: 16px; width: 80px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.13); padding: 8px 10px; text-align: center; z-index: 1000; display: none; }
-    #floatPrecision .fp-label { font-size: 9px; color: #9CA3AF; font-weight: 600; letter-spacing: .3px; margin-bottom: 2px; }
-    #floatPrecision .fp-val { font-size: 20px; font-weight: 900; line-height: 1.1; letter-spacing: -1px; }
-
     /* Step cards */
     .step-card { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
     .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
@@ -137,10 +132,11 @@
     .del-btn:hover { border-color: #EF4444; color: #EF4444; }
 
     /* Dir grid */
-    .dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-    .dir-btn { border: 1.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 8px 6px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 700; color: #6B7280; background: #fff; user-select: none; transition: all 0.15s; }
+    .dir-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 14px; }
+    .dir-btn { border: 1.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 7px 4px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 700; color: #6B7280; background: #fff; user-select: none; transition: all 0.15s; }
     .dir-btn:hover { border-color: #F5A623; color: #D4880F; }
     .dir-btn.active { border-color: #F5A623; background: rgba(245,166,35,0.1); color: #D4880F; }
+    .dir-center { display: flex; align-items: center; justify-content: center; font-size: 16px; color: #D1D5DB; pointer-events: none; }
 
     /* Size grid */
     .size-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
@@ -839,7 +835,7 @@ var selectedYoto = '';
 var selectedMode = 'A';
 var lastSeasonScores = null;
 
-var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0 };
+var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
 var SIZE_MULT = { '小':0.85, '中':1.0, '大':1.1 };
 var SAMPLE_DAYS = [1, 8, 15, 22];
 var TIME_SLOTS = [6, 8, 10, 12, 14, 16];
@@ -853,6 +849,8 @@ var PHOTO_TAB_MAP = {
   '東':  { left:'北東', center:'東',   right:'南東' },
   '西':  { left:'南西', center:'西',   right:'北西' },
   '北':  { left:'北西', center:'北',   right:'北東' },
+  '北東':{ left:'北',   center:'北東', right:'東'   },
+  '北西':{ left:'西',   center:'北西', right:'北'   },
 };
 
 // Stored heatmaps for tab switching
@@ -1052,11 +1050,12 @@ function svgGuide3() {
 function makeDefaultWindow(i) {
   return {
     name: (typeof selectedUsecase !== 'undefined' && selectedUsecase === '建築前リサーチ' ? '方觓' : '窓') + (i + 1),
-    dir: '\u5357',
+    dir: '',
     size: '\u4e2d',
     surroundings: [],
-    bldH: 0,
+    bldH: null,
     bldDist: 10,
+    bldDistSelected: false,
     photos: { left: null, center: null, right: null },
     svf: { left: null, center: null, right: null },
     activeTab: 'center'
@@ -1071,15 +1070,16 @@ function makeDefaultWindow(i) {
 // ============================================================
 function renderPhotoCards(i, w) {
   var tabs = PHOTO_TAB_MAP[w.dir] || PHOTO_TAB_MAP['\u5357'];
-  var bldHOptions = [
-    [0, '\u306a\u3057 (0m)'],
-    [7, '\u4f4e\u3044 1-2\u968e (7m)'],
-    [15, '\u4e2d 3-5\u968e (15m)'],
-    [30, '\u9ad8\u3044 6-10\u968e (30m)'],
-    [40, '\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a (40m)']
-  ].map(function(item) {
-    return '<option value="' + item[0] + '"' + (w.bldH == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
-  }).join('');
+  var bldHOptions = '<option value=""' + (w.bldH === null ? ' selected' : '') + '>-- \u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044 --</option>'
+    + [
+      [0, '\u306a\u3057 (0m)'],
+      [7, '\u4f4e\u3044 1-2\u968e (7m)'],
+      [15, '\u4e2d 3-5\u968e (15m)'],
+      [30, '\u9ad8\u3044 6-10\u968e (30m)'],
+      [40, '\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a (40m)']
+    ].map(function(item) {
+      return '<option value="' + item[0] + '"' + (w.bldH === item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+    }).join('');
   var bldDistOptions = [
     [3, '\u63a5\u8fd1\uff5e5m'],
     [10, '\u8fd1\u3044 5-15m'],
@@ -1118,10 +1118,10 @@ function renderPhotoCards(i, w) {
   html += '<div style="margin:10px 0;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
     + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066</div>'
     + '<label style="font-size:11px;">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
-    + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=parseFloat(this.value);updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\')">' + bldHOptions + '</select>'
+    + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=(this.value===\'\'?null:parseFloat(this.value));updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\')">' + bldHOptions + '</select>'
     + '<div id="bld-dist-win-' + i + '" style="display:' + (w.bldH > 0 ? '' : 'none') + '">'
     + '<label style="font-size:11px;">\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
-    + '<select style="width:100%;" onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);updatePrecision()">' + bldDistOptions + '</select>'
+    + '<select style="width:100%;" onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);windowStates[' + i + '].bldDistSelected=true;updatePrecision()">' + bldDistOptions + '</select>'
     + '</div>'
     + '</div>';
 
@@ -1190,13 +1190,16 @@ function toggleSurrounding(winIdx, val, checked) {
     if (!checked && existing !== -1) w.surroundings.splice(existing, 1);
   }
   renderAllWindows();
+  updatePrecision();
 }
 
 // ============================================================
 function renderWindowCard(w, i) {
-  var dirs = ['\u5357','\u5357\u6771','\u5357\u897f','\u6771','\u897f','\u5317'];
-  var dirBtns = dirs.map(function(d) {
-    return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + d + '</button>';
+  // コンパス配置: 3×3グリッド（中央はセンターマーク）
+  var compassLayout = ['\u5317\u897f','\u5317','\u5317\u6771', '\u897f',null,'\u6771', '\u5357\u897f','\u5357','\u5357\u6771'];
+  var dirBtns = compassLayout.map(function(d) {
+    if (d === null) return '<div class="dir-center">\u2295</div>';
+    return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + escHtml(d) + '</button>';
   }).join('');
 
   var sizes = ['\u5c0f','\u4e2d','\u5927'];
@@ -1366,7 +1369,7 @@ function selYoto(el, val) {
   selectedYoto = val;
   document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) { b.classList.remove('active'); });
   el.classList.add('active');
-  checkCalcReady();
+  updatePrecision();
 }
 
 function selMode(el, mode) {
@@ -1384,60 +1387,6 @@ function toggleBldDist(selectEl, distId) {
 }
 
 function updatePrecision() {
-  // 必須項目チェック（lat / lng / yoto / dir）
-  var lat = parseFloat(document.getElementById('lat').value);
-  var lng = parseFloat(document.getElementById('lng').value);
-  var hasRequired = !isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0
-    && selectedYoto !== ''
-    && windowStates.length > 0 && windowStates.every(function(w) { return !!w.dir; });
-
-  var meter = document.getElementById('floatPrecision');
-  var valEl = document.getElementById('floatPrecisionVal');
-
-  if (!hasRequired) {
-    if (meter) meter.style.display = 'none';
-    checkCalcReady();
-    return;
-  }
-
-  // 任意項目の加点
-  var score = 0;
-
-  // 建物の高さ入力済み: +25%
-  var hasBldH = windowStates.some(function(w) { return w.bldH > 0; });
-  if (hasBldH) score += 25;
-
-  // 建物までの距離（デフォルト10m以外）: +25%
-  var hasBldDist = windowStates.some(function(w) { return w.bldDist !== 10; });
-  if (hasBldDist) score += 25;
-
-  // 写真アップロード済み: +20%
-  var hasPhoto = windowStates.some(function(w) {
-    return w.photos.left || w.photos.center || w.photos.right;
-  });
-  if (hasPhoto) score += 20;
-
-  // 階数が1F以外: +15%
-  var fl = parseInt(document.getElementById('floor').value);
-  if (!isNaN(fl) && fl > 1) score += 15;
-
-  // 窓が複数: +10%
-  if (windowStates.length > 1) score += 10;
-
-  // 補足情報（木・障害物）選択済み: +5%
-  var hasSurr = windowStates.some(function(w) {
-    return w.surroundings && w.surroundings.length > 0 && w.surroundings[0] !== 'none';
-  });
-  if (hasSurr) score += 5;
-
-  score = Math.min(100, score);
-
-  // 色：0-24% 赤、25-64% オレンジ、65%+ 緑
-  var color = score >= 65 ? '#10B981' : score >= 25 ? '#F59E0B' : '#EF4444';
-
-  if (meter) meter.style.display = 'block';
-  if (valEl) { valEl.textContent = score + '%'; valEl.style.color = color; }
-
   checkCalcReady();
 }
 
@@ -1993,7 +1942,7 @@ function restoreFromHash() {
     if (data.windows && data.windows.length > 0) {
       windowStates = data.windows.map(function(w, i) {
         var def = makeDefaultWindow(i);
-        return Object.assign(def, { name: w.name || def.name, dir: w.dir || '南', size: w.size || '中', surroundings: Array.isArray(w.surroundings) ? w.surroundings : [], bldH: parseFloat(w.bldH) || 0, bldDist: parseFloat(w.bldDist) || 10 });
+        return Object.assign(def, { name: w.name || def.name, dir: w.dir || '南', size: w.size || '中', surroundings: Array.isArray(w.surroundings) ? w.surroundings : [], bldH: parseFloat(w.bldH) || 0, bldDist: parseFloat(w.bldDist) || 10, bldDistSelected: !!w.bldDistSelected });
       });
       renderAllWindows();
     }
@@ -2335,11 +2284,6 @@ function cRemoveDir(key) {
 }
 </script>
 
-<!-- Floating precision meter -->
-<div id="floatPrecision">
-  <div class="fp-label">算出精度</div>
-  <div class="fp-val" id="floatPrecisionVal">0%</div>
-</div>
 
 </body>
 </html>
