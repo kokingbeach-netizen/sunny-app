@@ -80,12 +80,10 @@
     /* Container */
     .container { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
 
-    /* Precision bar */
-    .precision-bar { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; }
-    .precision-bar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: #6B7280; }
-    .precision-bar-label { font-weight: 700; }
-    .precision-track { background: #EFEFEC; border-radius: 6px; height: 6px; overflow: hidden; }
-    #precisionFill { height: 100%; border-radius: 6px; background: #ef4444; transition: width 0.4s, background 0.3s; width: 0%; }
+    /* Floating precision meter */
+    #floatPrecision { position: fixed; bottom: 20px; right: 16px; width: 80px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.13); padding: 8px 10px; text-align: center; z-index: 1000; display: none; }
+    #floatPrecision .fp-label { font-size: 9px; color: #9CA3AF; font-weight: 600; letter-spacing: .3px; margin-bottom: 2px; }
+    #floatPrecision .fp-val { font-size: 20px; font-weight: 900; line-height: 1.1; letter-spacing: -1px; }
 
     /* Step cards */
     .step-card { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
@@ -175,8 +173,6 @@
     .upload-sub { font-size: 11px; color: #6B7280; display: block; margin-top: 2px; }
     .svf-badge { font-size: 11px; color: #10B981; font-weight: 700; margin-top: 4px; }
     .photo-guide-desc { font-size: 12px; color: var(--gray); line-height: 1.7; margin-bottom: 12px; padding: 8px 10px; background: rgba(245,166,35,0.05); border-radius: 8px; border: 1px solid rgba(245,166,35,0.15); }
-    .result-precision { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 12px; }
-
     /* Photo strip (always-visible thumbnails) */
     .photo-strip { display: flex; gap: 6px; margin-bottom: 10px; }
     .photo-strip-item { flex: 1; cursor: pointer; }
@@ -579,18 +575,6 @@
 <!-- Main container -->
 <div class="container">
 
-  <!-- Precision bar -->
-  <div class="precision-bar">
-    <div class="precision-bar-top">
-      <span class="precision-bar-label">現在の算出精度</span>
-      <span>
-        <span id="precisionScore" style="font-size:11px;color:var(--gray);margin-right:6px;">0 pt</span>
-        <span id="precisionLabel" style="font-weight:900;font-size:13px;color:#ef4444;">低</span>
-      </span>
-    </div>
-    <div class="precision-track"><div id="precisionFill"></div></div>
-  </div>
-
   <!-- STEP 1 -->
   <div class="step-card" id="step1">
     <div class="step-header">
@@ -780,7 +764,6 @@
         </div>
       </div>
       <div id="scoreText" style="font-size:13px;color:var(--gray);line-height:1.8;white-space:pre-wrap"></div>
-      <div id="resultPrecisionBadge" class="result-precision"></div>
     </div>
     <div class="result-card" id="windowBarsCard">
       <div style="font-size:12px;font-weight:700;margin-bottom:12px">窓別スコア</div>
@@ -1401,50 +1384,60 @@ function toggleBldDist(selectEl, distId) {
 }
 
 function updatePrecision() {
-  var score = 0;
-
-  // 緯度経度入力完了: +20pt
+  // 必須項目チェック（lat / lng / yoto / dir）
   var lat = parseFloat(document.getElementById('lat').value);
   var lng = parseFloat(document.getElementById('lng').value);
-  if (!isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0) score += 20;
+  var hasRequired = !isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0
+    && selectedYoto !== ''
+    && windowStates.length > 0 && windowStates.every(function(w) { return !!w.dir; });
 
-  // 階数入力: +10pt
-  var fl = parseInt(document.getElementById('floor').value);
-  if (!isNaN(fl) && fl >= 1) score += 10;
+  var meter = document.getElementById('floatPrecision');
+  var valEl = document.getElementById('floatPrecisionVal');
 
-  // 窓の方角選択（1窓につき+10pt）
-  windowStates.forEach(function(w) {
-    if (w.dir) score += 10;
+  if (!hasRequired) {
+    if (meter) meter.style.display = 'none';
+    checkCalcReady();
+    return;
+  }
 
-    // 写真アップ（1枚につき+10pt）
-    ['left','center','right'].forEach(function(k) {
-      if (w.photos[k]) score += 10;
-    });
+  // 任意項目の加点
+  var score = 0;
 
-    // 建物の高さ・距離入力: +5pt
-    if (w.bldH > 0 || w.bldDist !== 10) score += 5;
+  // 建物の高さ入力済み: +25%
+  var hasBldH = windowStates.some(function(w) { return w.bldH > 0; });
+  if (hasBldH) score += 25;
 
-    // 補足情報（木・障害物）選択: +5pt
-    if (w.surroundings && w.surroundings.length > 0 && w.surroundings[0] !== 'none') score += 5;
+  // 建物までの距離（デフォルト10m以外）: +25%
+  var hasBldDist = windowStates.some(function(w) { return w.bldDist !== 10; });
+  if (hasBldDist) score += 25;
+
+  // 写真アップロード済み: +20%
+  var hasPhoto = windowStates.some(function(w) {
+    return w.photos.left || w.photos.center || w.photos.right;
   });
+  if (hasPhoto) score += 20;
+
+  // 階数が1F以外: +15%
+  var fl = parseInt(document.getElementById('floor').value);
+  if (!isNaN(fl) && fl > 1) score += 15;
+
+  // 窓が複数: +10%
+  if (windowStates.length > 1) score += 10;
+
+  // 補足情報（木・障害物）選択済み: +5%
+  var hasSurr = windowStates.some(function(w) {
+    return w.surroundings && w.surroundings.length > 0 && w.surroundings[0] !== 'none';
+  });
+  if (hasSurr) score += 5;
 
   score = Math.min(100, score);
 
-  document.getElementById('precisionFill').style.width = score + '%';
-  document.getElementById('precisionScore').textContent = score + ' pt';
+  // 色：0-24% 赤、25-64% オレンジ、65%+ 緑
+  var color = score >= 65 ? '#10B981' : score >= 25 ? '#F59E0B' : '#EF4444';
 
-  var lbl = document.getElementById('precisionLabel');
-  var fill = document.getElementById('precisionFill');
-  if (score >= 61) {
-    lbl.textContent = '\u9ad8'; lbl.style.color = '#10B981';
-    fill.style.background = '#10B981';
-  } else if (score >= 31) {
-    lbl.textContent = '\u4e2d'; lbl.style.color = '#f59e0b';
-    fill.style.background = '#f59e0b';
-  } else {
-    lbl.textContent = '\u4f4e'; lbl.style.color = '#ef4444';
-    fill.style.background = '#ef4444';
-  }
+  if (meter) meter.style.display = 'block';
+  if (valEl) { valEl.textContent = score + '%'; valEl.style.color = color; }
+
   checkCalcReady();
 }
 
@@ -1663,24 +1656,6 @@ function displayResults(score, winScores, heatmaps) {
 
   document.getElementById('scoreNum').textContent = Math.round(score);
   document.getElementById('scoreText').textContent = getScoreText(score);
-
-  // 精度インジケーター
-  var precScore = parseInt(document.getElementById('precisionScore').textContent) || 0;
-  var badge = document.getElementById('resultPrecisionBadge');
-  if (badge) {
-    var precLabel, precBg, precColor;
-    if (precScore >= 80) {
-      precLabel = '\u7b97\u51fa\u7cbe\u5ea6: \u9ad8'; precBg = 'rgba(16,185,129,0.1)'; precColor = '#10B981';
-    } else if (precScore >= 50) {
-      precLabel = '\u7b97\u51fa\u7cbe\u5ea6: \u4e2d'; precBg = 'rgba(245,166,35,0.12)'; precColor = '#D4880F';
-    } else {
-      precLabel = '\u7b97\u51fa\u7cbe\u5ea6: \u4f4e'; precBg = 'rgba(239,68,68,0.1)'; precColor = '#EF4444';
-    }
-    badge.textContent = precLabel;
-    badge.style.background = precBg;
-    badge.style.color = precColor;
-    badge.style.border = '1px solid ' + precColor;
-  }
 
   var barsHtml = winScores.map(function(s, i) {
     var name = escHtml(windowStates[i].name);
@@ -2372,5 +2347,12 @@ function cRemoveDir(key) {
   if (addBtn) addBtn.style.display = 'flex';
 }
 </script>
+
+<!-- Floating precision meter -->
+<div id="floatPrecision">
+  <div class="fp-label">算出精度</div>
+  <div class="fp-val" id="floatPrecisionVal">0%</div>
+</div>
+
 </body>
 </html>
