@@ -668,7 +668,7 @@
             <p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>
             <div class="photo-check-items" id="c-checks-south">
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>
-              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬-5% 秋-10% 春夏-15%</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
@@ -729,8 +729,8 @@
         <div>
           <div style="font-size:11px;color:#666;margin-bottom:4px;font-family:'DM Mono',monospace;letter-spacing:2px">PROPERTY SCORE</div>
           <div style="display:flex;align-items:baseline;gap:2px">
-            <span id="scoreNum" style="font-size:52px;font-weight:900;letter-spacing:-3px;line-height:1;color:#1A1A1A">--</span>
-            <span style="font-size:18px;font-weight:400;color:#666">%</span>
+            <span id="scoreNum" style="font-size:78px;font-weight:900;letter-spacing:-4px;line-height:1;color:#1A1A1A">--</span>
+            <span style="font-size:22px;font-weight:400;color:#666">%</span>
           </div>
         </div>
         <div id="peakMonthBlock" style="display:none;text-align:right;flex-shrink:0;margin-bottom:6px">
@@ -762,15 +762,7 @@
       </div>
       <div id="scoreText" style="font-size:13px;color:var(--gray);line-height:1.8;white-space:pre-wrap"></div>
     </div>
-    <div class="result-card" id="windowBarsCard">
-      <div style="font-size:12px;font-weight:700;margin-bottom:12px">窓別スコア</div>
-      <div id="windowBars"></div>
-    </div>
-    <div class="result-card">
-      <div style="font-size:12px;font-weight:700;margin-bottom:12px">月別×時間帯ヒートマップ</div>
-      <div id="heatmapTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
-      <div style="overflow-x:auto"><div id="heatmapTable"></div></div>
-    </div>
+    <div id="windowDetails"></div>
     <div class="disclaimer">&#9888;&#65039; この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。</div>
 
     <div class="next-steps-card">
@@ -1153,8 +1145,8 @@ function deletePhoto(i, tabKey) {
 function renderSurroundingCheckboxes(i, selected) {
   var surr = selected || [];
   var options = [
-    { val: 'evergreen',  label: '\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09', tag: null },
-    { val: 'deciduous',  label: '\u6a39\u6728\uff08\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b\uff09', tag: '\u2192 \u51ac+15%\u88dc\u6b63' },
+    { val: 'evergreen',  label: '\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09', tag: '\u2192 \u5168\u5b63\u7bc0-15%' },
+    { val: 'deciduous',  label: '\u6a39\u6728\uff08\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b\uff09', tag: '\u2192 \u51ac-5% \u79cb-10% \u6625\u590f-15%' },
     { val: 'pole',       label: '\u96fb\u67f1\u30fb\u96fb\u7dda', tag: null },
     { val: 'signboard',  label: '\u770b\u677f\u30fb\u5e83\u544a\u677f', tag: '\u2192 \u9065\u853d\u3068\u3057\u3066\u8a08\u7b97' },
     { val: 'wall',       label: '\u96a3\u63a5\u3059\u308b\u5efa\u7269\u306e\u58c1\u9762\uff08\u771f\u6a2a\uff09', tag: '\u2192 \u9065\u853d\u3068\u3057\u3066\u8a08\u7b97' },
@@ -1550,9 +1542,14 @@ function calcWindowHeatmap(w, floorNum) {
 
       var val = total > 0 ? sunlit / total : 0;
 
-      // 落葉樹補正\uff08冬は透達率アップ\uff09
-      if (surrList.indexOf('deciduous') !== -1 && [0,1,2,10,11].indexOf(m) !== -1) {
-        val = Math.min(1, val + 0.15);
+      // 樹木補正（常緑樹：全季節-15%、落葉樹：春夏-15%、秋-10%、冬-5%）
+      if (surrList.indexOf('evergreen') !== -1) {
+        val = Math.max(0, val - 0.15);
+      } else if (surrList.indexOf('deciduous') !== -1) {
+        var treeAdj = [0,1,11].indexOf(m) !== -1 ? -0.05   // 冬(12,1,2月)
+                    : [8,9,10].indexOf(m) !== -1 ? -0.10   // 秋(9,10,11月)
+                    : -0.15;                                 // 春夏
+        val = Math.max(0, val + treeAdj);
       }
       val = Math.min(1, val);
       row.push(val);
@@ -1586,7 +1583,9 @@ function runCalculation() {
         var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
         return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
       });
-      var propertyScore = windowScores.reduce(function(a, b) { return a + b; }, 0) / windowScores.length;
+      var orMatrix = computeOrHeatmap(heatmaps);
+      var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
+      var propertyScore = (orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100;
       storedHeatmaps = heatmaps;
       displayResults(propertyScore, windowScores, heatmaps);
     } catch(e) {
@@ -1598,6 +1597,24 @@ function runCalculation() {
 }
 
 // ============================================================
+// Count-up animation
+// ============================================================
+function countUp(el, target, duration, suffix) {
+  if (!el) return;
+  el.textContent = '0' + suffix;
+  var startTs = null;
+  function step(ts) {
+    if (!startTs) startTs = ts;
+    var t = Math.min((ts - startTs) / duration, 1);
+    var eased = 1 - Math.pow(1 - t, 3); // cubic ease-out
+    el.textContent = Math.round(eased * target) + suffix;
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = target + suffix;
+  }
+  requestAnimationFrame(step);
+}
+
+// ============================================================
 // Display results
 // ============================================================
 function displayResults(score, winScores, heatmaps) {
@@ -1605,28 +1622,50 @@ function displayResults(score, winScores, heatmaps) {
   resultsEl.style.display = 'block';
   resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  document.getElementById('scoreNum').textContent = Math.round(score);
+  countUp(document.getElementById('scoreNum'), Math.round(score), 1500, '');
   document.getElementById('scoreText').textContent = getScoreText(score);
 
-  var barsHtml = winScores.map(function(s, i) {
-    var name = escHtml(windowStates[i].name);
-    var pct = Math.round(s);
-    return '<div class="win-bar">'
-      + '<div class="win-bar-meta"><span>' + name + '</span><span style="font-family:\'DM Mono\',monospace;font-weight:700">' + pct + '%</span></div>'
-      + '<div class="win-bar-track"><div class="win-bar-fill" style="width:' + pct + '%"></div></div>'
+  // Property-level OR matrix for season scores and peak month
+  var orMatrix = computeOrHeatmap(heatmaps);
+  calcPeakMonth(orMatrix);
+  calcSeasonScores(orMatrix);
+
+  // Per-window detail sections
+  var detailsHtml = '';
+  heatmaps.forEach(function(hm, i) {
+    var w = windowStates[i];
+    var winScore = Math.round(winScores[i]);
+    var seasons = getSeasonScoresFromMatrix(hm);
+    var title = escHtml(w.name + (w.dir ? '\uff08' + w.dir + '\u5411\u304d\uff09' : ''));
+
+    detailsHtml += '<div class="result-card">';
+    detailsHtml += '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px;">'
+      + '<span style="font-size:13px;font-weight:800;color:#1A1A1A;">' + title + '</span>'
+      + '<span style="font-family:\'DM Mono\',monospace;font-weight:700;font-size:15px;color:#F5A623;">' + winScore + '%</span>'
       + '</div>';
-  }).join('');
-  document.getElementById('windowBars').innerHTML = barsHtml;
-
-  var tabsContainer = document.getElementById('heatmapTabs');
-  var tabsHtml = '<button class="hm-tab active" id="hmt-agg" onclick="switchHeatmapTab(\'agg\')">\u7269\u4ef6\u5168\u4f53</button>';
-  windowStates.forEach(function(w, i) {
-    tabsHtml += '<button class="hm-tab" id="hmt-' + i + '" onclick="switchHeatmapTab(' + i + ')">' + escHtml(w.name) + '</button>';
+    detailsHtml += '<div style="display:flex;justify-content:space-around;background:rgba(0,0,0,0.04);border-radius:12px;padding:8px 4px;margin-bottom:12px;gap:2px">';
+    detailsHtml += winSeasonBlock('\uD83C\uDF38', '\u6625', seasons.spring);
+    detailsHtml += winSeasonBlock('\u2600\uFE0F', '\u590f', seasons.summer);
+    detailsHtml += winSeasonBlock('\uD83C\uDF42', '\u79CB', seasons.autumn);
+    detailsHtml += winSeasonBlock('\u2744\uFE0F', '\u51AC', seasons.winter);
+    detailsHtml += '</div>';
+    detailsHtml += '<div style="font-size:11px;font-weight:700;color:#666;margin-bottom:8px;">\u6708\u5225\xd7\u6642\u9593\u5e2f\u30d2\u30fc\u30c8\u30de\u30c3\u30d7</div>';
+    detailsHtml += '<div style="overflow-x:auto">' + buildHeatmapHtml(hm) + '</div>';
+    var winLevel = winScore >= 75 ? 'high' : winScore >= 60 ? 'mid' : winScore >= 40 ? 'low' : 'vlow';
+    var dirCmt = getDirComment(w.dir);
+    var yotoCmt = getYotoComment(winLevel);
+    if (dirCmt) {
+      detailsHtml += '<div style="margin-top:12px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border-left:3px solid #F5A623;font-size:12px;color:#6B7280;line-height:1.7;">'
+        + '<span style="font-weight:700;color:#D4880F;">' + escHtml(w.dir) + '\u5411\u304d\u306e\u7279\u5fb4</span><br>' + escHtml(dirCmt)
+        + '</div>';
+    }
+    if (yotoCmt) {
+      detailsHtml += '<div style="margin-top:8px;font-size:13px;color:var(--gray);line-height:1.8;">' + escHtml(yotoCmt) + '</div>';
+    }
+    detailsHtml += '</div>';
   });
-  tabsContainer.innerHTML = tabsHtml;
 
-  var aggMatrix = computeAggHeatmap(heatmaps);
-  renderHeatmapTable(aggMatrix);
+  document.getElementById('windowDetails').innerHTML = detailsHtml;
 }
 
 function computeAggHeatmap(heatmaps) {
@@ -1648,6 +1687,73 @@ function computeAggHeatmap(heatmaps) {
     }
   }
   return agg;
+}
+
+// OR heatmap: P(at least one window gets sun) = 1 - ∏(1 - p_i)
+function computeOrHeatmap(heatmaps) {
+  var or = [];
+  for (var m = 0; m < 12; m++) {
+    or.push(new Array(6).fill(0));
+  }
+  for (var m = 0; m < 12; m++) {
+    for (var t = 0; t < 6; t++) {
+      var noSunProb = 1;
+      heatmaps.forEach(function(hm) { noSunProb *= (1 - hm[m][t]); });
+      or[m][t] = 1 - noSunProb;
+    }
+  }
+  return or;
+}
+
+function getSeasonScoresFromMatrix(matrix) {
+  var monthlyAvg = [];
+  for (var m = 0; m < 12; m++) {
+    var sum = 0;
+    for (var t = 0; t < 6; t++) { sum += matrix[m][t]; }
+    monthlyAvg.push(sum / 6);
+  }
+  return {
+    spring: Math.round((monthlyAvg[2] + monthlyAvg[3] + monthlyAvg[4]) / 3 * 100),
+    summer: Math.round((monthlyAvg[5] + monthlyAvg[6] + monthlyAvg[7]) / 3 * 100),
+    autumn: Math.round((monthlyAvg[8] + monthlyAvg[9] + monthlyAvg[10]) / 3 * 100),
+    winter: Math.round((monthlyAvg[11] + monthlyAvg[0] + monthlyAvg[1]) / 3 * 100)
+  };
+}
+
+function winSeasonBlock(emoji, label, pct) {
+  return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+    + '<span style="font-size:18px">' + emoji + '</span>'
+    + '<span style="font-size:13px;color:#666;font-weight:600">' + label + '</span>'
+    + '<span style="font-size:18px;font-weight:800;color:#1A1A1A">' + pct + '%</span>'
+    + '</div>';
+}
+
+function buildHeatmapHtml(matrix) {
+  var html = '<table class="heatmap-table"><thead><tr><th class="hm-row-label"></th>';
+  TIME_LABELS.forEach(function(lbl) {
+    html += '<th>' + escHtml(lbl) + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+  for (var m = 0; m < 12; m++) {
+    html += '<tr><td class="hm-row-label hm-mn">' + escHtml(MONTH_LABELS[m]) + '</td>';
+    for (var t = 0; t < 6; t++) {
+      var val = matrix[m][t];
+      var bg = getHeatColor(val);
+      var lightCls = val < 0.35 ? ' light' : '';
+      var pct = val > 0.01 ? Math.round(val * 100) + '%' : '';
+      html += '<td><div class="hm-cell' + lightCls + '" style="background:' + bg + '" title="' + Math.round(val*100) + '%">' + pct + '</div></td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  html += '<div class="hm-legend">'
+    + '<span class="hm-leg-item" style="background:#E8420A;color:#fff">\u3068\u3066\u3082\u826f\u3044</span>'
+    + '<span class="hm-leg-item" style="background:#F5A623;color:#fff">\u826f\u3044</span>'
+    + '<span class="hm-leg-item" style="background:#F5D080;color:#555">\u666e\u901a</span>'
+    + '<span class="hm-leg-item" style="background:#F5F4F0;color:#666;border:1px solid #DDD">\u306a\u3057</span>'
+    + '</div>';
+  html += '<p class="hm-desc">\u5404\u30de\u30b9\u306f\u305d\u306e\u6642\u9593\u5e2f\uff082\u6642\u9593\uff09\u306e\u65e5\u7167\u7387\u3092\u793a\u3057\u3066\u3044\u307e\u3059\u3002</p>';
+  return html;
 }
 
 function switchHeatmapTab(tabId) {
@@ -1730,10 +1836,12 @@ function calcSeasonScores(matrix) {
   var autumn = Math.round((monthlyAvg[8] + monthlyAvg[9] + monthlyAvg[10]) / 3 * 100);
   var winter = Math.round((monthlyAvg[11] + monthlyAvg[0] + monthlyAvg[1]) / 3 * 100);
   lastSeasonScores = { spring: spring, summer: summer, autumn: autumn, winter: winter };
-  document.getElementById('seasonValSpring').textContent = spring + '%';
-  document.getElementById('seasonValSummer').textContent = summer + '%';
-  document.getElementById('seasonValAutumn').textContent = autumn + '%';
-  document.getElementById('seasonValWinter').textContent = winter + '%';
+  setTimeout(function() {
+    countUp(document.getElementById('seasonValSpring'), spring, 1200, '%');
+    countUp(document.getElementById('seasonValSummer'), summer, 1200, '%');
+    countUp(document.getElementById('seasonValAutumn'), autumn, 1200, '%');
+    countUp(document.getElementById('seasonValWinter'), winter, 1200, '%');
+  }, 200);
 }
 
 // ============================================================
@@ -1797,6 +1905,23 @@ function getSolarAltitudeComment() {
   }
   if (selectedYoto === 'rooftop') {
     return 'ルーフバルコニーは完全開放のため、夏の高い太陽でも遮るものがなく、季節を問わず直射日光が入ります。夏場の熱対策（日除け・打ち水など）を検討してください。';
+  }
+  return '';
+}
+
+function getDirComment(dir) {
+  if (!dir) return '';
+  if (dir === '\u5357' || dir === '\u5357\u6771' || dir === '\u5357\u897f') {
+    return '\u590f\u306f\u592a\u967d\u304c\u9ad8\u3044\u305f\u3081\u5c4b\u6839\u30fb\u5eb87\u306b\u9057\u3089\u308c\u3084\u3059\u304f\u3001\u51ac\u306f\u4f4e\u3044\u592a\u967d\u304c\u6df1\u304f\u5dee\u3057\u8fbc\u307f\u307e\u3059\u3002';
+  }
+  if (dir === '\u6771' || dir === '\u5317\u6771') {
+    return '\u5348\u524d\u4e2d\u306b\u65e5\u304c\u5165\u308a\u3084\u3059\u304f\u3001\u5348\u5f8c\u306f\u65e5\u5dee\u3057\u304c\u5f31\u307e\u308a\u307e\u3059\u3002';
+  }
+  if (dir === '\u897f' || dir === '\u5317\u897f') {
+    return '\u5348\u5f8c\uff5e\u5915\u65b9\u306b\u65e5\u304c\u5165\u308a\u3084\u3059\u304f\u3001\u5348\u524d\u4e2d\u306f\u65e5\u5dee\u3057\u304c\u5f31\u3044\u50be\u5411\u304c\u3042\u308a\u307e\u3059\u3002';
+  }
+  if (dir === '\u5317') {
+    return '\u76f4\u5c04\u65e5\u5149\u306f\u5c11\u306a\u304f\u3001\u5e74\u9593\u3092\u901a\u3058\u3066\u5b89\u5b9a\u3057\u305f\u9593\u63a5\u5149\u304c\u5165\u308a\u307e\u3059\u3002\u590f\u306e\u5915\u65b9\u30fb\u671d\u65b9\u306b\u7b46\u304b\u306b\u65e5\u304c\u5165\u308b\u5834\u5408\u304c\u3042\u308a\u307e\u3059\u3002';
   }
   return '';
 }
@@ -1880,7 +2005,7 @@ function resetAll() {
 function openScreenshot() {
   var score = document.getElementById('scoreNum').textContent;
   var text = document.getElementById('scoreText').textContent;
-  var hmHtml = document.getElementById('heatmapTable').innerHTML;
+  var hmHtml = storedHeatmaps.length ? buildHeatmapHtml(computeAggHeatmap(storedHeatmaps)) : '';
   var addr = document.getElementById('address').value;
 
   var html = '<div class="ss-hint">📸 この画面をスクリーンショットして保存できます</div>';
@@ -2245,7 +2370,7 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '<p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>'
     + '<div class="photo-check-items">'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>'
-    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬+15%補正</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬-5% 秋-10% 春夏-15%</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
