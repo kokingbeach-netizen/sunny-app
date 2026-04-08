@@ -675,8 +675,8 @@
             </div>
           </div>
           <div style="margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">
-            <div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">南側（正面）の建物について</div>
-            <div class="c-field-label">見える建物の高さ <span class="c-key-sup">任意</span></div>
+            <div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">南側（正面）の遮蔽物について</div>
+            <div class="c-field-label">遮蔽物の高さ（建物・樹木など） <span class="c-key-sup">任意</span></div>
             <select class="finput" onchange="cState['south'].bldH=parseFloat(this.value);toggleBldDist(this,'c-bld-dist-south')" style="margin-bottom:8px;">
               <option value="0">なし（0m）</option>
               <option value="7">低い 1-2階（7m）</option>
@@ -685,7 +685,7 @@
               <option value="40">とても高い 10階以上（40m）</option>
             </select>
             <div id="c-bld-dist-south" style="display:none">
-              <div class="c-field-label">建物までの距離 <span class="c-key-sup">任意</span></div>
+              <div class="c-field-label">遮蔽物までの距離 <span class="c-key-sup">任意</span></div>
               <select class="finput" onchange="cState['south'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">
                 <option value="3">接近 ～5m</option>
                 <option value="10" selected>近い 5-15m</option>
@@ -1107,13 +1107,13 @@ function renderPhotoCards(i, w) {
   html += '</div>';
 
   // 正面の建物入力
-  var bldLabel = (w.dir ? w.dir + '\u5074' : '\u6b63\u9762') + '\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066';
+  var bldLabel = (w.dir ? w.dir + '\u5074' : '\u6b63\u9762') + '\uff08\u6b63\u9762\uff09\u306e\u9060\u853d\u7269\u306b\u3064\u3044\u3066';
   html += '<div style="margin:10px 0;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
     + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">' + escHtml(bldLabel) + '</div>'
-    + '<label style="font-size:11px;">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
+    + '<label style="font-size:11px;">\u9060\u853d\u7269\u306e\u9ad8\u3055\uff08\u5efa\u7269\u30fb\u6a39\u6728\u306a\u3069\uff09 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
     + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=(this.value===\'\'?null:parseFloat(this.value));updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\')">' + bldHOptions + '</select>'
     + '<div id="bld-dist-win-' + i + '" style="display:' + (w.bldH > 0 ? '' : 'none') + '">'
-    + '<label style="font-size:11px;">\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
+    + '<label style="font-size:11px;">\u9060\u853d\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
     + '<select style="width:100%;" onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);windowStates[' + i + '].bldDistSelected=true;updatePrecision()">' + bldDistOptions + '</select>'
     + '</div>'
     + '</div>';
@@ -1729,19 +1729,14 @@ function buildHeatmapHtml(matrix) {
     html += '<tr><td class="hm-row-label hm-mn">' + escHtml(MONTH_LABELS[m]) + '</td>';
     for (var t = 0; t < 6; t++) {
       var val = matrix[m][t];
-      var bg = getHeatColor(val);
-      var lightCls = val < 0.35 ? ' light' : '';
-      var pct = val > 0.01 ? Math.round(val * 100) + '%' : '';
-      html += '<td><div class="hm-cell' + lightCls + '" style="background:' + bg + '" title="' + Math.round(val*100) + '%">' + pct + '</div></td>';
+      var info = getHeatInfo(val);
+      html += '<td><div class="hm-cell" style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
     }
     html += '</tr>';
   }
   html += '</tbody></table>';
-  html += '<div class="hm-legend">'
-    + '<span class="hm-leg-item" style="background:#E8420A;color:#fff">\u3068\u3066\u3082\u826f\u3044</span>'
-    + '<span class="hm-leg-item" style="background:#F5A623;color:#fff">\u826f\u3044</span>'
-    + '<span class="hm-leg-item" style="background:#F5D080;color:#555">\u666e\u901a</span>'
-    + '<span class="hm-leg-item" style="background:#F5F4F0;color:#666;border:1px solid #DDD">\u306a\u3057</span>'
+  html += '<div class="hm-legend" style="font-size:12px;color:#555;margin-top:10px;line-height:2;">'
+    + '\ud83d\udfe5 100%\u3000\ud83d\udfe7 \u826f\u597d\u3000\ud83d\udfe8 \u8584\u65e5\u3000\u2b1c \u308f\u305a\u304b'
     + '</div>';
   html += '<p class="hm-desc">\u5404\u30de\u30b9\u306f\u305d\u306e\u6642\u9593\u5e2f\uff082\u6642\u9593\uff09\u306e\u65e5\u7167\u7387\u3092\u793a\u3057\u3066\u3044\u307e\u3059\u3002</p>';
   return html;
@@ -1765,15 +1760,13 @@ function switchHeatmapTab(tabId) {
 // ============================================================
 // Heatmap color scale
 // ============================================================
-function getHeatColor(val) {
+function getHeatInfo(val) {
   var pct = Math.round(val * 100);
-  if (pct >= 90) return '#E8420A';
-  if (pct >= 70) return '#F06020';
-  if (pct >= 50) return '#F5A623';
-  if (pct >= 35) return '#F5BC50';
-  if (pct >= 15) return '#F5D080';
-  if (pct > 0)   return '#F5E8B0';
-  return 'transparent';
+  if (pct >= 100) return { bg: '#E8420A', label: '100%',      fontSize: '11px', color: '#fff' };
+  if (pct >= 70)  return { bg: '#F5A623', label: '\u826f\u597d',    fontSize: '11px', color: '#fff' };
+  if (pct >= 30)  return { bg: '#F5D080', label: '\u8584\u65e5',    fontSize: '11px', color: '#666' };
+  if (pct >= 1)   return { bg: '#F5ECD0', label: '\u308f\u305a\u304b', fontSize: '10px', color: '#888' };
+  return { bg: 'transparent', label: '', fontSize: '11px', color: 'transparent' };
 }
 
 
@@ -1791,20 +1784,15 @@ function renderHeatmapTable(matrix) {
     html += '<tr><td class="hm-row-label hm-mn">' + escHtml(MONTH_LABELS[m]) + '</td>';
     for (var t = 0; t < 6; t++) {
       var val = matrix[m][t];
-      var bg = getHeatColor(val);
-      var lightCls = val < 0.35 ? ' light' : '';
-      var pct = val > 0.01 ? Math.round(val * 100) + '%' : '';
-      html += '<td><div class="hm-cell' + lightCls + '" style="background:' + bg + '" title="' + Math.round(val*100) + '%">' + pct + '</div></td>';
+      var info = getHeatInfo(val);
+      html += '<td><div class="hm-cell" style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
     }
     html += '</tr>';
   }
 
   html += '</tbody></table>';
-  html += '<div class="hm-legend">'
-    + '<span class="hm-leg-item" style="background:#E8420A;color:#fff">\u3068\u3066\u3082\u826f\u3044</span>'
-    + '<span class="hm-leg-item" style="background:#F5A623;color:#fff">\u826f\u3044</span>'
-    + '<span class="hm-leg-item" style="background:#F5D080;color:#555">\u666e\u901a</span>'
-    + '<span class="hm-leg-item" style="background:#F5F4F0;color:#666;border:1px solid #DDD">\u306a\u3057</span>'
+  html += '<div class="hm-legend" style="font-size:12px;color:#555;margin-top:10px;line-height:2;">'
+    + '\ud83d\udfe5 100%\u3000\ud83d\udfe7 \u826f\u597d\u3000\ud83d\udfe8 \u8584\u65e5\u3000\u2b1c \u308f\u305a\u304b'
     + '</div>';
   html += '<p class="hm-desc">\u5404\u30de\u30b9\u306f\u305d\u306e\u6642\u9593\u5e2f\uff082\u6642\u9593\uff09\u306e\u65e5\u7167\u7387\u3092\u793a\u3057\u3066\u3044\u307e\u3059\u3002</p>';
   document.getElementById('heatmapTable').innerHTML = html;
@@ -2370,8 +2358,8 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '</div></div>'
     + (key === 'south'
       ? '<div style="margin-top:8px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
-        + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u5efa\u7269\u306b\u3064\u3044\u3066</div>'
-        + '<div class="c-field-label">\u898b\u3048\u308b\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f</span></div>'
+        + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">\u5357\u5074\uff08\u6b63\u9762\uff09\u306e\u9060\u853d\u7269\u306b\u3064\u3044\u3066</div>'
+        + '<div class="c-field-label">\u9060\u853d\u7269\u306e\u9ad8\u3055\uff08\u5efa\u7269\u30fb\u6a39\u6728\u306a\u3069\uff09 <span class="c-key-sup">\u4efb\u610f</span></div>'
         + '<select class="finput" onchange="cState[\'south\'].bldH=parseFloat(this.value);toggleBldDist(this,\'c-bld-dist-south-dyn\')" style="margin-bottom:8px;">'
         + '<option value="0">\u306a\u3057\uff080m\uff09</option>'
         + '<option value="7">\u4f4e\u3044 1-2\u968e\uff087m\uff09</option>'
@@ -2380,7 +2368,7 @@ function cAddSpecificDir(key, arrow, name, el) {
         + '<option value="40">\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a\uff0840m\uff09</option>'
         + '</select>'
         + '<div id="c-bld-dist-south-dyn" style="display:none">'
-        + '<div class="c-field-label">\u5efa\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f</span></div>'
+        + '<div class="c-field-label">\u9060\u853d\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f</span></div>'
         + '<select class="finput" onchange="cState[\'south\'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">'
         + '<option value="3">\u63a5\u8fd1 \uff5e5m</option>'
         + '<option value="10" selected>\u8fd1\u3044 5-15m</option>'

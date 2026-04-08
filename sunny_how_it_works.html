@@ -521,16 +521,16 @@ body {
       <li class="input-item">
         <div class="input-icon">🏢</div>
         <div class="input-body">
-          <div class="input-title">向かいの建物の高さ</div>
-          <div class="input-desc">太陽を遮る建物の高さ。これが高いほど遮蔽仰角が大きくなります。</div>
+          <div class="input-title">向かいの遮蔽物の高さ</div>
+          <div class="input-desc">太陽を遮る遮蔽物の高さ。これが高いほど遮蔽仰角が大きくなります。</div>
           <span class="input-badge">→ 計算式の分子</span>
         </div>
       </li>
       <li class="input-item">
         <div class="input-icon">📏</div>
         <div class="input-body">
-          <div class="input-title">向かいの建物までの距離</div>
-          <div class="input-desc">建物が遠いほど遮蔽仰角は小さくなり、日照率が上がります。</div>
+          <div class="input-title">向かいの遮蔽物までの距離</div>
+          <div class="input-desc">遮蔽物が遠いほど遮蔽仰角は小さくなり、日照率が上がります。</div>
           <span class="input-badge">→ 計算式の分母</span>
         </div>
       </li>
@@ -575,7 +575,7 @@ body {
       <div class="ex-step-title">窓の向きから遮蔽仰角を計算する</div>
     </div>
     <div class="ex-step-body">
-      <p class="ex-text">向かいの建物を見上げる角度（遮蔽仰角）を計算します。これが「日照の境界線」になります。</p>
+      <p class="ex-text">向かいの遮蔽物を見上げる角度（遮蔽仰角）を計算します。これが「日照の境界線」になります。</p>
       <div class="ex-formula">
         θ = arctan（(15m − 0m) ÷ 20m）= <strong>37°</strong>
       </div>
@@ -626,7 +626,7 @@ body {
           <div style="font-size:11px;font-weight:700;margin-bottom:3px;">冬至の昼12時</div>
           <div style="font-size:10px;opacity:0.85;line-height:1.8;">
             太陽30.9° ＜ 境界線37°<br>
-            → 太陽が建物より低い → 日照なし ×
+            → 太陽が遮蔽物より低い → 日照なし ×
           </div>
         </div>
 
@@ -634,7 +634,7 @@ body {
           <div style="font-size:11px;font-weight:700;margin-bottom:3px;">夏至の昼12時</div>
           <div style="font-size:10px;opacity:0.85;line-height:1.8;">
             太陽77.7° ＞ 境界線37°<br>
-            → 太陽が建物より高い → 日照あり ✓
+            → 太陽が遮蔽物より高い → 日照あり ✓
           </div>
         </div>
 
@@ -924,7 +924,7 @@ body {
     <div class="accuracy-item">
       <div class="accuracy-icon">📏</div>
       <div class="accuracy-body">
-        <div class="accuracy-title">建物の高さ・距離の入力精度</div>
+        <div class="accuracy-title">遮蔽物の高さ・距離の入力精度</div>
         <div class="accuracy-desc">目視・概算値を使用するため実測値とのズレが生じます。</div>
       </div>
     </div>
