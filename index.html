@@ -489,6 +489,22 @@
 <!-- Hero -->
 <section class="hero">
   <div class="hero-sun-bg"></div>
+  <img
+    src="sunnylady.png"
+    alt=""
+    style="
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      height: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      object-position: bottom;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+    "
+  >
   <div class="hero-inner">
     <h1 class="hero-h1">あなたの家の<br><span style="font-size:2em;line-height:1;display:inline-block;border-bottom:5px solid #F5A623;padding-bottom:2px;">日当たり</span>を<br>数値で知る。</h1>
     <p class="hero-sub"><span style="color:#1A1A1A;font-weight:600;">緯度経度・物件情報と、画像をアップするだけ。</span><br><br><span style="color:#555;font-weight:400;">NOAAの太陽軌道計算式を元にしたSunCalc.jsエンジンが、<br>1年分の日照を計算します。</span></p>
@@ -578,6 +594,14 @@
       <span class="step-title">緯度・経度を入力</span>
       <span class="step-title-sub">Google Mapから取得可能</span>
     </div>
+    <button id="geoBtn" onclick="getGeolocation()" style="
+      width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+      background:#1A1A1A;color:#fff;border:none;border-radius:8px;
+      padding:12px;font-size:14px;font-weight:700;cursor:pointer;
+      font-family:'Noto Sans JP',sans-serif;margin-bottom:16px;transition:background 0.2s;">
+      📍 現在地を取得
+    </button>
+    <div id="geoStatus" style="display:none;font-size:12px;color:#6B7280;margin-bottom:12px;text-align:center;"></div>
     <label>Google Mapの緯度経度をここにペースト</label>
     <input type="text" id="pasteInput" placeholder="例：35.6909483, 139.7302033"
       style="margin-bottom:4px" autocomplete="off" autocorrect="off" spellcheck="false">
@@ -688,9 +712,10 @@
               <div class="c-field-label">遮蔽物までの距離 <span class="c-key-sup">任意</span></div>
               <select class="finput" onchange="cState['south'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">
                 <option value="3">接近 ～5m</option>
-                <option value="10" selected>近い 5-15m</option>
-                <option value="22">普通 15-30m</option>
-                <option value="40">遠い 30m～</option>
+                <option value="7">近い 5～10m</option>
+                <option value="15" selected>やや近い 10～20m</option>
+                <option value="27">普通 20～35m</option>
+                <option value="45">遠い 35m～</option>
               </select>
             </div>
           </div>
@@ -1073,12 +1098,14 @@ function renderPhotoCards(i, w) {
       return '<option value="' + item[0] + '"' + (w.bldH === item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
     }).join('');
   var bldDistOptions = [
-    [3, '\u63a5\u8fd1\uff5e5m'],
-    [10, '\u8fd1\u3044 5-15m'],
-    [22, '\u666e\u901a 15-30m'],
-    [40, '\u9060\u3044 30m\uff5e']
+    [3, '\u63a5\u8fd1 \uff5e5m'],
+    [7, '\u8fd1\u3044 5\uff5e10m'],
+    [15, '\u3084\u3084\u8fd1\u3044 10\uff5e20m'],
+    [27, '\u666e\u901a 20\uff5e35m'],
+    [45, '\u9060\u3044 35m\uff5e']
   ].map(function(item) {
-    return '<option value="' + item[0] + '"' + (w.bldDist == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+    var sel = (w.bldDist == item[0]) ? ' selected' : (item[0] === 15 && !w.bldDistSelected ? ' selected' : '');
+    return '<option value="' + item[0] + '"' + sel + '>' + escHtml(item[1]) + '</option>';
   }).join('');
   var html = '<div class="dir-photo-grid">';
   ['left','center','right'].forEach(function(tabKey) {
@@ -1122,7 +1149,7 @@ function renderPhotoCards(i, w) {
   html += '<div class="dir-guide-shared">'
     + '<div class="shooting-guide-wrap">'
     + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
-    + '<img src="shooting-guide.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
+    + '<img src="hand.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
     + '</div>'
     + '<p class="photo-guide-desc" id="photo-guide-text"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;"><li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li><li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u4f7f\u7528\u306f\u7cbe\u5ea6\u5411\u4e0a</li><li>\u6674\u5929\u6642\u306e\u64ae\u5f71\u3092\u63a8\u5968\uff08\u66c7\u308a\u30fb\u96e8\u5929\u3067\u3082\u8a08\u7b97\u53ef\u80fd\uff09</li><li>\u7a7a\u30fb\u5efa\u7269\u304c\u5e83\u304f\u5199\u308b\u3088\u3046\u306b\u64ae\u5f71\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u7a93\u67a0\u3084\u518a\u304c\u4e00\u90e8\u5199\u3063\u3066\u3082\u554f\u984c\u3042\u308a\u307e\u305b\u3093\u3002</li><li>\u5411\u304b\u3044\u306e\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK</li><li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066OK</li></ul></p>'
     + '</div>';
@@ -2186,7 +2213,7 @@ function updateStep3() {
     guideSection.innerHTML = '<div class="dir-guide-shared">'
       + '<div class="shooting-guide-wrap">'
       + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
-      + '<img src="shooting-guide.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
+      + '<img src="hand.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
       + '</div>'
       + '<p class="photo-guide-desc"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;">'
       + '<li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li>'
@@ -2371,9 +2398,10 @@ function cAddSpecificDir(key, arrow, name, el) {
         + '<div class="c-field-label">\u9060\u853d\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f</span></div>'
         + '<select class="finput" onchange="cState[\'south\'].bldDist=parseFloat(this.value)" style="margin-bottom:8px;">'
         + '<option value="3">\u63a5\u8fd1 \uff5e5m</option>'
-        + '<option value="10" selected>\u8fd1\u3044 5-15m</option>'
-        + '<option value="22">\u666e\u901a 15-30m</option>'
-        + '<option value="40">\u9060\u3044 30m\uff5e</option>'
+        + '<option value="7">\u8fd1\u3044 5\uff5e10m</option>'
+        + '<option value="15" selected>\u3084\u3084\u8fd1\u3044 10\uff5e20m</option>'
+        + '<option value="27">\u666e\u901a 20\uff5e35m</option>'
+        + '<option value="45">\u9060\u3044 35m\uff5e</option>'
         + '</select>'
         + '</div>'
         + '</div>'
@@ -2386,6 +2414,73 @@ function cAddSpecificDir(key, arrow, name, el) {
     const addBtn = document.querySelector('.c-add-dir-btn');
     if (addBtn) addBtn.style.display = 'none';
   }
+}
+
+function getGeolocation() {
+  if (!navigator.geolocation) {
+    alert('お使いのブラウザは位置情報に対応していません。');
+    return;
+  }
+  var btn = document.getElementById('geoBtn');
+  var status = document.getElementById('geoStatus');
+  btn.textContent = '📍 取得中...';
+  btn.disabled = true;
+  btn.style.background = '#6B7280';
+  status.style.display = 'block';
+  status.textContent = 'GPSで位置情報を取得しています...';
+
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var acc = Math.round(pos.coords.accuracy);
+
+      document.getElementById('lat').value = lat.toFixed(6);
+      document.getElementById('lng').value = lng.toFixed(6);
+      updatePrecision();
+
+      btn.textContent = '✅ 現在地を取得しました';
+      btn.style.background = '#10B981';
+      status.textContent = '精度：約' + acc + 'm　（住所は自動取得中）';
+
+      fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=ja')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data && data.address) {
+            var a = data.address;
+            var parts = [a.prefecture, a.city || a.town || a.village, a.suburb || a.neighbourhood || a.quarter].filter(Boolean);
+            document.getElementById('address').value = parts.join('');
+            status.textContent = '📍 ' + parts.join('') + '　精度：約' + acc + 'm';
+          }
+        })
+        .catch(function() {
+          status.textContent = '住所の取得に失敗しました。精度：約' + acc + 'm';
+        });
+
+      setTimeout(function() {
+        btn.textContent = '📍 現在地を再取得';
+        btn.style.background = '#1A1A1A';
+        btn.disabled = false;
+      }, 3000);
+    },
+    function(err) {
+      var msg = {
+        1: '位置情報の使用が許可されていません。設定からオンにしてください。',
+        2: '位置情報を取得できませんでした。',
+        3: '取得がタイムアウトしました。再度お試しください。'
+      }[err.code] || '位置情報の取得に失敗しました。';
+      btn.textContent = '📍 現在地を取得';
+      btn.style.background = '#1A1A1A';
+      btn.disabled = false;
+      status.textContent = '⚠️ ' + msg;
+      status.style.color = '#EF4444';
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
 }
 
 function cRemoveDir(key) {
