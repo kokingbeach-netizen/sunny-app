@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プライバシーポリシー — SUNNY</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F4F0;
+  --white: #FFFFFF;
+  --black: #1A1A1A;
+  --amber: #F5A623;
+  --amber-dk: #D4880F;
+  --amber-lt: rgba(245,166,35,0.1);
+  --gray: #6B7280;
+  --border: rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--black);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  padding-bottom: 80px;
+}
+
+/* Header */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 56px;
+}
+.logo-area { display: flex; align-items: center; gap: 8px; }
+.logo-text { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; letter-spacing: 3px; }
+.back-btn {
+  font-size: 13px; color: var(--gray); background: none; border: none;
+  cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+  display: flex; align-items: center; gap: 4px;
+}
+.back-btn:hover { color: var(--black); }
+
+/* Hero */
+.hero {
+  background: var(--black);
+  padding: 48px 24px 40px;
+}
+.hero-inner { max-width: 640px; margin: 0 auto; }
+.hero-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--amber); margin-bottom: 16px; display: block;
+}
+.hero-h1 {
+  font-size: 32px; font-weight: 900;
+  letter-spacing: -1px; line-height: 1.2;
+  color: #fff; margin-bottom: 12px;
+}
+.hero-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+/* Container */
+.container { max-width: 640px; margin: 0 auto; padding: 40px 24px; }
+
+/* Section */
+.section { margin-bottom: 36px; }
+.section-title {
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 2px; color: var(--amber-dk);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(245,166,35,0.2);
+}
+.section-body {
+  font-size: 14px; color: #444; line-height: 1.9;
+}
+.section-body p { margin-bottom: 10px; }
+.section-body p:last-child { margin-bottom: 0; }
+
+/* Item list */
+.item-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.item-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.item-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+.item-body {}
+.item-title { font-size: 13px; font-weight: 700; color: var(--black); margin-bottom: 3px; }
+.item-desc { font-size: 13px; color: var(--gray); line-height: 1.7; }
+
+/* Highlight box */
+.highlight-box {
+  background: rgba(245,166,35,0.06);
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px; color: #555; line-height: 1.8;
+  margin: 12px 0;
+}
+.highlight-box strong { color: var(--black); }
+
+/* Contact */
+.contact-box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.contact-label { font-size: 11px; font-weight: 700; color: var(--gray); letter-spacing: 1px; margin-bottom: 8px; }
+.contact-link {
+  color: var(--amber-dk);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(212,136,15,0.3);
+}
+.contact-link:hover { opacity: 0.7; }
+
+/* Footer */
+.footer {
+  text-align: center;
+  font-size: 12px; color: var(--gray);
+  padding: 32px 24px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+.updated {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--gray);
+  margin-bottom: 24px;
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo-area">
+    <span style="color:var(--amber);font-size:18px;">☀</span>
+    <span class="logo-text">SUNNY</span>
+  </div>
+  <button class="back-btn" onclick="history.back()">← 戻る</button>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <span class="hero-tag">PRIVACY POLICY</span>
+    <h1 class="hero-h1">プライバシーポリシー</h1>
+    <p class="hero-sub">個人情報の取り扱いについて</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <p class="updated">最終更新：2025年4月</p>
+
+  <div class="section">
+    <div class="section-title">01 — 基本方針</div>
+    <div class="section-body">
+      <p>Sunny（以下「本サービス」）は、ユーザーのプライバシーを尊重し、個人情報の適切な取り扱いに努めます。本ポリシーは、本サービスが取得する情報の種類・目的・管理方法について説明します。</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">02 — 取得する情報</div>
+    <div class="section-body">
+      <ul class="item-list">
+        <li class="item-card">
+          <div class="item-icon">📍</div>
+          <div class="item-body">
+            <div class="item-title">位置情報（任意）</div>
+            <div class="item-desc">「現在地を取得」ボタンをタップした場合のみ、デバイスのGPSから緯度・経度を取得します。ボタンを使用しない場合、位置情報は一切取得されません。</div>
+          </div>
+        </li>
+        <li class="item-card">
+          <div class="item-icon">📷</div>
+          <div class="item-body">
+            <div class="item-title">アップロード写真</div>
+            <div class="item-desc">窓からの写真はブラウザ内でのみ処理されます。外部サーバーへの送信・保存は一切行いません。</div>
+          </div>
+        </li>
+        <li class="item-card">
+          <div class="item-icon">⌨️</div>
+          <div class="item-body">
+            <div class="item-title">入力情報（階数・遮蔽物など）</div>
+            <div class="item-desc">ユーザーが入力した物件情報はブラウザ内でのみ使用され、外部へ送信・保存されません。</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">03 — 利用目的</div>
+    <div class="section-body">
+      <p>取得した情報は、日照率の計算・表示のみに使用します。マーケティング・広告・第三者への販売には一切使用しません。</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">04 — 第三者サービスの利用</div>
+    <div class="section-body">
+      <ul class="item-list">
+        <li class="item-card">
+          <div class="item-icon">🗺</div>
+          <div class="item-body">
+            <div class="item-title">Nominatim（OpenStreetMap）</div>
+            <div class="item-desc">「現在地を取得」使用時、住所の参考表示のためにNominatim APIへ緯度・経度を送信します。町名レベルの表示のみに使用し、個人を特定する情報は含みません。<br><a href="https://nominatim.openstreetmap.org/" target="_blank" style="color:var(--amber-dk);font-size:12px;">→ Nominatim利用規約</a></div>
+          </div>
+        </li>
+        <li class="item-card">
+          <div class="item-icon">☀️</div>
+          <div class="item-body">
+            <div class="item-title">SunCalc.js</div>
+            <div class="item-desc">太陽軌道の計算にSunCalc.js（BSDライセンス）を使用しています。外部へのデータ送信はありません。ブラウザ内で完結します。</div>
+          </div>
+        </li>
+      </ul>
+      <div class="highlight-box">
+        <strong>データの保存について：</strong><br>
+        本サービスはユーザーデータをサーバーに保存しません。入力・写真・位置情報はブラウザのセッション内でのみ存在し、ページを閉じると消去されます。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">05 — Cookieとアクセス解析</div>
+    <div class="section-body">
+      <p>現在、本サービスはCookieおよびアクセス解析ツールを使用していません。</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">06 — ポリシーの変更</div>
+    <div class="section-body">
+      <p>本ポリシーは予告なく変更される場合があります。変更後はこのページに最新版を掲載します。</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">07 — お問い合わせ</div>
+    <div class="section-body">
+      <div class="contact-box">
+        <div class="contact-label">CONTACT</div>
+        <div style="font-size:13px;color:var(--gray);margin-bottom:10px;">プライバシーに関するご質問・ご要望はこちらへ</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">運営者：Koki</div>
+        <a href="mailto:ooo@gmail.com" class="contact-link">ooo@gmail.com</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>© 2025 Sunny — 日照率チェッカー</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>お問い合わせ — SUNNY</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F4F0;
+  --white: #FFFFFF;
+  --black: #1A1A1A;
+  --amber: #F5A623;
+  --amber-dk: #D4880F;
+  --amber-lt: rgba(245,166,35,0.1);
+  --gray: #6B7280;
+  --border: rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--black);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  padding-bottom: 80px;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 56px;
+}
+.logo-area { display: flex; align-items: center; gap: 8px; }
+.logo-text { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; letter-spacing: 3px; }
+.back-btn {
+  font-size: 13px; color: var(--gray); background: none; border: none;
+  cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+}
+.back-btn:hover { color: var(--black); }
+
+.hero {
+  background: var(--black);
+  padding: 48px 24px 40px;
+}
+.hero-inner { max-width: 640px; margin: 0 auto; }
+.hero-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--amber); margin-bottom: 16px; display: block;
+}
+.hero-h1 {
+  font-size: 32px; font-weight: 900;
+  letter-spacing: -1px; line-height: 1.2;
+  color: #fff; margin-bottom: 12px;
+}
+.hero-sub { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.8; }
+
+.container { max-width: 640px; margin: 0 auto; padding: 40px 24px; }
+
+/* Use case cards */
+.usecase-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+.usecase-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex; gap: 14px; align-items: flex-start;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.usecase-card:hover { border-color: var(--amber); background: rgba(245,166,35,0.03); }
+.usecase-card.selected { border-color: var(--amber); background: rgba(245,166,35,0.06); }
+.uc-icon { font-size: 22px; flex-shrink: 0; line-height: 1.3; }
+.uc-body { flex: 1; }
+.uc-title { font-size: 14px; font-weight: 700; color: var(--black); margin-bottom: 3px; }
+.uc-desc { font-size: 12px; color: var(--gray); line-height: 1.6; }
+.uc-check {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.12);
+  flex-shrink: 0; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: transparent;
+  transition: all 0.15s;
+}
+.usecase-card.selected .uc-check {
+  background: var(--amber); border-color: var(--amber); color: #fff;
+}
+
+/* Section */
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  color: var(--gray); font-family: 'DM Mono', monospace;
+  margin-bottom: 14px;
+}
+
+/* Info box */
+.info-box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.info-row {
+  display: flex; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.info-row:last-child { border-bottom: none; padding-bottom: 0; }
+.info-row:first-child { padding-top: 0; }
+.info-label { font-size: 11px; font-weight: 700; color: var(--gray); width: 80px; flex-shrink: 0; padding-top: 2px; }
+.info-val { font-size: 13px; color: var(--black); flex: 1; line-height: 1.7; }
+
+/* CTA button */
+.cta-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  background: var(--black); color: #fff;
+  border: none; border-radius: 10px;
+  padding: 18px 24px;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+  margin-bottom: 12px;
+}
+.cta-btn:hover { background: #333; }
+.cta-btn:active { transform: scale(0.98); }
+.cta-btn-amber {
+  background: var(--amber); color: var(--black);
+}
+.cta-btn-amber:hover { background: var(--amber-dk); color: #fff; }
+
+.cta-note {
+  font-size: 12px; color: var(--gray); text-align: center; line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+/* Template preview */
+.template-box {
+  background: #F5F4F0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 13px; color: #444; line-height: 1.9;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+}
+.template-label {
+  font-size: 11px; font-weight: 700; color: var(--gray);
+  letter-spacing: 1px; margin-bottom: 8px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* FAQ */
+.faq-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+.faq-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.faq-q { font-size: 13px; font-weight: 700; color: var(--black); margin-bottom: 6px; display: flex; gap: 8px; }
+.faq-q::before { content: 'Q'; color: var(--amber); font-family: 'DM Mono', monospace; flex-shrink: 0; }
+.faq-a { font-size: 13px; color: var(--gray); line-height: 1.7; display: flex; gap: 8px; }
+.faq-a::before { content: 'A'; color: var(--black); font-family: 'DM Mono', monospace; font-weight: 700; flex-shrink: 0; }
+
+.footer {
+  text-align: center;
+  font-size: 12px; color: var(--gray);
+  padding: 32px 24px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo-area">
+    <span style="color:var(--amber);font-size:18px;">☀</span>
+    <span class="logo-text">SUNNY</span>
+  </div>
+  <button class="back-btn" onclick="history.back()">← 戻る</button>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <span class="hero-tag">CONTACT</span>
+    <h1 class="hero-h1">お問い合わせ</h1>
+    <p class="hero-sub">導入検討・取材・ご質問など、<br>お気軽にご連絡ください。</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- お問い合わせ種別 -->
+  <div style="margin-bottom:28px;">
+    <div class="section-label">INQUIRY TYPE — お問い合わせの種別</div>
+    <div class="usecase-grid">
+      <div class="usecase-card" onclick="selectType(this,'business')" id="type-business">
+        <div class="uc-icon">🏢</div>
+        <div class="uc-body">
+          <div class="uc-title">導入・事業連携のご相談</div>
+          <div class="uc-desc">不動産プラットフォーム・ポータルサイトへの導入、API提供、共同開発など</div>
+        </div>
+        <div class="uc-check">✓</div>
+      </div>
+      <div class="usecase-card" onclick="selectType(this,'media')" id="type-media">
+        <div class="uc-icon">📰</div>
+        <div class="uc-body">
+          <div class="uc-title">取材・メディア掲載</div>
+          <div class="uc-desc">記事・インタビュー・プレスリリースなどのメディア対応</div>
+        </div>
+        <div class="uc-check">✓</div>
+      </div>
+      <div class="usecase-card" onclick="selectType(this,'other')" id="type-other">
+        <div class="uc-icon">💬</div>
+        <div class="uc-body">
+          <div class="uc-title">その他のご質問・ご意見</div>
+          <div class="uc-desc">サービスへのフィードバック、機能要望、一般的なご質問など</div>
+        </div>
+        <div class="uc-check">✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 送信先 -->
+  <div style="margin-bottom:28px;">
+    <div class="section-label">CONTACT INFO — 送信先</div>
+    <div class="info-box">
+      <div class="info-row">
+        <div class="info-label">運営者</div>
+        <div class="info-val">Koki</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">メール</div>
+        <div class="info-val" style="font-family:'DM Mono',monospace;">ooo@gmail.com</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">返信目安</div>
+        <div class="info-val">3営業日以内</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- テンプレートプレビュー -->
+  <div style="margin-bottom:28px;">
+    <div class="section-label">TEMPLATE — メールの内容例</div>
+    <div class="template-label">送信されるメールの内容</div>
+    <div class="template-box" id="templatePreview">お問い合わせ種別を選んでください。</div>
+  </div>
+
+  <!-- CTAボタン -->
+  <a id="mailtoBtn" href="mailto:ooo@gmail.com" class="cta-btn cta-btn-amber">
+    ✉️ メールを送る
+  </a>
+  <p class="cta-note">
+    タップするとメールアプリが開きます。<br>
+    件名・本文は自動で入力されます。
+  </p>
+
+  <!-- FAQ -->
+  <div style="margin-bottom:8px;">
+    <div class="section-label">FAQ</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">導入の費用はかかりますか？</div>
+        <div class="faq-a">現在、導入条件・価格はご相談ベースで対応しています。まずはお気軽にご連絡ください。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">APIとして提供は可能ですか？</div>
+        <div class="faq-a">対応可能です。計算エンジンのAPI化・埋め込みウィジェット等、ご要望に応じてご相談します。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">精度についてもっと詳しく知りたい</div>
+        <div class="faq-a">算出方法ページをご覧ください。誤差±20〜30%の根拠・計算ロジックを公開しています。</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>© 2025 Sunny — 日照率チェッカー</p>
+</div>
+
+<script>
+var templates = {
+  business: {
+    subject: '【導入・事業連携のご相談】Sunnyについて',
+    body: '株式会社〇〇の〇〇と申します。\n\nSunnyの導入・事業連携についてご相談したいと思いご連絡いたしました。\n\n■ご相談内容\n（例：自社不動産ポータルへの導入検討、API連携など）\n\n■会社・サービスの概要\n（簡単にご記入ください）\n\n■ご希望の対応\n□ オンラインMTGを希望\n□ 資料送付を希望\n□ その他：\n\nよろしくお願いいたします。'
+  },
+  media: {
+    subject: '【取材・メディア掲載のご依頼】Sunnyについて',
+    body: '〇〇（メディア名）の〇〇と申します。\n\nSunnyについて取材させていただきたく、ご連絡いたしました。\n\n■媒体名・掲載予定\n（例：〇〇ブログ・2025年〇月掲載予定）\n\n■取材内容\n（例：開発の経緯、技術的な仕組みなど）\n\n■ご希望の対応\n□ メールインタビュー\n□ オンライン取材\n□ その他：\n\nよろしくお願いいたします。'
+  },
+  other: {
+    subject: '【お問い合わせ】Sunnyについて',
+    body: 'お名前：\n\nお問い合わせ内容：\n（ご自由にご記入ください）\n\nよろしくお願いいたします。'
+  }
+};
+
+var selectedTypeKey = '';
+
+function selectType(el, key) {
+  document.querySelectorAll('.usecase-card').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  selectedTypeKey = key;
+
+  var t = templates[key];
+  document.getElementById('templatePreview').textContent =
+    '件名：' + t.subject + '\n\n' + t.body;
+
+  var mailto = 'mailto:ooo@gmail.com?subject=' + encodeURIComponent(t.subject) + '&body=' + encodeURIComponent(t.body);
+  document.getElementById('mailtoBtn').href = mailto;
+}
+
+// デフォルト選択
+selectType(document.getElementById('type-business'), 'business');
+</script>
+
+</body>
+</html>
