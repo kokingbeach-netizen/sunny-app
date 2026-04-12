@@ -637,6 +637,15 @@
         <button class="sel-card" onclick="selYoto(this,'balcony')">🏠 ベランダ・バルコニー</button>
         <button class="sel-card" onclick="selYoto(this,'rooftop')">🏡 ルーフバルコニー</button>
       </div>
+      <div id="roofDepthSection" style="display:none;margin-top:16px;">
+        <label>窓の上に屋根・庇はありますか？<span style="font-size:11px;color:#6B7280;font-weight:400;margin-left:6px;">（日照精度が向上します）</span></label>
+        <div class="card-row" id="roofDepthCards">
+          <button class="sel-card" onclick="selRoofDepth(this, 0)">なし</button>
+          <button class="sel-card" onclick="selRoofDepth(this, 0.7)">浅い 〜1m</button>
+          <button class="sel-card" onclick="selRoofDepth(this, 1.25)">普通 1〜1.5m</button>
+          <button class="sel-card" onclick="selRoofDepth(this, 1.75)">深い 1.5m〜</button>
+        </div>
+      </div>
     </div>
 
     <!-- 建築前リサーチ用（新規） -->
@@ -863,6 +872,7 @@
 // ============================================================
 var windowStates = [];
 var selectedYoto = '';
+var roofDepth = 0;
 var selectedMode = 'A';
 var lastSeasonScores = null;
 
@@ -1163,7 +1173,28 @@ function renderPhotoCards(i, w) {
   html += '<div class="dir-guide-shared">'
     + '<div class="shooting-guide-wrap">'
     + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
-    + '<img src="hand.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
+    + '<div style="display:flex;gap:12px;align-items:center;justify-content:center;">'
+    + '<div style="flex:1;text-align:center;">'
+    + '<img src="hand.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d45\u00b0\u4e0a\u5411\u304d" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
+    + '<div style="font-size:10px;color:#6B7280;margin-top:4px;">\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d</div>'
+    + '</div>'
+    + '<div style="width:1px;height:80px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
+    + '<div style="flex:1;text-align:center;">'
+    + '<div id="shoot-guide-default" style="font-size:11px;color:#9CA3AF;line-height:1.6;">\u7528\u9014\u3092\u9078\u3076\u3068<br>\u64ae\u5f71\u5834\u6240\u306e<br>\u30ac\u30a4\u30c9\u304c\u51fa\u307e\u3059</div>'
+    + '<div id="shoot-guide-living" style="display:none;">'
+    + '<svg width="100" height="90" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg"><rect x="60" y="0" width="40" height="70" fill="#E8E4DC"/><rect x="63" y="8" width="34" height="48" rx="2" fill="#B8D8F0" stroke="#1A1A1A" stroke-width="1.5"/><line x1="80" y1="8" x2="80" y2="56" stroke="#1A1A1A" stroke-width="1"/><line x1="63" y1="32" x2="97" y2="32" stroke="#1A1A1A" stroke-width="1"/><rect x="0" y="70" width="100" height="20" fill="#F5F4F0"/><circle cx="30" cy="48" r="7" fill="#1A1A1A"/><rect x="23" y="55" width="14" height="15" rx="2" fill="#1A1A1A"/><g transform="translate(22,50) rotate(-45)"><rect x="-3" y="-8" width="7" height="12" rx="1.5" fill="#F5A623" stroke="#D4880F" stroke-width="1"/></g><line x1="24" y1="47" x2="55" y2="22" stroke="#F5A623" stroke-width="1.5" stroke-dasharray="3,2"/></svg>'
+    + '<div style="font-size:10px;color:#6B7280;margin-top:2px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>'
+    + '</div>'
+    + '<div id="shoot-guide-balcony" style="display:none;">'
+    + '<svg width="100" height="90" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="100" height="60" fill="#87CEEB"/><rect x="65" y="10" width="30" height="50" fill="#C8C0B0"/><rect x="69" y="15" width="8" height="8" fill="#B8D8F0"/><rect x="80" y="15" width="8" height="8" fill="#B8D8F0"/><rect x="0" y="60" width="65" height="12" fill="#D4C9B8"/><rect x="0" y="52" width="62" height="3" rx="1" fill="#9CA3AF"/><line x1="8" y1="52" x2="8" y2="72" stroke="#9CA3AF" stroke-width="2"/><line x1="22" y1="52" x2="22" y2="72" stroke="#9CA3AF" stroke-width="2"/><line x1="36" y1="52" x2="36" y2="72" stroke="#9CA3AF" stroke-width="2"/><line x1="50" y1="52" x2="50" y2="72" stroke="#9CA3AF" stroke-width="2"/><circle cx="30" cy="40" r="7" fill="#1A1A1A"/><rect x="23" y="47" width="14" height="13" rx="2" fill="#1A1A1A"/><g transform="translate(22,38) rotate(-45)"><rect x="-3" y="-8" width="7" height="12" rx="1.5" fill="#F5A623" stroke="#D4880F" stroke-width="1"/></g><line x1="22" y1="36" x2="5" y2="18" stroke="#F5A623" stroke-width="1.5" stroke-dasharray="3,2"/></svg>'
+    + '<div style="font-size:10px;color:#6B7280;margin-top:2px;">\u67f5\u304b\u3089\u5916\u306b\u5411\u3051\u3066</div>'
+    + '</div>'
+    + '<div id="shoot-guide-rooftop" style="display:none;">'
+    + '<svg width="100" height="90" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="100" height="65" fill="#87CEEB"/><circle cx="50" cy="18" r="12" fill="#F5A623"/><line x1="50" y1="2" x2="50" y2="0" stroke="#F5A623" stroke-width="2"/><line x1="64" y1="6" x2="66" y2="4" stroke="#F5A623" stroke-width="2"/><line x1="70" y1="18" x2="73" y2="18" stroke="#F5A623" stroke-width="2"/><line x1="36" y1="6" x2="34" y2="4" stroke="#F5A623" stroke-width="2"/><line x1="30" y1="18" x2="27" y2="18" stroke="#F5A623" stroke-width="2"/><rect x="10" y="65" width="80" height="15" fill="#D4C9B8"/><line x1="35" y1="65" x2="35" y2="80" stroke="#C4B8A8" stroke-width="1"/><line x1="60" y1="65" x2="60" y2="80" stroke="#C4B8A8" stroke-width="1"/><circle cx="50" cy="51" r="7" fill="#1A1A1A"/><rect x="43" y="58" width="14" height="10" rx="2" fill="#1A1A1A"/><g transform="translate(50,44) rotate(0)"><rect x="-3" y="-10" width="7" height="12" rx="1.5" fill="#F5A623" stroke="#D4880F" stroke-width="1"/></g></svg>'
+    + '<div style="font-size:10px;color:#6B7280;margin-top:2px;">\u5168\u65b9\u5411\u30fb\u7a7a\u304c\u5e83\u304f\u5199\u308b\u3088\u3046\u306b</div>'
+    + '</div>'
+    + '</div>'
+    + '</div>'
     + '</div>'
     + '<p class="photo-guide-desc" id="photo-guide-text"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;"><li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li><li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u4f7f\u7528\u306f\u7cbe\u5ea6\u5411\u4e0a</li><li>\u6674\u5929\u6642\u306e\u64ae\u5f71\u3092\u63a8\u5968\uff08\u66c7\u308a\u30fb\u96e8\u5929\u3067\u3082\u8a08\u7b97\u53ef\u80fd\uff09</li><li>\u7a7a\u30fb\u5efa\u7269\u304c\u5e83\u304f\u5199\u308b\u3088\u3046\u306b\u64ae\u5f71\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u7a93\u67a0\u3084\u518a\u304c\u4e00\u90e8\u5199\u3063\u3066\u3082\u554f\u984c\u3042\u308a\u307e\u305b\u3093\u3002</li><li>\u5411\u304b\u3044\u306e\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK</li><li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066OK</li></ul></p>'
     + '</div>';
@@ -1405,10 +1436,39 @@ function deleteWindow(i) {
 // ============================================================
 // Yoto (用途) / Mode selection
 // ============================================================
+function selRoofDepth(el, val) {
+  roofDepth = val;
+  document.querySelectorAll('#roofDepthCards .sel-card').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  el.classList.add('active');
+}
+
 function selYoto(el, val) {
   selectedYoto = val;
   document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) { b.classList.remove('active'); });
   el.classList.add('active');
+
+  // 屋根・庇セクションの表示制御
+  var roofSection = document.getElementById('roofDepthSection');
+  if (val === 'rooftop') {
+    roofSection.style.display = 'none';
+    roofDepth = 0;
+  } else {
+    roofSection.style.display = 'block';
+  }
+
+  // 撮影ガイドの切り替え
+  var guideIds = ['shoot-guide-default','shoot-guide-living','shoot-guide-balcony','shoot-guide-rooftop'];
+  var guideMap = { 'living':'shoot-guide-living', 'balcony':'shoot-guide-balcony', 'rooftop':'shoot-guide-rooftop' };
+  setTimeout(function() {
+    document.querySelectorAll(guideIds.map(function(id){ return '#'+id; }).join(',')).forEach(function(el){ el.style.display='none'; });
+    var guideId = guideMap[val];
+    if (guideId) {
+      document.querySelectorAll('#' + guideId).forEach(function(el){ el.style.display='block'; });
+    }
+  }, 50);
+
   updatePrecision();
 }
 
@@ -1527,6 +1587,13 @@ function calcWindowHeatmap(w, floorNum) {
     obstBase = formulaObst;
   } else if (photoObst !== null) {
     obstBase = photoObst;
+  }
+
+  // 屋根・庇による追加遮蔽
+  if (roofDepth > 0 && selectedYoto !== 'rooftop') {
+    var ceilingH = 2.3;
+    var roofObstAngle = Math.atan2(roofDepth, ceilingH) * 180 / Math.PI;
+    obstBase = Math.max(obstBase, roofObstAngle);
   }
 
   // 追加遮蔽\uff08看板・隣接壁\uff09
