@@ -699,9 +699,8 @@
           <div class="photo-check-section">
             <p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>
             <div class="photo-check-items" id="c-checks-south">
-              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>
-              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬-5% 秋-10% 春夏-15%</span></label>
-              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（常緑樹・1年中葉がある）</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（落葉樹・冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬-5% 秋-10% 春夏-15%</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="none" checked onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">上記に該当するものは写っていない</span></label>
@@ -1218,7 +1217,7 @@ function renderSurroundingCheckboxes(i, selected) {
   var options = [
     { val: 'evergreen',  label: '\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09', tag: '\u2192 \u5168\u5b63\u7bc0-15%' },
     { val: 'deciduous',  label: '\u6a39\u6728\uff08\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b\uff09', tag: '\u2192 \u51ac-5% \u79cb-10% \u6625\u590f-15%' },
-    { val: 'pole',       label: '\u96fb\u67f1\u30fb\u96fb\u7dda', tag: null },
+
     { val: 'signboard',  label: '\u770b\u677f\u30fb\u5e83\u544a\u677f', tag: '\u2192 \u9065\u853d\u3068\u3057\u3066\u8a08\u7b97' },
     { val: 'wall',       label: '\u96a3\u63a5\u3059\u308b\u5efa\u7269\u306e\u58c1\u9762\uff08\u771f\u6a2a\uff09', tag: '\u2192 \u9065\u853d\u3068\u3057\u3066\u8a08\u7b97' },
     { val: 'none',       label: '\u4e0a\u8a18\u306b\u8a72\u5f53\u3059\u308b\u3082\u306e\u306f\u5199\u3063\u3066\u3044\u306a\u3044', tag: null }
@@ -2294,7 +2293,17 @@ function updateStep3() {
     guideSection.innerHTML = '<div class="dir-guide-shared">'
       + '<div class="shooting-guide-wrap">'
       + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
-      + '<img src="hand.png" alt="\u64ae\u5f71\u65b9\u6cd5\uff1a\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" class="shooting-guide-img">'
+      + '<div style="display:flex;gap:12px;align-items:center;justify-content:center;">'
+      + '<div style="flex:1;text-align:center;">'
+      + '<img src="hand.png" alt="\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
+      + '<div style="font-size:10px;color:#6B7280;margin-top:4px;">\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d</div>'
+      + '</div>'
+      + '<div style="width:1px;height:80px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
+      + '<div style="flex:1;text-align:center;">'
+      + '<img src="landshoot.png" alt="\u66f4\u5730\u306e\u4e2d\u592e\u304b\u3089\u64ae\u5f71" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
+      + '<div style="font-size:10px;color:#6B7280;margin-top:4px;">\u66f4\u5730\u306e\u4e2d\u592e\u304b\u3089\u64ae\u5f71</div>'
+      + '</div>'
+      + '</div>'
       + '</div>'
       + '<p class="photo-guide-desc"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;">'
       + '<li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li>'
@@ -2457,9 +2466,8 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '<div class="photo-check-section">'
     + '<p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>'
     + '<div class="photo-check-items">'
-    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">常緑樹（1年中葉がある）</span></label>'
-    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">落葉樹（冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬-5% 秋-10% 春夏-15%</span></label>'
-    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="pole" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">電柱・電線</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">\u6a39\u6728\uff08\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b\uff09</span><span class="photo-check-tag warn">\u2192 \u51ac-5% \u79cb-10% \u6625\u590f-15%</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="none" checked onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">上記に該当するものは写っていない</span></label>'
