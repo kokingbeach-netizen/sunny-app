@@ -631,7 +631,7 @@
       </div>
     </div>
     <label style="margin-top:14px">住所（任意）</label>
-    <input type="text" id="address" placeholder="例：東京都渋谷区代々木2丁目...">
+    <input type="text" id="address" placeholder="例：東京都渋谷区代々木2丁目..." oninput="updatePrecision()">
   </div>
 
   <!-- STEP 2 -->
@@ -1174,10 +1174,10 @@ function renderPhotoCards(i, w) {
   html += '<div style="margin:10px 0;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border:1px solid rgba(245,166,35,0.2);">'
     + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:8px;">' + escHtml(bldLabel) + '</div>'
     + '<label style="font-size:11px;">\u9060\u853d\u7269\u306e\u9ad8\u3055\uff08\u5efa\u7269\u30fb\u6a39\u6728\u306a\u3069\uff09 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
-    + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=(this.value===\'\'?null:parseFloat(this.value));updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\')">' + bldHOptions + '</select>'
+    + '<select style="width:100%;margin-bottom:8px;" onchange="windowStates[' + i + '].bldH=(this.value===\'\'?null:parseFloat(this.value));updatePrecision();toggleBldDist(this,\'bld-dist-win-' + i + '\');this.style.borderColor=this.value>0?\'#F5A623\':\'\';this.style.background=this.value>0?\'rgba(245,166,35,0.06)\':\'\'">' + bldHOptions + '</select>'
     + '<div id="bld-dist-win-' + i + '" style="display:' + (w.bldH > 0 ? '' : 'none') + '">'
     + '<label style="font-size:11px;">\u9060\u853d\u7269\u307e\u3067\u306e\u8ddd\u96e2 <span class="c-key-sup">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></label>'
-    + '<select style="width:100%;" onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);windowStates[' + i + '].bldDistSelected=true;updatePrecision()">' + bldDistOptions + '</select>'
+    + '<select style="width:100%;" onchange="windowStates[' + i + '].bldDist=parseFloat(this.value);windowStates[' + i + '].bldDistSelected=true;updatePrecision();this.style.borderColor=\'#F5A623\';this.style.background=\'rgba(245,166,35,0.06)\'">' + bldDistOptions + '</select>'
     + '</div>'
     + '</div>';
 
@@ -1344,6 +1344,18 @@ function setWinDir(i, dir) {
   windowStates[i].dir = dir;
   rerenderWindow(i);
   updatePrecision();
+  // 選択済み窓カード全体にオレンジ枠
+  windowStates.forEach(function(w, idx) {
+    var card = document.getElementById('win-card-' + idx);
+    if (!card) return;
+    if (w.dir) {
+      card.style.borderColor = '#F5A623';
+      card.style.background  = 'rgba(245,166,35,0.03)';
+    } else {
+      card.style.borderColor = '';
+      card.style.background  = '';
+    }
+  });
 }
 
 // ============================================================
@@ -1481,6 +1493,13 @@ function selYoto(el, val) {
     }
   }, 50);
 
+  // 用途カードのオレンジ枠
+  document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) {
+    var isActive = b.classList.contains('active');
+    b.style.borderColor = isActive ? '#F5A623' : '';
+    b.style.background  = isActive ? 'rgba(245,166,35,0.08)' : '';
+  });
+
   updatePrecision();
 }
 
@@ -1500,15 +1519,36 @@ function toggleBldDist(selectEl, distId) {
 
 function updatePrecision() {
   checkCalcReady();
-  var lat = parseFloat(document.getElementById('lat').value);
-  var lng = parseFloat(document.getElementById('lng').value);
+
+  // 緯度
+  var latVal = parseFloat(document.getElementById('lat').value);
   var latEl = document.getElementById('lat');
+  var latDone = !isNaN(latVal) && latVal !== 0;
+  latEl.style.borderColor = latDone ? '#F5A623' : '';
+  latEl.style.background  = latDone ? 'rgba(245,166,35,0.06)' : '';
+
+  // 経度
+  var lngVal = parseFloat(document.getElementById('lng').value);
   var lngEl = document.getElementById('lng');
-  var done = !isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0;
-  latEl.style.borderColor = done ? '#F5A623' : '';
-  lngEl.style.borderColor = done ? '#F5A623' : '';
-  latEl.style.background  = done ? 'rgba(245,166,35,0.06)' : '';
-  lngEl.style.background  = done ? 'rgba(245,166,35,0.06)' : '';
+  var lngDone = !isNaN(lngVal) && lngVal !== 0;
+  lngEl.style.borderColor = lngDone ? '#F5A623' : '';
+  lngEl.style.background  = lngDone ? 'rgba(245,166,35,0.06)' : '';
+
+  // 住所（任意・1文字以上で完了）
+  var addrEl = document.getElementById('address');
+  if (addrEl) {
+    var addrDone = addrEl.value.trim().length > 0;
+    addrEl.style.borderColor = addrDone ? '#F5A623' : '';
+    addrEl.style.background  = addrDone ? 'rgba(245,166,35,0.06)' : '';
+  }
+
+  // 階数
+  var floorEl = document.getElementById('floor');
+  if (floorEl) {
+    var floorDone = floorEl.value.trim().length > 0;
+    floorEl.style.borderColor = floorDone ? '#F5A623' : '';
+    floorEl.style.background  = floorDone ? 'rgba(245,166,35,0.06)' : '';
+  }
 }
 
 // ============================================================
@@ -2109,11 +2149,20 @@ function resetAll() {
   document.getElementById('address').value = '';
   document.getElementById('floor').value = '1';
   selectedYoto = '';
-  document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#yotoCards .sel-card').forEach(function(b) {
+    b.classList.remove('active');
+    b.style.borderColor = '';
+    b.style.background  = '';
+  });
   windowStates = [makeDefaultWindow(0)];
   renderAllWindows();
   storedHeatmaps = [];
   document.getElementById('results').style.display = 'none';
+  // 入力フィードバックのスタイルリセット
+  ['lat','lng','address','floor'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.borderColor = ''; el.style.background = ''; }
+  });
   updatePrecision();
   window.location.hash = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
