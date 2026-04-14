@@ -211,8 +211,10 @@
     .dir-card-label { font-size: 11px; font-weight: 700; padding: 6px 8px 5px; background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.06); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .dir-card-check { color: var(--amber-dk); }
     .dir-card-btns { padding: 7px 6px 6px; }
-    .dir-card-btn-full { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; padding: 9px 6px; border: 1.5px solid var(--amber); border-radius: 7px; font-size: 12px; font-weight: 700; color: var(--amber-dk); cursor: pointer; background: #fff; text-align: center; transition: background 0.15s; box-sizing: border-box; }
-    .dir-card-btn-full:hover { background: #FFF8ED; }
+    .dir-card-btn-full { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; padding: 9px 6px; border: 1.5px solid rgba(0,0,0,0.12); border-radius: 7px; font-size: 12px; font-weight: 700; color: #6B7280; cursor: pointer; background: #fff; text-align: center; transition: background 0.15s; box-sizing: border-box; }
+    .dir-card-btn-full:hover { background: #F5F4F0; border-color: rgba(0,0,0,0.2); }
+    .dir-card.has-photo .dir-card-btn-full { border: 1.5px solid var(--amber); color: var(--amber-dk); }
+    .dir-card.has-photo .dir-card-btn-full:hover { background: #FFF8ED; border-color: var(--amber); }
     .dir-card-preview { padding: 6px; }
     .dir-card-thumb { width: 100%; height: 64px; object-fit: cover; border-radius: 5px; display: block; cursor: pointer; }
     .dir-card-svf { font-size: 9px; color: var(--amber-dk); text-align: center; margin-top: 3px; }
