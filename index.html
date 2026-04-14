@@ -584,6 +584,19 @@
   </div>
 </div>
 
+<!-- Map Guide Modal -->
+<div class="modal-overlay" id="mapGuideModal" onclick="if(event.target===this)closeMapGuideModal()">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <span>📍 Google Mapから緯度経度を取得する方法</span>
+      <button class="modal-close" onclick="closeMapGuideModal()">&#x2715;</button>
+    </div>
+    <div style="padding:24px;overflow-y:auto;max-height:70vh;">
+      <p style="color:#6B7280;font-size:14px;">（内容は後日追加）</p>
+    </div>
+  </div>
+</div>
+
 <!-- Main container -->
 <div class="container">
 
@@ -602,7 +615,7 @@
       📍 現在地を取得
     </button>
     <div id="geoStatus" style="display:none;font-size:12px;color:#6B7280;margin-bottom:12px;text-align:center;"></div>
-    <label>Google Mapの緯度経度をここにペースト</label>
+    <label>またはGoogle Mapからペースト <a href="#" onclick="openMapGuideModal();return false;" style="font-size:11px;color:#F5A623;font-weight:400;margin-left:6px;text-decoration:underline;">取得方法はこちら</a></label>
     <input type="text" id="pasteInput" placeholder="例：35.6909483, 139.7302033"
       style="margin-bottom:4px" autocomplete="off" autocorrect="off" spellcheck="false">
     <div class="paste-hint">ペーストすると下の欄に自動入力されます</div>
@@ -1487,6 +1500,15 @@ function toggleBldDist(selectEl, distId) {
 
 function updatePrecision() {
   checkCalcReady();
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+  var latEl = document.getElementById('lat');
+  var lngEl = document.getElementById('lng');
+  var done = !isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0;
+  latEl.style.borderColor = done ? '#F5A623' : '';
+  lngEl.style.borderColor = done ? '#F5A623' : '';
+  latEl.style.background  = done ? 'rgba(245,166,35,0.06)' : '';
+  lngEl.style.background  = done ? 'rgba(245,166,35,0.06)' : '';
 }
 
 // ============================================================
@@ -2053,7 +2075,15 @@ function closeHowModal() {
   document.getElementById('howModal').classList.remove('open');
   document.body.style.overflow = '';
 }
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeHowModal(); closePhotoLightbox(); closeScreenshot(); } });
+function openMapGuideModal() {
+  document.getElementById('mapGuideModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMapGuideModal() {
+  document.getElementById('mapGuideModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeHowModal(); closeMapGuideModal(); closePhotoLightbox(); closeScreenshot(); } });
 
 // ============================================================
 // Photo lightbox
