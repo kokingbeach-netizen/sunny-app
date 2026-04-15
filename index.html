@@ -931,6 +931,7 @@ var windowStates = [];
 var selectedYoto = '';
 var roofDepth = 0;
 var selectedMode = 'A';
+var selectedUsecase = '居住・不動産';
 var lastSeasonScores = null;
 
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
@@ -2475,7 +2476,7 @@ function restoreFromHash() {
 
 <script>
 // 用途選択UI
-let selectedUsecase = '居住・不動産';
+// selectedUsecase は State セクション（line 930付近）で var 宣言済み
 
 const usecaseConfig = {
   '居住・不動産': {
