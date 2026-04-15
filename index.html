@@ -1822,50 +1822,49 @@ function displayResults(score, winScores, heatmaps) {
   resultsEl.style.display = 'block';
   resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  countUp(document.getElementById('scoreNum'), Math.round(score), 1500, '');
-  document.getElementById('scoreText').textContent = getScoreText(score);
-
-  // Property-level OR matrix for season scores and peak month
+  var addr = document.getElementById('address').value;
   var orMatrix = computeOrHeatmap(heatmaps);
-  calcPeakMonth(orMatrix);
-  calcSeasonScores(orMatrix);
+  var seasons = getSeasonScoresFromMatrix(orMatrix);
+  var comment = getScreenshotComment(Math.round(score));
 
-  // Per-window detail sections
-  var detailsHtml = '';
+  storedHeatmaps = heatmaps;
+
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:20px 16px 8px;">';
+
+  html += buildSummaryCard(Math.round(score), seasons, orMatrix, addr, comment);
+
   heatmaps.forEach(function(hm, i) {
     var w = windowStates[i];
-    var winScore = Math.round(winScores[i]);
-    var seasons = getSeasonScoresFromMatrix(hm);
-    var title = escHtml(w.name + (w.dir ? '\uff08' + w.dir + '\u5411\u304d\uff09' : ''));
-
-    detailsHtml += '<div class="result-card">';
-    detailsHtml += '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px;">'
-      + '<span style="font-size:13px;font-weight:800;color:#1A1A1A;">' + title + '</span>'
-      + '<span style="font-family:\'DM Mono\',monospace;font-weight:700;font-size:15px;color:#F5A623;">' + winScore + '%</span>'
-      + '</div>';
-    detailsHtml += '<div style="display:flex;justify-content:space-around;background:rgba(0,0,0,0.04);border-radius:12px;padding:8px 4px;margin-bottom:12px;gap:2px">';
-    detailsHtml += winSeasonBlock('\uD83C\uDF38', '\u6625', seasons.spring);
-    detailsHtml += winSeasonBlock('\u2600\uFE0F', '\u590f', seasons.summer);
-    detailsHtml += winSeasonBlock('\uD83C\uDF42', '\u79CB', seasons.autumn);
-    detailsHtml += winSeasonBlock('\u2744\uFE0F', '\u51AC', seasons.winter);
-    detailsHtml += '</div>';
-    detailsHtml += '<div style="font-size:11px;font-weight:700;color:#666;margin-bottom:8px;">\u6708\u5225\xd7\u6642\u9593\u5e2f\u30d2\u30fc\u30c8\u30de\u30c3\u30d7</div>';
-    detailsHtml += '<div style="overflow-x:auto">' + buildHeatmapHtml(hm) + '</div>';
-    var winLevel = winScore >= 75 ? 'high' : winScore >= 60 ? 'mid' : winScore >= 40 ? 'low' : 'vlow';
-    var dirCmt = getDirComment(w.dir);
-    var yotoCmt = getYotoComment(winLevel);
-    if (dirCmt) {
-      detailsHtml += '<div style="margin-top:12px;padding:10px 12px;background:rgba(245,166,35,0.06);border-radius:8px;border-left:3px solid #F5A623;font-size:12px;color:#6B7280;line-height:1.7;">'
-        + '<span style="font-weight:700;color:#D4880F;">' + escHtml(w.dir) + '\u5411\u304d\u306e\u7279\u5fb4</span><br>' + escHtml(dirCmt)
-        + '</div>';
-    }
-    if (yotoCmt) {
-      detailsHtml += '<div style="margin-top:8px;font-size:13px;color:var(--gray);line-height:1.8;">' + escHtml(yotoCmt) + '</div>';
-    }
-    detailsHtml += '</div>';
+    var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+    var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
+    var winSeasons = getSeasonScoresFromMatrix(hm);
+    var winComment = getWindowComment(w.dir);
+    html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
   });
 
-  document.getElementById('windowDetails').innerHTML = detailsHtml;
+  html += '</div>';
+
+  html += '<p style="font-size:11px;color:#9CA3AF;margin:0 16px 16px;line-height:1.7;text-align:center;">⚠️ この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。</p>';
+
+  html += '<div style="padding:0 16px 32px;">'
+    + '<div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:12px;">📋 この結果をどうしますか？</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px;">'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="window.scrollTo({top:0,behavior:\'smooth\'})">'
+    + '<span style="font-size:20px;">✏️</span><div><div style="font-size:13px;font-weight:700;">修正する</div><div style="font-size:11px;color:#6B7280;">この画面のまま修正できます</div></div>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="resetAll()">'
+    + '<span style="font-size:20px;">🔄</span><div><div style="font-size:13px;font-weight:700;">最初からやり直す</div><div style="font-size:11px;color:#6B7280;">入力をリセットして再計算</div></div>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="openScreenshot()">'
+    + '<span style="font-size:20px;">📸</span><div><div style="font-size:13px;font-weight:700;">結果をスクリーンショット用に表示する</div><div style="font-size:11px;color:#6B7280;">シンプルな画面に切り替えて保存できます</div></div>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="copyResultUrl()">'
+    + '<span style="font-size:20px;">🔗</span><div><div style="font-size:13px;font-weight:700;">結果URLをコピーする</div><div style="font-size:11px;color:#6B7280;">同じURLを開くと同じ結果が再現されます（写真以外）</div></div>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+
+  document.getElementById('results').innerHTML = html;
 }
 
 function computeAggHeatmap(heatmaps) {
