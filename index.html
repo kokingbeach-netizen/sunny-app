@@ -755,7 +755,7 @@
           <div class="photo-check-section">
             <p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>
             <div class="photo-check-items" id="c-checks-south">
-              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（常緑樹・1年中葉がある）</span></label>
+              <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（常緑樹・1年中葉がある）</span><span class="photo-check-tag warn">→ 全季節-15%</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（落葉樹・冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬-5% 秋-10% 春夏-15%</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>
@@ -1603,9 +1603,14 @@ function checkCalcReady() {
   var lat = parseFloat(document.getElementById('lat').value);
   var lng = parseFloat(document.getElementById('lng').value);
   var hasLatLng = !isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0;
-  var hasYoto = selectedYoto !== '';
-  var hasDir = windowStates.length > 0 && windowStates.every(function(w) { return !!w.dir; });
-  var ready = hasLatLng && hasYoto && hasDir;
+  var ready;
+  if (selectedUsecase === '建築前リサーチ') {
+    ready = hasLatLng;
+  } else {
+    var hasYoto = selectedYoto !== '';
+    var hasDir = windowStates.length > 0 && windowStates.every(function(w) { return !!w.dir; });
+    ready = hasLatLng && hasYoto && hasDir;
+  }
   var btn = document.getElementById('calcBtn');
   if (btn) {
     btn.disabled = !ready;
@@ -1770,7 +1775,13 @@ function runCalculation() {
     document.getElementById('step1')?.scrollIntoView({behavior:'smooth'});
     return;
   }
-  var floorNum = parseInt(document.getElementById('floor').value) || 1;
+  var floorNum;
+  if (selectedUsecase === '建築前リサーチ') {
+    var cfEl = document.getElementById('constructionFloors');
+    floorNum = cfEl ? (parseInt(cfEl.value) || 1) : 1;
+  } else {
+    floorNum = parseInt(document.getElementById('floor').value) || 1;
+  }
   hideError();
 
   var btn = document.getElementById('calcBtn');
@@ -1779,16 +1790,42 @@ function runCalculation() {
 
   setTimeout(function() {
     try {
-      var heatmaps = windowStates.map(function(w) { return calcWindowHeatmap(w, floorNum); });
-      var windowScores = heatmaps.map(function(hm) {
-        var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
-        return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
-      });
-      var orMatrix = computeOrHeatmap(heatmaps);
-      var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
-      var propertyScore = (orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100;
-      storedHeatmaps = heatmaps;
-      displayResults(propertyScore, windowScores, heatmaps);
+      var heatmaps, windowScores, orMatrix, orAll, propertyScore;
+      if (selectedUsecase === '建築前リサーチ') {
+        var C_DIR_MAP = { south:'南', southeast:'南東', southwest:'南西', east:'東', west:'西', north:'北' };
+        var dirs = ['south'];
+        cAddedDirs.forEach(function(d) { if (d !== 'south' && dirs.indexOf(d) === -1) dirs.push(d); });
+        var cWindows = dirs.map(function(key) {
+          var s = cState[key] || { bldH:0, bldDist:10, surroundings:[] };
+          return { dir: C_DIR_MAP[key] || '南', name: C_DIR_MAP[key] || '南',
+                   bldH: s.bldH, bldDist: s.bldDist, surroundings: s.surroundings,
+                   svf: { center: null, left: null, right: null }, size: '中' };
+        });
+        heatmaps = cWindows.map(function(w) { return calcWindowHeatmap(w, floorNum); });
+        windowScores = heatmaps.map(function(hm) {
+          var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+          return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
+        });
+        orMatrix = computeOrHeatmap(heatmaps);
+        orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
+        propertyScore = (orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100;
+        storedHeatmaps = heatmaps;
+        var origWindowStates = windowStates;
+        windowStates = cWindows;
+        displayResults(propertyScore, windowScores, heatmaps);
+        windowStates = origWindowStates;
+      } else {
+        heatmaps = windowStates.map(function(w) { return calcWindowHeatmap(w, floorNum); });
+        windowScores = heatmaps.map(function(hm) {
+          var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+          return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
+        });
+        orMatrix = computeOrHeatmap(heatmaps);
+        orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
+        propertyScore = (orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100;
+        storedHeatmaps = heatmaps;
+        displayResults(propertyScore, windowScores, heatmaps);
+      }
     } catch(e) {
       showError('\u8a08\u7b97\u4e2d\u306b\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f: ' + e.message);
     }
@@ -2720,7 +2757,7 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '<div class="photo-check-section">'
     + '<p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>'
     + '<div class="photo-check-items">'
-    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09</span></label>'
+    + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09</span><span class="photo-check-tag warn">\u2192 \u5168\u5b63\u7bc0-15%</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">\u6a39\u6728\uff08\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b\uff09</span><span class="photo-check-tag warn">\u2192 \u51ac-5% \u79cb-10% \u6625\u590f-15%</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="signboard" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">看板・広告板</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="wall" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">隣接する建物の壁面（真横）</span><span class="photo-check-tag warn">→ 遮蔽として計算</span></label>'
