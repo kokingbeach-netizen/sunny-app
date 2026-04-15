@@ -95,14 +95,14 @@
     input[type=text] {
       width: 100%; background: #EFEFEC; border: 1px solid rgba(0,0,0,0.1);
       border-radius: 8px; padding: 10px 12px; color: #1A1A1A;
-      font-family: 'Noto Sans JP', sans-serif; font-size: 13px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 16px;
       outline: none; transition: border-color 0.2s; margin-bottom: 14px;
     }
     input[type=text]:focus { border-color: #F5A623; }
     input[type=number], select {
       width: 100%; background: #EFEFEC; border: 1px solid rgba(0,0,0,0.1);
       border-radius: 8px; padding: 10px 12px; color: #1A1A1A;
-      font-family: 'DM Mono', monospace; font-size: 13px;
+      font-family: 'DM Mono', monospace; font-size: 16px;
       outline: none; transition: border-color 0.2s; margin-bottom: 14px;
       appearance: none; -webkit-appearance: none;
     }
@@ -110,6 +110,11 @@
     select {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+    }
+    textarea { font-size: 16px; }
+    /* iOSズーム防止 */
+    input[type=text], input[type=number], input[type=email], input[type=tel], select, textarea {
+      font-size: 16px !important;
     }
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -126,7 +131,7 @@
     .window-card { background: #F5F4F0; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 18px; margin-bottom: 14px; }
     .window-card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .window-card-title { font-size: 13px; font-weight: 700; }
-    .win-name-input { background: transparent; border: none; border-bottom: 1.5px solid rgba(0,0,0,0.12); border-radius: 0; padding: 2px 4px; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 0; width: auto; font-family: 'Noto Sans JP', sans-serif; }
+    .win-name-input { background: transparent; border: none; border-bottom: 1.5px solid rgba(0,0,0,0.12); border-radius: 0; padding: 2px 4px; font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 0; width: auto; font-family: 'Noto Sans JP', sans-serif; }
     .win-name-input:focus { border-bottom-color: #F5A623; outline: none; }
     .del-btn { background: none; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #6B7280; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
     .del-btn:hover { border-color: #EF4444; color: #EF4444; }
