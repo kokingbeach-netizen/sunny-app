@@ -767,7 +767,7 @@
   
 
   <div id="errorBox" style="display:none;margin:0 20px;padding:12px;background:#FFF3F3;border:1px solid rgba(220,50,50,0.2);border-radius:8px;font-size:12px;color:#C00;"></div>
-  <div style="padding:20px 20px 32px;"><button id="calcBtn" onclick="runCalculation()" disabled style="width:100%;background:#9CA3AF;color:#fff;font-size:15px;font-weight:700;padding:16px;border-radius:8px;border:none;cursor:not-allowed;letter-spacing:-.2px;">☀️ 日照率を算出する</button><p id="calcValidationMsg" style="text-align:center;margin-top:8px;font-size:11px;color:#EF4444;">緯度・経度・窓の向き・用途を入力してください</p><p style="text-align:center;margin-top:6px;font-size:11px;color:#666;">入力した情報をもとに1年分の日照を計算します</p></div>
+  <div style="padding:20px 20px 32px;"><button id="calcBtn" onclick="runCalculation()" disabled style="width:100%;background:#9CA3AF;color:#fff;font-size:15px;font-weight:700;padding:16px;border-radius:8px;border:none;cursor:not-allowed;letter-spacing:-.2px;">☀️ 日照率を算出する</button></div>
 
   <!-- Results -->
   <div id="results" style="display:none">
@@ -1564,14 +1564,10 @@ function checkCalcReady() {
   var hasDir = windowStates.length > 0 && windowStates.every(function(w) { return !!w.dir; });
   var ready = hasLatLng && hasYoto && hasDir;
   var btn = document.getElementById('calcBtn');
-  var msg = document.getElementById('calcValidationMsg');
   if (btn) {
     btn.disabled = !ready;
     btn.style.background = ready ? '#1A1A1A' : '#9CA3AF';
     btn.style.cursor = ready ? 'pointer' : 'not-allowed';
-  }
-  if (msg) {
-    msg.style.display = ready ? 'none' : 'block';
   }
 }
 
