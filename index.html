@@ -2226,14 +2226,14 @@ function buildHeatmapForCard(matrix) {
   return html;
 }
 
-function getScreenshotComment(score, seasons) {
+function getScreenshotComment(score) {
   if (score >= 75) return '日照が豊富で、一年を通じて明るく快適な住環境です。洗濯物もよく乾き、暖房費も節約できます。';
   if (score >= 60) return 'バランスの良い日当たりで、季節を問わず快適に過ごせます。';
   if (score >= 40) return '落ち着いた日当たりで、夏は涼しく快適に過ごせます。冬は暖かな差し込み光が楽しめます。';
   return '穏やかな採光環境です。夏の猛暑も和らぎ、涼しく快適な空間になります。';
 }
 
-function getWindowComment(dir, score, seasons) {
+function getWindowComment(dir) {
   var dirMap = {
     '南':  '冬でも低い太陽が深く差し込む、年間を通じて安定した明るさが魅力です。',
     '南東': '朝から昼にかけて明るく、気持ちの良い一日のスタートが切れます。',
@@ -2333,7 +2333,7 @@ function openScreenshot() {
   var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
   var score = Math.round((orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100);
   var seasons = getSeasonScoresFromMatrix(orMatrix);
-  var comment = getScreenshotComment(score, seasons);
+  var comment = getScreenshotComment(score);
 
   var html = buildSummaryCard(score, seasons, orMatrix, addr, comment);
 
@@ -2342,7 +2342,7 @@ function openScreenshot() {
     var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
     var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
     var winSeasons = getSeasonScoresFromMatrix(hm);
-    var winComment = getWindowComment(w.dir, winScore, winSeasons);
+    var winComment = getWindowComment(w.dir);
     html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
   });
 
