@@ -290,6 +290,46 @@
     .ss-text { font-size: 14px; color: var(--gray); line-height: 1.9; white-space: pre-wrap; margin: 16px 0; }
     .ss-sep { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 
+    /* Screenshot card */
+    .sc-card { width: 360px; height: 360px; background: #fff; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Noto Sans JP', sans-serif; flex-shrink: 0; }
+    .sc-top-black { background: #1A1A1A; padding: 7px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .sc-top-amber { background: #F5A623; padding: 7px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .sc-logo-w { font-size: 10px; color: #F5A623; letter-spacing: 2px; font-family: 'DM Mono', monospace; }
+    .sc-logo-dk { font-size: 10px; color: #1A1A1A; letter-spacing: 2px; font-family: 'DM Mono', monospace; }
+    .sc-addr-w { font-size: 7px; color: rgba(255,255,255,0.4); }
+    .sc-win-badge { font-size: 8px; font-weight: 700; background: rgba(0,0,0,0.15); color: #1A1A1A; padding: 2px 8px; border-radius: 4px; }
+    .sc-catch { border-bottom: 0.5px solid rgba(245,166,35,0.2); padding: 10px 20px; display: flex; align-items: center; justify-content: center; gap: 16px; flex-shrink: 0; }
+    .sc-catch-total { background: #FFFBF2; }
+    .sc-catch-window { background: #FFF8F0; }
+    .sc-catch-left { display: flex; flex-direction: column; align-items: flex-end; }
+    .sc-catch-q { font-size: 18px; font-weight: 900; color: #1A1A1A; line-height: 1.25; text-align: right; }
+    .sc-catch-divider { width: 100%; height: 1.5px; background: #F5A623; margin: 6px 0; border-radius: 2px; }
+    .sc-catch-label-total { font-size: 16px; font-weight: 900; color: #B45309; letter-spacing: 1px; text-align: right; }
+    .sc-catch-label-win { font-size: 14px; font-weight: 900; color: #B45309; text-align: right; line-height: 1.3; }
+    .sc-catch-sep { width: 1.5px; height: 68px; background: rgba(245,166,35,0.3); border-radius: 2px; flex-shrink: 0; }
+    .sc-catch-right { display: flex; align-items: baseline; gap: 2px; }
+    .sc-score-num { font-size: 88px; font-weight: 900; color: #1A1A1A; line-height: 1; letter-spacing: -5px; }
+    .sc-score-pct { font-size: 26px; color: #aaa; font-weight: 400; }
+    .sc-detail { flex: 1; display: grid; grid-template-columns: 1fr 140px; overflow: hidden; }
+    .sc-left { display: flex; flex-direction: column; padding: 10px; border-right: 0.5px solid rgba(0,0,0,0.06); gap: 6px; }
+    .sc-seasons { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .sc-s { background: #F5F4F0; border-radius: 6px; padding: 6px 4px; text-align: center; }
+    .sc-s-e { font-size: 13px; display: block; }
+    .sc-s-l { font-size: 9px; color: #555; display: block; font-weight: 700; }
+    .sc-s-v { font-size: 16px; font-weight: 900; color: #1A1A1A; display: block; }
+    .sc-comment { font-size: 9px; color: #1A1A1A; line-height: 1.7; padding: 6px 8px; background: rgba(245,166,35,0.05); border-radius: 4px; border-left: 2px solid #F5A623; font-weight: 500; }
+    .sc-right { display: flex; flex-direction: column; padding: 9px 8px 8px; }
+    .sc-hm-lbl { font-size: 7px; color: #1A1A1A; font-weight: 700; margin-bottom: 5px; }
+    .sc-hm-table { border-collapse: separate; border-spacing: 1px; width: 100%; }
+    .sc-hm-th { font-size: 5px; color: #888; text-align: center; font-weight: 700; }
+    .sc-hm-rl { font-size: 5px; color: #888; text-align: right; padding-right: 3px; white-space: nowrap; font-weight: 700; }
+    .sc-hm-cell { width: 11px; height: 10px; border-radius: 1px; }
+    .sc-footer-total { background: #F5F4F0; padding: 5px 14px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-top: 0.5px solid rgba(0,0,0,0.05); }
+    .sc-footer-window { background: #FFF3E0; padding: 5px 14px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-top: 0.5px solid rgba(0,0,0,0.05); }
+    .sc-f-note { font-size: 7px; color: #555; font-weight: 500; }
+    .sc-f-badge-total { font-size: 8px; color: #F5A623; font-weight: 700; }
+    .sc-f-badge-win { font-size: 8px; color: #B45309; font-weight: 700; }
+
     /* copy URL feedback */
     .copy-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1A1A1A; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 20000; }
     .copy-toast.show { opacity: 1; }
@@ -868,7 +908,9 @@
 <div class="ss-overlay" id="ssOverlay">
   <button class="ss-back" onclick="closeScreenshot()" style="position:fixed;top:16px;left:16px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;z-index:1001;">← 戻る</button>
   <button class="ss-close" onclick="closeScreenshot()">&#x2715; 閉じる</button>
-  <div id="ssContent" style="max-width:600px;margin:0 auto;"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:56px;">
+    <div id="ssContent" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;"></div>
+  </div>
 </div>
 
 <!-- Copy URL toast -->
@@ -2166,23 +2208,143 @@ function resetAll() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function openScreenshot() {
-  var score = document.getElementById('scoreNum').textContent;
-  var text = document.getElementById('scoreText').textContent;
-  var hmHtml = storedHeatmaps.length ? buildHeatmapHtml(computeAggHeatmap(storedHeatmaps)) : '';
-  var addr = document.getElementById('address').value;
+function buildHeatmapForCard(matrix) {
+  var times = ['6','8','10','12','14','16'];
+  var html = '<table class="sc-hm-table"><thead><tr><th class="sc-hm-rl"></th>';
+  times.forEach(function(t) { html += '<th class="sc-hm-th">' + t + '</th>'; });
+  html += '</tr></thead><tbody>';
+  MONTH_LABELS.forEach(function(lbl, m) {
+    html += '<tr><td class="sc-hm-rl">' + lbl + '</td>';
+    for (var t = 0; t < 6; t++) {
+      var v = matrix[m][t];
+      var bg = v >= 0.9 ? '#E8420A' : v >= 0.6 ? '#F5A623' : v >= 0.3 ? '#F5D080' : v >= 0.05 ? '#F5ECD0' : '#F0EFE9';
+      html += '<td class="sc-hm-cell" style="background:' + bg + '"></td>';
+    }
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
 
-  var html = '<div class="ss-hint">📸 この画面をスクリーンショットして保存できます</div>';
-  if (addr) html += '<div style="font-size:12px;color:#6B7280;margin-bottom:16px;">📍 ' + escHtml(addr) + '</div>';
-  html += '<div class="ss-label">PROPERTY SCORE</div>';
-  html += '<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:12px;">';
-  html += '<span class="ss-score-big">' + score + '</span>';
-  html += '<span style="font-size:32px;font-weight:700;color:#6B7280">%</span></div>';
-  html += '<div class="ss-text">' + escHtml(text) + '</div>';
-  html += '<hr class="ss-sep">';
-  html += '<div style="font-size:12px;font-weight:700;margin-bottom:12px;">月別×時間帯ヒートマップ</div>';
-  html += '<div style="overflow-x:auto">' + hmHtml + '</div>';
-  html += '<p style="font-size:11px;color:#9CA3AF;margin-top:20px;line-height:1.7;">⚠️ この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。</p>';
+function getScreenshotComment(score, seasons) {
+  if (score >= 75) return '日照が豊富で、一年を通じて明るく快適な住環境です。洗濯物もよく乾き、暖房費も節約できます。';
+  if (score >= 60) return 'バランスの良い日当たりで、季節を問わず快適に過ごせます。';
+  if (score >= 40) return '落ち着いた日当たりで、夏は涼しく快適に過ごせます。冬は暖かな差し込み光が楽しめます。';
+  return '穏やかな採光環境です。夏の猛暑も和らぎ、涼しく快適な空間になります。';
+}
+
+function getWindowComment(dir, score, seasons) {
+  var dirMap = {
+    '南':  '冬でも低い太陽が深く差し込む、年間を通じて安定した明るさが魅力です。',
+    '南東': '朝から昼にかけて明るく、気持ちの良い一日のスタートが切れます。',
+    '南西': '午後から夕方にたっぷり日が入り、夕食時も自然光で明るく過ごせます。',
+    '東':  '朝の清々しい光が差し込み、気持ちよく一日を始められます。',
+    '西':  '午後から夕方にかけて暖かな光が差し込み、夕暮れの美しい景色が楽しめます。',
+    '北':  '安定した柔らかい光が一年中入り、眩しくなく落ち着いた空間になります。',
+    '北東': '朝の柔らかい光が差し込み、穏やかな雰囲気の空間になります。',
+    '北西': '午後の穏やかな光が入り、落ち着いた住環境が楽しめます。'
+  };
+  return dirMap[dir] || '窓から差し込む光が、快適な住環境をつくり出しています。';
+}
+
+function buildSummaryCard(score, seasons, matrix, addr, comment) {
+  return '<div class="sc-card">'
+    + '<div class="sc-top-black">'
+    + '<span class="sc-logo-w">☀ SUNNY</span>'
+    + '<span class="sc-addr-w">' + escHtml(addr || '') + '</span>'
+    + '</div>'
+    + '<div class="sc-catch sc-catch-total">'
+    + '<div class="sc-catch-left">'
+    + '<div class="sc-catch-q">この物件の<br>日当たりは？</div>'
+    + '<div class="sc-catch-divider"></div>'
+    + '<div class="sc-catch-label-total">総合判定</div>'
+    + '</div>'
+    + '<div class="sc-catch-sep"></div>'
+    + '<div class="sc-catch-right">'
+    + '<span class="sc-score-num">' + score + '</span>'
+    + '<span class="sc-score-pct">%</span>'
+    + '</div>'
+    + '</div>'
+    + '<div class="sc-detail">'
+    + '<div class="sc-left">'
+    + '<div class="sc-seasons">'
+    + '<div class="sc-s"><span class="sc-s-e">🌸</span><span class="sc-s-l">春</span><span class="sc-s-v">' + seasons.spring + '%</span></div>'
+    + '<div class="sc-s"><span class="sc-s-e">☀️</span><span class="sc-s-l">夏</span><span class="sc-s-v">' + seasons.summer + '%</span></div>'
+    + '<div class="sc-s"><span class="sc-s-e">🍂</span><span class="sc-s-l">秋</span><span class="sc-s-v">' + seasons.autumn + '%</span></div>'
+    + '<div class="sc-s"><span class="sc-s-e">❄️</span><span class="sc-s-l">冬</span><span class="sc-s-v">' + seasons.winter + '%</span></div>'
+    + '</div>'
+    + '<div class="sc-comment">' + escHtml(comment) + '</div>'
+    + '</div>'
+    + '<div class="sc-right">'
+    + '<div class="sc-hm-lbl">月別×時間帯</div>'
+    + buildHeatmapForCard(matrix)
+    + '</div>'
+    + '</div>'
+    + '<div class="sc-footer-total">'
+    + '<span class="sc-f-note">誤差±20〜30% / 天候・雲量含まず</span>'
+    + '<span class="sc-f-badge-total">Powered by SUNNY</span>'
+    + '</div>'
+    + '</div>';
+}
+
+function buildWindowCard(w, i, score, seasons, matrix, comment) {
+  return '<div class="sc-card">'
+    + '<div class="sc-top-black">'
+    + '<span class="sc-logo-w">☀ SUNNY</span>'
+    + '<span class="sc-win-badge">WINDOW ' + (i+1) + '　' + escHtml(w.dir || '') + '向き</span>'
+    + '</div>'
+    + '<div class="sc-catch sc-catch-window">'
+    + '<div class="sc-catch-left">'
+    + '<div class="sc-catch-q">この窓の<br>日当たりは？</div>'
+    + '<div class="sc-catch-divider"></div>'
+    + '<div class="sc-catch-label-win">窓' + (i+1) + '（' + escHtml(w.dir || '') + '向き）<br>の判定</div>'
+    + '</div>'
+    + '<div class="sc-catch-sep"></div>'
+    + '<div class="sc-catch-right">'
+    + '<span class="sc-score-num">' + score + '</span>'
+    + '<span class="sc-score-pct">%</span>'
+    + '</div>'
+    + '</div>'
+    + '<div class="sc-detail">'
+    + '<div class="sc-left">'
+    + '<div class="sc-seasons">'
+    + '<div class="sc-s"><span class="sc-s-e">🌸</span><span class="sc-s-l">春</span><span class="sc-s-v">' + seasons.spring + '%</span></div>'
+    + '<div class="sc-s"><span class="sc-s-e">☀️</span><span class="sc-s-l">夏</span><span class="sc-s-v">' + seasons.summer + '%</span></div>'
+    + '<div class="sc-s"><span class="sc-s-e">🍂</span><span class="sc-s-l">秋</span><span class="sc-s-v">' + seasons.autumn + '%</span></div>'
+    + '<div class="sc-s"><span class="sc-s-e">❄️</span><span class="sc-s-l">冬</span><span class="sc-s-v">' + seasons.winter + '%</span></div>'
+    + '</div>'
+    + '<div class="sc-comment">' + escHtml(comment) + '</div>'
+    + '</div>'
+    + '<div class="sc-right">'
+    + '<div class="sc-hm-lbl">月別×時間帯</div>'
+    + buildHeatmapForCard(matrix)
+    + '</div>'
+    + '</div>'
+    + '<div class="sc-footer-window">'
+    + '<span class="sc-f-note">誤差±20〜30% / 天候・雲量含まず</span>'
+    + '<span class="sc-f-badge-win">Powered by SUNNY</span>'
+    + '</div>'
+    + '</div>';
+}
+
+function openScreenshot() {
+  var addr = document.getElementById('address').value;
+  var orMatrix = computeOrHeatmap(storedHeatmaps);
+  var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
+  var score = Math.round((orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100);
+  var seasons = getSeasonScoresFromMatrix(orMatrix);
+  var comment = getScreenshotComment(score, seasons);
+
+  var html = buildSummaryCard(score, seasons, orMatrix, addr, comment);
+
+  storedHeatmaps.forEach(function(hm, i) {
+    var w = windowStates[i];
+    var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+    var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
+    var winSeasons = getSeasonScoresFromMatrix(hm);
+    var winComment = getWindowComment(w.dir, winScore, winSeasons);
+    html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
+  });
 
   document.getElementById('ssContent').innerHTML = html;
   document.getElementById('ssOverlay').classList.add('open');
