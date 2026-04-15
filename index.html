@@ -1825,7 +1825,7 @@ function displayResults(score, winScores, heatmaps) {
   var addr = document.getElementById('address').value;
   var orMatrix = computeOrHeatmap(heatmaps);
   var seasons = getSeasonScoresFromMatrix(orMatrix);
-  var comment = getScreenshotComment(Math.round(score));
+  var comment = getScreenshotComment(Math.round(score), windowStates);
 
   storedHeatmaps = heatmaps;
 
@@ -1833,14 +1833,16 @@ function displayResults(score, winScores, heatmaps) {
 
   html += buildSummaryCard(Math.round(score), seasons, orMatrix, addr, comment);
 
-  heatmaps.forEach(function(hm, i) {
-    var w = windowStates[i];
-    var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
-    var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
-    var winSeasons = getSeasonScoresFromMatrix(hm);
-    var winComment = getWindowComment(w.dir);
-    html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
-  });
+  if (heatmaps.length >= 2) {
+    heatmaps.forEach(function(hm, i) {
+      var w = windowStates[i];
+      var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+      var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
+      var winSeasons = getSeasonScoresFromMatrix(hm);
+      var winComment = getWindowComment(w.dir);
+      html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
+    });
+  }
 
   html += '</div>';
 
@@ -2225,11 +2227,22 @@ function buildHeatmapForCard(matrix) {
   return html;
 }
 
-function getScreenshotComment(score) {
-  if (score >= 75) return '日照が豊富で、一年を通じて明るく快適な住環境です。洗濯物もよく乾き、暖房費も節約できます。';
-  if (score >= 60) return 'バランスの良い日当たりで、季節を問わず快適に過ごせます。';
-  if (score >= 40) return '落ち着いた日当たりで、夏は涼しく快適に過ごせます。冬は暖かな差し込み光が楽しめます。';
-  return '穏やかな採光環境です。夏の猛暑も和らぎ、涼しく快適な空間になります。';
+function getScreenshotComment(score, windows) {
+  var baseComment;
+  if (score >= 75) baseComment = '日照が豊富で、一年を通じて明るく快適な住環境です。洗濯物もよく乾き、暖房費も節約できます。';
+  else if (score >= 60) baseComment = 'バランスの良い日当たりで、季節を問わず快適に過ごせます。';
+  else if (score >= 40) baseComment = '落ち着いた日当たりで、夏は涼しく快適に過ごせます。冬は暖かな差し込み光が楽しめます。';
+  else baseComment = '穏やかな採光環境です。夏の猛暑も和らぎ、涼しく快適な空間になります。';
+
+  if (windows && windows.length === 1) {
+    var winComment = getWindowComment(windows[0].dir);
+    return baseComment + '\n' + winComment;
+  }
+  if (windows && windows.length >= 2) {
+    var dirs = windows.map(function(w) { return w.dir; }).join('・');
+    return baseComment + '\n' + dirs + 'の窓から、時間帯を変えながら一日中日差しが楽しめます。';
+  }
+  return baseComment;
 }
 
 function getWindowComment(dir) {
@@ -2332,18 +2345,20 @@ function openScreenshot() {
   var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
   var score = Math.round((orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100);
   var seasons = getSeasonScoresFromMatrix(orMatrix);
-  var comment = getScreenshotComment(score);
+  var comment = getScreenshotComment(score, windowStates);
 
   var html = buildSummaryCard(score, seasons, orMatrix, addr, comment);
 
-  storedHeatmaps.forEach(function(hm, i) {
-    var w = windowStates[i];
-    var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
-    var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
-    var winSeasons = getSeasonScoresFromMatrix(hm);
-    var winComment = getWindowComment(w.dir);
-    html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
-  });
+  if (storedHeatmaps.length >= 2) {
+    storedHeatmaps.forEach(function(hm, i) {
+      var w = windowStates[i];
+      var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+      var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
+      var winSeasons = getSeasonScoresFromMatrix(hm);
+      var winComment = getWindowComment(w.dir);
+      html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
+    });
+  }
 
   document.getElementById('ssContent').innerHTML = html;
   document.getElementById('ssOverlay').classList.add('open');
