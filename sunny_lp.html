@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUNNY — 不動産プロのための日照率算出ツール</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #F5F4F0;
+      color: #1A1A1A;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      background: #F5F4F0;
+    }
+
+    /* ============================================================
+       NAV
+    ============================================================ */
+    .nav {
+      background: #1A1A1A;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      color: #F5A623;
+      letter-spacing: 3px;
+    }
+    .nav-cta {
+      background: #F5A623;
+      color: #1A1A1A;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 18px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    .hero {
+      background: #1A1A1A;
+      padding: 56px 24px 64px;
+      text-align: left;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: #F5A623;
+      letter-spacing: 2px;
+      border: 1px solid rgba(245,166,35,0.4);
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 20px;
+    }
+    .hero-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: 30px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.35;
+      letter-spacing: -0.5px;
+      margin-bottom: 16px;
+    }
+    .hero-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.8;
+      margin-bottom: 36px;
+    }
+    .hero-cta {
+      display: block;
+      width: 100%;
+      background: #F5A623;
+      color: #1A1A1A;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ============================================================
+       SECTION COMMON
+    ============================================================ */
+    .section { padding: 56px 24px; }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      color: #F5A623;
+      margin-bottom: 12px;
+    }
+    .section h2 {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.4;
+      letter-spacing: -0.3px;
+      margin-bottom: 20px;
+    }
+    .section-body {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.9;
+    }
+
+    /* ============================================================
+       PROBLEM
+    ============================================================ */
+    .problem { background: #fff; }
+    .problem h2 { color: #1A1A1A; }
+    .problem-quote {
+      border-left: 3px solid #F5A623;
+      background: rgba(245,166,35,0.06);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #7C4A00;
+      line-height: 1.7;
+      margin: 20px 0;
+    }
+    .problem-close {
+      font-size: 13px;
+      color: #1A1A1A;
+      font-weight: 500;
+      line-height: 1.8;
+    }
+
+    /* ============================================================
+       DATA
+    ============================================================ */
+    .data-section {
+      background: #1A1A1A;
+      padding: 56px 24px;
+    }
+    .data-section .section-label { color: #F5A623; }
+    .data-section h2 { color: #fff; margin-bottom: 28px; }
+
+    .data-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .data-number {
+      font-family: 'DM Mono', monospace;
+      font-size: 48px;
+      font-weight: 500;
+      color: #F5A623;
+      line-height: 1;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+    .data-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+    .data-source {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .trends-block {
+      background: rgba(245,166,35,0.1);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-top: 8px;
+    }
+    .trends-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #F5A623;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+    .trends-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+    }
+    .trends-row:last-of-type { border-bottom: none; }
+    .trends-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .trends-badge.up { background: rgba(34,197,94,0.15); color: #4ADE80; }
+    .trends-badge.surge { background: rgba(245,166,35,0.2); color: #F5A623; }
+    .trends-badge.down { background: rgba(156,163,175,0.15); color: #9CA3AF; }
+    .trends-source {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      font-family: 'DM Mono', monospace;
+      margin-top: 12px;
+    }
+
+    /* ============================================================
+       FEATURES
+    ============================================================ */
+    .features { background: #F5F4F0; }
+    .features h2 { color: #1A1A1A; }
+    .feature-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .feature-icon-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 8px;
+    }
+    .feature-desc {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    /* ============================================================
+       FOR WHO
+    ============================================================ */
+    .forwho { background: #1A1A1A; padding: 56px 24px; }
+    .forwho .section-label { color: #F5A623; }
+    .forwho h2 { color: #fff; margin-bottom: 28px; }
+    .forwho-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .forwho-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .forwho-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.8;
+    }
+
+    /* ============================================================
+       HOW TO USE
+    ============================================================ */
+    .howto { background: #fff; }
+    .howto h2 { color: #1A1A1A; margin-bottom: 28px; }
+    .step-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: #1A1A1A;
+      color: #F5A623;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-body {}
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 6px;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    /* Score card mock */
+    .card-mock-wrap {
+      margin-top: 20px;
+    }
+    .card-mock-label {
+      font-size: 11px;
+      color: #9CA3AF;
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .card-mock {
+      background: #fff;
+      border: 1.5px solid rgba(0,0,0,0.1);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .cm-header {
+      background: #1A1A1A;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cm-header-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: #F5A623;
+      letter-spacing: 2px;
+    }
+    .cm-header-addr {
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+    }
+    .cm-body { padding: 14px; }
+    .cm-catch {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .cm-catch-left {
+      flex: 1;
+    }
+    .cm-catch-question {
+      font-size: 10px;
+      color: #9CA3AF;
+      margin-bottom: 3px;
+    }
+    .cm-catch-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1A1A1A;
+    }
+    .cm-divider {
+      width: 1px;
+      height: 40px;
+      background: rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+    .cm-score-area {
+      text-align: right;
+    }
+    .cm-score-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 40px;
+      font-weight: 500;
+      color: #F5A623;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+    .cm-score-unit {
+      font-size: 14px;
+      color: #9CA3AF;
+      font-family: 'DM Mono', monospace;
+    }
+    .cm-seasons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .cm-season {
+      background: #F5F4F0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cm-season-label {
+      font-size: 11px;
+      color: #555;
+    }
+    .cm-season-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1A1A1A;
+    }
+    /* Dummy heatmap */
+    .cm-heatmap {
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .cm-hm-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .cm-hm-cell {
+      height: 10px;
+    }
+    .hm-0 { background: #E5E7EB; }
+    .hm-1 { background: #FDE68A; }
+    .hm-2 { background: #FCD34D; }
+    .hm-3 { background: #FBBF24; }
+    .hm-4 { background: #F59E0B; }
+    .hm-5 { background: #D97706; }
+    .cm-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #9CA3AF;
+    }
+    .card-mock-note {
+      font-size: 11px;
+      color: #9CA3AF;
+      text-align: center;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    /* ============================================================
+       TRUST
+    ============================================================ */
+    .trust { background: #F5F4F0; }
+    .trust h2 { color: #1A1A1A; margin-bottom: 24px; }
+    .trust-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .trust-check {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      background: #1A1A1A;
+      color: #F5A623;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .trust-text {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.8;
+    }
+
+    /* ============================================================
+       CTA
+    ============================================================ */
+    .cta-section {
+      background: #F5A623;
+      padding: 56px 24px;
+      text-align: center;
+    }
+    .cta-section h2 {
+      font-size: 22px;
+      font-weight: 900;
+      color: #1A1A1A;
+      line-height: 1.4;
+      margin-bottom: 28px;
+    }
+    .cta-btn {
+      display: block;
+      width: 100%;
+      background: #1A1A1A;
+      color: #fff;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .footer {
+      background: #1A1A1A;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: #F5A623;
+      letter-spacing: 3px;
+      margin-bottom: 16px;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+    }
+    .footer-copy {
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">☀ SUNNY</div>
+    <a href="index.html" class="nav-cta">無料で試す</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">FOR REAL ESTATE PROFESSIONALS</div>
+    <div class="hero-label">SUNNYとは？</div>
+    <h1>日当たりを<br>数値で算出します。</h1>
+    <p class="hero-sub">物件の日照率を月別・時間帯別に算出。<br>「南向き」だけでは伝わらない日当たりを、<br>データで見せるツールです。</p>
+    <a href="index.html" class="hero-cta">無料で使ってみる →</a>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="section problem">
+    <div class="section-label">PROBLEM</div>
+    <h2>「日当たり良好」を<br>もっと詳しく</h2>
+    <p class="section-body">物件を探すお客様の多くが、日当たりについて具体的な情報を求めています。しかし「南向き」「日当たり良好」だけでは、実際にどれくらい日が入るのか伝わりません。</p>
+    <div class="problem-quote">"南向きって書いてあったのに、<br>冬は全然日が入らなかった"</div>
+    <p class="problem-close">Sunnyなら月別・時間帯別の日照率を数値で提示。お客様の納得度が変わります。</p>
+  </section>
+
+  <!-- DATA -->
+  <section class="data-section">
+    <div class="section-label">DATA</div>
+    <h2>日当たりは<br>お客様が求めている。</h2>
+
+    <div class="data-card">
+      <div class="data-number">59%</div>
+      <p class="data-desc">物件選びで「住戸の向き・方角」を重視すると回答。全10項目中9位にランクイン。</p>
+      <div class="data-source">SUUMO調べ（400名対象）</div>
+    </div>
+
+    <div class="data-card">
+      <div class="data-number">1位</div>
+      <p class="data-desc">テレワーク経験者が在宅になって初めて気づいた不満として「日当たり」が上位に。在宅時間の増加で日照への関心が高まっている。</p>
+      <div class="data-source">アットホーム調べ・在宅ワーク住環境意識調査</div>
+    </div>
+
+    <div class="trends-block">
+      <div class="trends-title">Google Trends — 「日当たり」関連キーワード動向</div>
+      <div class="trends-row">
+        <span>南向き 日当たり</span>
+        <span class="trends-badge up">↑ +10%</span>
+      </div>
+      <div class="trends-row">
+        <span>南西 日当たり</span>
+        <span class="trends-badge up">↑ +50%</span>
+      </div>
+      <div class="trends-row">
+        <span>北向き 日当たり</span>
+        <span class="trends-badge surge">急上昇</span>
+      </div>
+      <div class="trends-row">
+        <span>日当たり 悪い 部屋</span>
+        <span class="trends-badge surge">急上昇</span>
+      </div>
+      <div class="trends-row">
+        <span>東向き 日当たり</span>
+        <span class="trends-badge down">−5%</span>
+      </div>
+      <div class="trends-source">Google Trends Japan（2025年）</div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section features">
+    <div class="section-label">FEATURES</div>
+    <h2>Sunnyでできること</h2>
+
+    <div class="feature-card">
+      <div class="feature-icon-title">☀️ 月別×時間帯の日照率を算出</div>
+      <p class="feature-desc">NOAAの太陽軌道計算式をベースに、1年分・17,520回の計算で正確な日照率を算出します。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-title">📸 写真と物件情報の入力のみ</div>
+      <p class="feature-desc">窓から撮影した写真をアップし、物件情報と周辺環境を設定します。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-title">🗂️ 物件資料に貼れるカードを生成</div>
+      <p class="feature-desc">正方形のスコアカードを生成。物件写真と並べて資料に使えます。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-title">🔗 結果URLをそのまま共有</div>
+      <p class="feature-desc">算出結果のURLをコピーしてお客様に送るだけ。アプリ不要で閲覧できます。</p>
+    </div>
+  </section>
+
+  <!-- FOR WHO -->
+  <section class="forwho">
+    <div class="section-label">FOR WHO</div>
+    <h2>こんな方に</h2>
+
+    <div class="forwho-card">
+      <div class="forwho-title">🏢 不動産仲介・売買会社</div>
+      <p class="forwho-desc">物件提案時の差別化ツールとして。お客様の納得度が上がります。</p>
+    </div>
+    <div class="forwho-card">
+      <div class="forwho-title">🏗️ 建築・設計会社</div>
+      <p class="forwho-desc">建築前の日照シミュレーションに。土地選定の根拠として活用できます。</p>
+    </div>
+    <div class="forwho-card">
+      <div class="forwho-title">🏠 賃貸管理・PM会社</div>
+      <p class="forwho-desc">空室対策として日照情報を訴求。他社物件との差別化に。</p>
+    </div>
+  </section>
+
+  <!-- HOW TO USE -->
+  <section class="section howto">
+    <div class="section-label">HOW TO USE</div>
+    <h2>使い方は3ステップ</h2>
+
+    <div class="step-item">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">物件の緯度経度を入力</div>
+        <p class="step-desc">Google Mapから緯度経度をコピー＆ペースト。または現在地ボタンで自動取得。</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">窓の向き・周辺の状況を設定し、写真をアップ</div>
+        <p class="step-desc">窓の方角・周辺環境を設定して、窓の外を撮影した写真をアップします。</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">スコアカードを資料に活用</div>
+        <p class="step-desc">生成された正方形カードをスクショして物件写真に追加。URLをお客様に共有できます。</p>
+      </div>
+    </div>
+
+    <!-- Score card mock -->
+    <div class="card-mock-wrap">
+      <div class="card-mock-label">生成されるスコアカードのイメージ</div>
+      <div class="card-mock">
+        <div class="cm-header">
+          <div class="cm-header-logo">☀ SUNNY</div>
+          <div class="cm-header-addr">東京都渋谷区〇〇 3F 南向き</div>
+        </div>
+        <div class="cm-body">
+          <div class="cm-catch">
+            <div class="cm-catch-left">
+              <div class="cm-catch-question">この物件の日当たりは？</div>
+              <div class="cm-catch-label">総合判定</div>
+            </div>
+            <div class="cm-divider"></div>
+            <div class="cm-score-area">
+              <div class="cm-score-num">72<span class="cm-score-unit">%</span></div>
+            </div>
+          </div>
+          <div class="cm-seasons">
+            <div class="cm-season">
+              <span class="cm-season-label">🌸 春</span>
+              <span class="cm-season-val">80%</span>
+            </div>
+            <div class="cm-season">
+              <span class="cm-season-label">☀️ 夏</span>
+              <span class="cm-season-val">65%</span>
+            </div>
+            <div class="cm-season">
+              <span class="cm-season-label">🍂 秋</span>
+              <span class="cm-season-val">74%</span>
+            </div>
+            <div class="cm-season">
+              <span class="cm-season-label">❄️ 冬</span>
+              <span class="cm-season-val">58%</span>
+            </div>
+          </div>
+          <!-- Dummy heatmap: 12 months × 6 time slots -->
+          <div class="cm-heatmap">
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-4"></div><div class="cm-hm-cell hm-4"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-5"></div><div class="cm-hm-cell hm-5"></div><div class="cm-hm-cell hm-4"></div><div class="cm-hm-cell hm-1"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-5"></div><div class="cm-hm-cell hm-5"></div><div class="cm-hm-cell hm-4"></div><div class="cm-hm-cell hm-1"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-4"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-4"></div><div class="cm-hm-cell hm-4"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-3"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-2"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-0"></div></div>
+            <div class="cm-hm-row"><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-0"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-1"></div><div class="cm-hm-cell hm-0"></div></div>
+          </div>
+          <div class="cm-footer">
+            <span>誤差±20〜30%</span>
+            <span>Powered by SUNNY</span>
+          </div>
+        </div>
+      </div>
+      <p class="card-mock-note">物件写真と同じサイズで並べて資料に使えます。</p>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="section trust">
+    <div class="section-label">TRUST</div>
+    <h2>信頼性について</h2>
+
+    <div class="trust-item">
+      <div class="trust-check">✓</div>
+      <p class="trust-text">NOAAの太陽軌道計算式をベースにしたSunCalc.jsエンジンを使用</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-check">✓</div>
+      <p class="trust-text">1年分・30分刻み17,520回の計算で月別×時間帯の日照率を算出</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-check">✓</div>
+      <p class="trust-text">誤差±20〜30%を正直に開示。天候・雲量は含まれません。</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-check">✓</div>
+      <p class="trust-text">周辺建物・樹木・庇の補正機能で実態に近い精度を実現</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>今すぐ無料で<br>試してみてください。</h2>
+    <a href="index.html" class="cta-btn">無料で使ってみる →</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-logo">☀ SUNNY</div>
+    <div class="footer-links">
+      <a href="sunny_contact.html">お問い合わせ</a>
+      <a href="sunny_privacy.html">プライバシーポリシー</a>
+      <a href="sunny_terms.html">利用規約</a>
+    </div>
+    <div class="footer-copy">© 2026 Sunny — 日照率チェッカー</div>
+  </footer>
+
+</div>
+</body>
+</html>
