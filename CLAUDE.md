@@ -54,6 +54,8 @@ URL: https://kokingbeach-netizen.github.io/sunny-app/
 - 判定結果・スクリーンショット画面を同一カードデザインで統一
 - 前向きコメント自動生成（スコア・窓の向き別）
 - スマホ入力時のiOS自動ズーム防止（font-size:16px統一）
+- BtoB向けランディングページ（sunny_lp.html）を追加
+- ナビゲーションバーに「Sunnyとは？」リンクを追加（sunny_lp.htmlへ遷移）
 
 ## 用途別計算ロジック
 - 室内（living）：obstAngleをそのまま適用
@@ -110,5 +112,8 @@ SOURCE：SunCalc.js・Sky View Factor・Nominatim
 - SUUMOへのBtoB提案準備
 - Google Map緯度経度取得方法モーダルの中身を作成（UIのみ実装済み・内容未記入）
 - 建築前リサーチモードの常緑樹補正（全季節-15%）を確認・修正
-- BtoB向けランディングページの作成
+- LPに「導入実績」セクションを追加（営業活動後）
+- 営業リスト作成（都内中小不動産会社・建築会社）
+- LPのSEO対策（メタタグ・OGP設定）
+- フェーズ2：Supabase導入・データ収集（オープン化のタイミングで）
 
