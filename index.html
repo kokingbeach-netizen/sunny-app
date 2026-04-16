@@ -569,20 +569,20 @@
 
   <div class="usecase-cards">
 
-    <div class="usecase-card active" data-usecase="居住・不動産">
+    <div class="usecase-card active" data-usecase="物件・室内">
       <div class="uc-icon">🏠</div>
       <div class="uc-body">
-        <div class="uc-title">居住用不動産</div>
+        <div class="uc-title">物件・室内</div>
         <div class="uc-desc">賃貸・購入検討、既存物件の日照確認</div>
       </div>
       <div class="uc-arrow">›</div>
     </div>
 
-    <div class="usecase-card" data-usecase="建築前リサーチ">
+    <div class="usecase-card" data-usecase="土地・屋外">
       <div class="uc-icon">🏗</div>
       <div class="uc-body">
-        <div class="uc-title">建築前リサーチ</div>
-        <div class="uc-desc">設計前の日照シミュレーション</div>
+        <div class="uc-title">土地・屋外</div>
+        <div class="uc-desc">土地・更地の日照シミュレーション</div>
       </div>
       <span class="uc-badge">NEW</span>
       <div class="uc-arrow">›</div>
@@ -691,7 +691,7 @@
       <span class="step-badge">STEP 2</span>
       <span class="step-title">物件・部屋の情報</span>
     </div>
-    <!-- 居住・不動産用（既存） -->
+    <!-- 物件・室内用（既存） -->
     <div id="step2-residential">
       <label>階数</label>
       <input type="number" id="floor" value="1" min="1" max="50" style="max-width:160px;" oninput="updatePrecision()">
@@ -712,9 +712,9 @@
       </div>
     </div>
 
-    <!-- 建築前リサーチ用（新規） -->
+    <!-- 土地・屋外用（新規） -->
     <div id="step2-construction" style="display:none;">
-      <label>建設予定地の階数</label>
+      <label>土地・屋外の階数</label>
       <p style="font-size:11px;color:#666;margin-bottom:8px;">シミュレーションしたい最大階数を入力</p>
       <input type="number" id="constructionFloors" min="1" max="50" placeholder="例：5" class="finput" style="max-width:160px;">
       <label style="margin-top:12px">建設の種類</label>
@@ -737,10 +737,10 @@
     <div id="windowsContainer"><!-- JS renders window cards here --></div>
     <button class="add-window-btn" id="addWindowBtn" onclick="addWindow()">＋ 窓を追加する</button>
 
-    <!-- 建築前リサーチ用STEP3 -->
+    <!-- 土地・屋外用STEP3 -->
     <div id="step3-construction" style="display:none;">
 
-      <div id="construction-disclaimer" style="display:none;margin:0 0 16px;background:#FFF8E8;border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:14px 16px;"><div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:6px;">⚠️ 建築前リサーチについて</div><div style="font-size:11px;color:#555;line-height:1.9;">更地の中央から撮影した写真を使用します。<br>実際の窓の位置・階数によって誤差が生じる場合があります。<br>撮影者の身長・カメラ位置による誤差も計算上含まれます。<br><strong style="color:#555;">この結果は土地選定の参考値です。</strong><br>正確な日照シミュレーションは建築士・設計士にご相談ください。</div></div>
+      <div id="construction-disclaimer" style="display:none;margin:0 0 16px;background:#FFF8E8;border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:14px 16px;"><div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:6px;">⚠️ 土地・屋外について</div><div style="font-size:11px;color:#555;line-height:1.9;">更地の中央から撮影した写真を使用します。<br>実際の窓の位置・階数によって誤差が生じる場合があります。<br>撮影者の身長・カメラ位置による誤差も計算上含まれます。<br><strong style="color:#555;">この結果は土地選定の参考値です。</strong><br>正確な日照シミュレーションは建築士・設計士にご相談ください。</div></div>
       <div id="construction-guide-section"></div>
 
       <!-- 南ブロック -->
@@ -940,7 +940,7 @@ var windowStates = [];
 var selectedYoto = '';
 var roofDepth = 0;
 var selectedMode = 'A';
-var selectedUsecase = '居住・不動産';
+var selectedUsecase = '物件・室内';
 var lastSeasonScores = null;
 
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
@@ -1157,7 +1157,7 @@ function svgGuide3() {
 
 function makeDefaultWindow(i) {
   return {
-    name: (typeof selectedUsecase !== 'undefined' && selectedUsecase === '建築前リサーチ' ? '方觓' : '窓') + (i + 1),
+    name: (typeof selectedUsecase !== 'undefined' && selectedUsecase === '土地・屋外' ? '方觓' : '窓') + (i + 1),
     dir: '',
     size: '',
     surroundings: [],
@@ -1614,7 +1614,7 @@ function checkCalcReady() {
   var lng = parseFloat(document.getElementById('lng').value);
   var hasLatLng = !isNaN(lat) && lat !== 0 && !isNaN(lng) && lng !== 0;
   var ready;
-  if (selectedUsecase === '建築前リサーチ') {
+  if (selectedUsecase === '土地・屋外') {
     ready = hasLatLng;
   } else {
     var hasYoto = selectedYoto !== '';
@@ -1786,7 +1786,7 @@ function runCalculation() {
     return;
   }
   var floorNum;
-  if (selectedUsecase === '建築前リサーチ') {
+  if (selectedUsecase === '土地・屋外') {
     var cfEl = document.getElementById('constructionFloors');
     floorNum = cfEl ? (parseInt(cfEl.value) || 1) : 1;
   } else {
@@ -1801,7 +1801,7 @@ function runCalculation() {
   setTimeout(function() {
     try {
       var heatmaps, windowScores, orMatrix, orAll, propertyScore;
-      if (selectedUsecase === '建築前リサーチ') {
+      if (selectedUsecase === '土地・屋外') {
         var C_DIR_MAP = { south:'南', southeast:'南東', southwest:'南西', east:'東', west:'西', north:'北' };
         var dirs = ['south'];
         cAddedDirs.forEach(function(d) { if (d !== 'south' && dirs.indexOf(d) === -1) dirs.push(d); });
@@ -2112,11 +2112,11 @@ function calcSeasonScores(matrix) {
 // Score text
 // ============================================================
 function getScoreText(score) {
-  if (selectedUsecase === '建築前リサーチ') {
+  if (selectedUsecase === '土地・屋外') {
     var fl = document.getElementById('constructionFloors');
     var floors = fl ? fl.value : '';
     var ft = floors ? floors + '階建ての場合、' : '';
-    if (score >= 75) return ft + '日照が豊富な建設予定地です。冬も暖かく、明るい建物になりそうです。夏の日差し対策も設計に組み込むと快適な環境になります。';
+    if (score >= 75) return ft + '日照が豊富な土地・屋外です。冬も暖かく、明るい建物になりそうです。夏の日差し対策も設計に組み込むと快適な環境になります。';
     if (score >= 60) return ft + 'ほどよくバランスの取れた日当たりが見込めます。年間を通じて快適な建物になりそうです。';
     if (score >= 40) return ft + '日照はやや控えめです。設計時に窓の配置や吹き抜けを工夫すると明るさを確保しやすくなります。';
     return ft + '日照が少ない環境です。天窓や照明計画を設計段階から検討することをお勧めします。';
@@ -2488,7 +2488,7 @@ function restoreFromHash() {
 // selectedUsecase は State セクション（line 930付近）で var 宣言済み
 
 const usecaseConfig = {
-  '居住・不動産': {
+  '物件・室内': {
     step2Title: '物件・部屋の情報',
     step3Title: '窓ごとの周辺環境',
     step3Guide: '窓枚が写らないように窓の外に向け',
@@ -2498,10 +2498,10 @@ const usecaseConfig = {
     outputType: 'heatmap',
     descriptionTone: 'residential'
   },
-  '建築前リサーチ': {
-    step2Title: '建設予定地の情報',
+  '土地・屋外': {
+    step2Title: '土地・屋外の情報',
     step3Title: '周辺の遮蔽環境',
-    step3Guide: '建設予定地の中央に立って',
+    step3Guide: '土地・屋外の中央に立って',
     hasWindow: false,
     weatherCorrection: false,
     focusSeason: '冬',
@@ -2562,7 +2562,7 @@ function updateStep2() {
   if (step2Title) step2Title.textContent = config.step2Title;
   const residential = document.getElementById('step2-residential');
   const construction = document.getElementById('step2-construction');
-  if (selectedUsecase === '建築前リサーチ') {
+  if (selectedUsecase === '土地・屋外') {
     if (residential) residential.style.display = 'none';
     if (construction) construction.style.display = 'block';
   } else {
@@ -2573,7 +2573,7 @@ function updateStep2() {
 }
 
 function updateStep3() {
-  var isConstruction = selectedUsecase === '建築前リサーチ';
+  var isConstruction = selectedUsecase === '土地・屋外';
   var step3Title = document.querySelector('#step3 .step-title');
   if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の位置と周辺環境';
   document.querySelectorAll('.guide-caption-1').forEach(function(el) {
