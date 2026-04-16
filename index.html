@@ -859,7 +859,7 @@
       <div id="scoreText" style="font-size:13px;color:var(--gray);line-height:1.8;white-space:pre-wrap"></div>
     </div>
     <div id="windowDetails"></div>
-    <div class="disclaimer">&#9888;&#65039; この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。</div>
+    <div class="disclaimer">&#9888;&#65039; この数値は参考値です。誤差±20〜30%（周辺建物の反射・地形等による）。</div>
 
     <div class="next-steps-card">
       <div class="next-steps-title">&#128203; この結果をどうしますか？</div>
@@ -1894,7 +1894,7 @@ function displayResults(score, winScores, heatmaps) {
 
   html += '</div>';
 
-  html += '<p style="font-size:11px;color:#9CA3AF;margin:0 16px 16px;line-height:1.7;text-align:center;">⚠️ この数値は参考値です（誤差±20〜30%）。天候・雲量は含まれません。</p>';
+  html += '<p style="font-size:11px;color:#9CA3AF;margin:0 16px 16px;line-height:1.7;text-align:center;">⚠️ この数値は参考値です。誤差±20〜30%（周辺建物の反射・地形等による）。</p>';
 
   html += '<div style="padding:0 16px 32px;">'
     + '<div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:12px;">📋 この結果をどうしますか？</div>'
@@ -2341,7 +2341,7 @@ function buildSummaryCard(score, seasons, matrix, addr, comment) {
     + '</div>'
     + '</div>'
     + '<div class="sc-footer-total">'
-    + '<span class="sc-f-note">誤差±20〜30% / 天候・雲量含まず</span>'
+    + '<span class="sc-f-note">誤差±20〜30%（周辺建物・地形等による）</span>'
     + '<span class="sc-f-badge-total">Powered by SUNNY</span>'
     + '</div>'
     + '</div>';
@@ -2381,7 +2381,7 @@ function buildWindowCard(w, i, score, seasons, matrix, comment) {
     + '</div>'
     + '</div>'
     + '<div class="sc-footer-window">'
-    + '<span class="sc-f-note">誤差±20〜30% / 天候・雲量含まず</span>'
+    + '<span class="sc-f-note">誤差±20〜30%（周辺建物・地形等による）</span>'
     + '<span class="sc-f-badge-win">Powered by SUNNY</span>'
     + '</div>'
     + '</div>';
