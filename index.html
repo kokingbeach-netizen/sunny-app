@@ -518,6 +518,18 @@
     .photo-check-text { font-size:12px; color:#444; flex:1; line-height:1.4; }
     .photo-check-tag { font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; white-space:nowrap; flex-shrink:0; }
     .photo-check-tag.warn { background:rgba(245,166,35,0.12); color:#B45309; }
+    /* 土地・屋外 階数タブ */
+    .c-floor-tabs { display:flex; gap:8px; flex-wrap:wrap; padding:16px 16px 0; }
+    .c-floor-tab { border:1.5px solid rgba(0,0,0,0.12); border-radius:8px; padding:8px 16px; font-size:13px; font-weight:700; color:#6B7280; background:#fff; cursor:pointer; transition:all 0.15s; }
+    .c-floor-tab.active { background:#1A1A1A; color:#F5A623; border-color:#1A1A1A; }
+    /* 方角別スコアバー */
+    .c-dir-scores { padding:0 16px 16px; }
+    .c-dir-scores-title { font-size:12px; font-weight:700; color:#6B7280; margin-bottom:10px; letter-spacing:0.5px; }
+    .c-dir-score-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .c-dir-score-label { width:32px; font-size:13px; font-weight:700; color:#1A1A1A; flex-shrink:0; text-align:center; }
+    .c-dir-score-bar-wrap { flex:1; background:#E5E7EB; border-radius:4px; height:8px; overflow:hidden; }
+    .c-dir-score-bar { height:8px; background:#F5A623; border-radius:4px; transition:width 0.4s ease; }
+    .c-dir-score-val { width:36px; font-size:13px; font-weight:700; color:#1A1A1A; text-align:right; flex-shrink:0; font-family:'DM Mono',monospace; }
 </style>
 </head>
 <body>
@@ -942,6 +954,8 @@ var roofDepth = 0;
 var selectedMode = 'A';
 var selectedUsecase = '物件・室内';
 var lastSeasonScores = null;
+var constructionResults = [];
+var selectedConstructionFloor = 1;
 
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
 var SIZE_MULT = { '小':0.85, '中':1.0, '大':1.1 };
@@ -1775,6 +1789,60 @@ function calcWindowHeatmap(w, floorNum) {
   return matrix;
 }
 // ============================================================
+// Construction heatmap (all 4 directions × 1 floor)
+// ============================================================
+function calcConstructionHeatmap(floorNum) {
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+
+  var directions = {
+    south: { az: 180, bldH: cState['south'] ? (cState['south'].bldH || 0) : 0, bldDist: cState['south'] ? (cState['south'].bldDist || 15) : 15 },
+    east:  { az: 90,  bldH: cState['east']  ? (cState['east'].bldH  || 0) : 0, bldDist: cState['east']  ? (cState['east'].bldDist  || 15) : 15 },
+    west:  { az: 270, bldH: cState['west']  ? (cState['west'].bldH  || 0) : 0, bldDist: cState['west']  ? (cState['west'].bldDist  || 15) : 15 },
+    north: { az: 0,   bldH: cState['north'] ? (cState['north'].bldH || 0) : 0, bldDist: cState['north'] ? (cState['north'].bldDist || 15) : 15 }
+  };
+
+  var result = {};
+  Object.keys(directions).forEach(function(dir) {
+    var d = directions[dir];
+    var selfH = (floorNum - 1) * 3;
+    var matrix = [];
+    for (var m = 0; m < 12; m++) {
+      var row = [];
+      for (var t = 0; t < 6; t++) {
+        var sunlit = 0, total = 0;
+        for (var dt = 0; dt < 120; dt += 10) {
+          var date = new Date(2024, m, 15, TIME_SLOTS[t], dt, 0);
+          var pos = SunCalc.getPosition(date, lat, lng);
+          var altDeg = pos.altitude * 180 / Math.PI;
+          total++;
+          if (altDeg <= 0) continue;
+          var azDeg = ((pos.azimuth * 180 / Math.PI) + 180 + 360) % 360;
+          var azDiff = Math.abs(azDeg - d.az);
+          if (azDiff > 180) azDiff = 360 - azDiff;
+          if (azDiff > 90) continue;
+          var heightDiff = d.bldH - selfH;
+          var obstAngle = 0;
+          if (heightDiff > 0) {
+            var baseAngle = Math.atan2(heightDiff, d.bldDist) * 180 / Math.PI;
+            var edgeFactor = Math.cos(azDiff * Math.PI / 180);
+            obstAngle = baseAngle * edgeFactor;
+          }
+          if (cState[dir] && cState[dir].svf !== undefined) {
+            var photoObst = (1 - cState[dir].svf) * 30;
+            obstAngle = Math.max(obstAngle, photoObst);
+          }
+          if (altDeg > obstAngle) sunlit++;
+        }
+        row.push(total > 0 ? sunlit / total : 0);
+      }
+      matrix.push(row);
+    }
+    result[dir] = matrix;
+  });
+  return result;
+}
+// ============================================================
 // Run calculation
 // ============================================================
 function runCalculation() {
@@ -1802,28 +1870,12 @@ function runCalculation() {
     try {
       var heatmaps, windowScores, orMatrix, orAll, propertyScore;
       if (selectedUsecase === '土地・屋外') {
-        var C_DIR_MAP = { south:'南', southeast:'南東', southwest:'南西', east:'東', west:'西', north:'北' };
-        var dirs = ['south'];
-        cAddedDirs.forEach(function(d) { if (d !== 'south' && dirs.indexOf(d) === -1) dirs.push(d); });
-        var cWindows = dirs.map(function(key) {
-          var s = cState[key] || { bldH:0, bldDist:10, surroundings:[] };
-          return { dir: C_DIR_MAP[key] || '南', name: C_DIR_MAP[key] || '南',
-                   bldH: s.bldH, bldDist: s.bldDist, surroundings: s.surroundings,
-                   svf: { center: null, left: null, right: null }, size: '中' };
-        });
-        heatmaps = cWindows.map(function(w) { return calcWindowHeatmap(w, floorNum); });
-        windowScores = heatmaps.map(function(hm) {
-          var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
-          return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
-        });
-        orMatrix = computeOrHeatmap(heatmaps);
-        orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
-        propertyScore = (orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100;
-        storedHeatmaps = heatmaps;
-        var origWindowStates = windowStates;
-        windowStates = cWindows;
-        displayResults(propertyScore, windowScores, heatmaps);
-        windowStates = origWindowStates;
+        constructionResults = [];
+        for (var f = 1; f <= floorNum; f++) {
+          constructionResults.push({ floor: f, data: calcConstructionHeatmap(f) });
+        }
+        selectedConstructionFloor = floorNum;
+        displayConstructionResults(floorNum);
       } else {
         heatmaps = windowStates.map(function(w) { return calcWindowHeatmap(w, floorNum); });
         windowScores = heatmaps.map(function(hm) {
@@ -1860,6 +1912,122 @@ function countUp(el, target, duration, suffix) {
     else el.textContent = target + suffix;
   }
   requestAnimationFrame(step);
+}
+
+// ============================================================
+// Construction results display
+// ============================================================
+function displayConstructionResults(maxFloor) {
+  var resultsEl = document.getElementById('results');
+  resultsEl.style.display = 'block';
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  var tabsHtml = '<div class="c-floor-tabs">';
+  for (var f = 1; f <= maxFloor; f++) {
+    var isActive = (f === selectedConstructionFloor);
+    tabsHtml += '<button id="c-floor-tab-' + f + '" class="c-floor-tab' + (isActive ? ' active' : '') + '"'
+      + ' onclick="switchConstructionFloor(' + f + ')">' + f + '階</button>';
+  }
+  tabsHtml += '</div>';
+
+  var actionsHtml = '<div style="padding:0 16px 32px;">'
+    + '<div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:12px;">📋 この結果をどうしますか？</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px;">'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="window.scrollTo({top:0,behavior:\'smooth\'})">'
+    + '<span style="font-size:20px;">✏️</span><div><div style="font-size:13px;font-weight:700;">修正する</div><div style="font-size:11px;color:#6B7280;">この画面のまま修正できます</div></div></div>'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="resetAll()">'
+    + '<span style="font-size:20px;">🔄</span><div><div style="font-size:13px;font-weight:700;">最初からやり直す</div><div style="font-size:11px;color:#6B7280;">入力をリセットして再計算</div></div></div>'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="openScreenshot()">'
+    + '<span style="font-size:20px;">📸</span><div><div style="font-size:13px;font-weight:700;">結果をスクリーンショット用に表示する</div><div style="font-size:11px;color:#6B7280;">シンプルな画面に切り替えて保存できます</div></div></div>'
+    + '</div></div>';
+
+  document.getElementById('results').innerHTML = tabsHtml
+    + '<div id="c-floor-result" style="padding:16px;"></div>'
+    + '<p style="font-size:11px;color:#9CA3AF;margin:0 16px 16px;line-height:1.7;text-align:center;">⚠️ この数値は参考値です。誤差±20〜30%（周辺建物の反射・地形等による）。</p>'
+    + actionsHtml;
+
+  renderConstructionFloor(selectedConstructionFloor);
+}
+
+function switchConstructionFloor(floor) {
+  selectedConstructionFloor = floor;
+  var maxFloor = constructionResults.length;
+  for (var f = 1; f <= maxFloor; f++) {
+    var tab = document.getElementById('c-floor-tab-' + f);
+    if (!tab) continue;
+    tab.style.background = (f === floor) ? '#1A1A1A' : '';
+    tab.style.color = (f === floor) ? '#F5A623' : '';
+    tab.style.borderColor = (f === floor) ? '#1A1A1A' : '';
+    tab.classList.toggle('active', f === floor);
+  }
+  renderConstructionFloor(floor);
+}
+
+function renderConstructionFloor(floor) {
+  var result = null;
+  for (var i = 0; i < constructionResults.length; i++) {
+    if (constructionResults[i].floor === floor) { result = constructionResults[i]; break; }
+  }
+  if (!result) return;
+
+  var DIRS = [
+    { key: 'south', label: '南', az: '↑' },
+    { key: 'east',  label: '東', az: '→' },
+    { key: 'west',  label: '西', az: '←' },
+    { key: 'north', label: '北', az: '↓' }
+  ];
+
+  var dirScores = {};
+  DIRS.forEach(function(d) {
+    var all = result.data[d.key].reduce(function(acc, row) { return acc.concat(row); }, []);
+    dirScores[d.key] = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
+  });
+
+  var seasons = getSeasonScoresFromMatrix(result.data['south']);
+  var comment = getConstructionAdvice(floor, dirScores);
+  var addr = document.getElementById('address').value;
+
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:4px 0 8px;">';
+  html += buildSummaryCard(dirScores['south'], seasons, result.data['south'], addr, comment, floor);
+  html += '</div>';
+
+  html += '<div class="c-dir-scores">';
+  html += '<div class="c-dir-scores-title">' + floor + '階 方角別スコア</div>';
+  DIRS.forEach(function(d) {
+    var score = dirScores[d.key];
+    html += '<div class="c-dir-score-row">'
+      + '<div class="c-dir-score-label">' + d.az + ' ' + d.label + '</div>'
+      + '<div class="c-dir-score-bar-wrap"><div class="c-dir-score-bar" style="width:' + score + '%"></div></div>'
+      + '<div class="c-dir-score-val">' + score + '%</div>'
+      + '</div>';
+  });
+  html += '</div>';
+
+  document.getElementById('c-floor-result').innerHTML = html;
+}
+
+function getConstructionAdvice(floor, dirScores) {
+  var keys = ['south', 'east', 'west', 'north'];
+  var best = keys.reduce(function(a, b) { return dirScores[a] > dirScores[b] ? a : b; });
+  var dirLabel = { south:'南', east:'東', west:'西', north:'北' };
+
+  var advice = floor + '階では' + dirLabel[best] + '向きが最も日照豊富（' + dirScores[best] + '%）です。';
+
+  if (dirScores['south'] >= 70) {
+    advice += '南向きに大きな窓を設置すると冬も深く日差しが差し込みます。';
+  } else if (dirScores['south'] >= 50) {
+    advice += '南向き窓は有効ですが、周辺建物の影響があります。';
+  } else {
+    advice += '南側に遮蔽物があるため、' + dirLabel[best] + '向きの窓を優先検討してください。';
+  }
+
+  if (floor <= 2) {
+    advice += '低層階のため上階と比べ日照が限られます。吹き抜けや天窓も検討してください。';
+  } else if (floor >= 4) {
+    advice += 'この階からルーフバルコニーを設置すると年間を通じて最大限の日照が得られます。';
+  }
+
+  return advice;
 }
 
 // ============================================================
@@ -2307,11 +2475,12 @@ function getWindowComment(dir) {
   return dirMap[dir] || '窓から差し込む光が、快適な住環境をつくり出しています。';
 }
 
-function buildSummaryCard(score, seasons, matrix, addr, comment) {
+function buildSummaryCard(score, seasons, matrix, addr, comment, floor) {
+  var floorLabel = floor ? floor + '階　' : '';
   return '<div class="sc-card">'
     + '<div class="sc-top-black">'
     + '<span class="sc-logo-w">☀ SUNNY</span>'
-    + '<span class="sc-addr-w">' + escHtml(addr || '') + '</span>'
+    + '<span class="sc-addr-w">' + escHtml(floorLabel + (addr || '')) + '</span>'
     + '</div>'
     + '<div class="sc-catch sc-catch-total">'
     + '<div class="sc-catch-left">'
@@ -2389,23 +2558,41 @@ function buildWindowCard(w, i, score, seasons, matrix, comment) {
 
 function openScreenshot() {
   var addr = document.getElementById('address').value;
-  var orMatrix = computeOrHeatmap(storedHeatmaps);
-  var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
-  var score = Math.round((orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100);
-  var seasons = getSeasonScoresFromMatrix(orMatrix);
-  var comment = getScreenshotComment(score, windowStates);
+  var html;
 
-  var html = buildSummaryCard(score, seasons, orMatrix, addr, comment);
-
-  if (storedHeatmaps.length >= 2) {
-    storedHeatmaps.forEach(function(hm, i) {
-      var w = windowStates[i];
-      var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
-      var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
-      var winSeasons = getSeasonScoresFromMatrix(hm);
-      var winComment = getWindowComment(w.dir);
-      html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
+  if (selectedUsecase === '土地・屋外') {
+    var result = null;
+    for (var i = 0; i < constructionResults.length; i++) {
+      if (constructionResults[i].floor === selectedConstructionFloor) { result = constructionResults[i]; break; }
+    }
+    if (!result) return;
+    var keys = ['south', 'east', 'west', 'north'];
+    var dirScores = {};
+    keys.forEach(function(k) {
+      var all = result.data[k].reduce(function(acc, row) { return acc.concat(row); }, []);
+      dirScores[k] = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
     });
+    var seasons = getSeasonScoresFromMatrix(result.data['south']);
+    var comment = getConstructionAdvice(selectedConstructionFloor, dirScores);
+    html = buildSummaryCard(dirScores['south'], seasons, result.data['south'], addr, comment, selectedConstructionFloor);
+  } else {
+    var orMatrix = computeOrHeatmap(storedHeatmaps);
+    var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
+    var score = Math.round((orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100);
+    var seasons = getSeasonScoresFromMatrix(orMatrix);
+    var comment = getScreenshotComment(score, windowStates);
+    html = buildSummaryCard(score, seasons, orMatrix, addr, comment);
+
+    if (storedHeatmaps.length >= 2) {
+      storedHeatmaps.forEach(function(hm, i) {
+        var w = windowStates[i];
+        var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
+        var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
+        var winSeasons = getSeasonScoresFromMatrix(hm);
+        var winComment = getWindowComment(w.dir);
+        html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
+      });
+    }
   }
 
   document.getElementById('ssContent').innerHTML = html;
