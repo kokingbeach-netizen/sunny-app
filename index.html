@@ -1345,13 +1345,21 @@ function toggleSurrounding(winIdx, val, checked) {
 // ============================================================
 function autoNameWindow(i) {
   var w = windowStates[i];
-  var defaultPattern = /^\u7a93\d+$/;
-  var dirPattern = /^(\u5357|\u6771|\u897f|\u5317|\u5357\u6771|\u5357\u897f|\u5317\u6771|\u5317\u897f)(\u30fb(\u5c0f|\u4e2d|\u5927))?$/;
+  var defaultPattern = /^窓\d+$/;
+  var dirPattern = /^(南|東|西|北|南東|南西|北東|北西)(の窓)?(・(小|中|大)サイズ)?$/;
   if (!defaultPattern.test(w.name) && !dirPattern.test(w.name)) return;
-  var parts = [];
-  if (w.dir) parts.push(w.dir);
-  if (w.size) parts.push(w.size);
-  w.name = parts.length > 0 ? parts.join('\u30fb') : '\u7a93' + (i + 1);
+
+  var name = '';
+  if (w.dir && w.size) {
+    name = w.dir + 'の窓・' + w.size + 'サイズ';
+  } else if (w.dir) {
+    name = w.dir + 'の窓';
+  } else if (w.size) {
+    name = w.size + 'サイズ';
+  } else {
+    name = '窓' + (i + 1);
+  }
+  w.name = name;
 }
 
 // ============================================================
