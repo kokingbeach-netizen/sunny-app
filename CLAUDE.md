@@ -1,143 +1,379 @@
-# Sunny プロジェクト概要
-日照率算出Webアプリ。単一HTMLファイル（index.html）。
-GitHub Pagesでデプロイ済み。
-URL: https://kokingbeach-netizen.github.io/sunny-app/
+# Sunny — 開発リファレンス
 
-## 技術構成
-- Vanilla JS / SunCalc.js / Chart.js
-- 単一ファイル構成（index.html）
-- サブページ：sunny_how_it_works.html・sunny_privacy.html・sunny_terms.html・sunny_contact.html
+## 1. プロジェクト概要
 
-## ローカル開発
-- 起動：`python3 -m http.server 8080`
-- 確認：http://127.0.0.1:8080/index.html
-- 停止：`lsof -ti:8080 | xargs kill`
-- デプロイ：`git add . → git commit -m "..." → git push`
+| 項目 | 内容 |
+|------|------|
+| アプリ名 | SUNNY — 日当たり算出ツール |
+| 種別 | 日照率算出 Web アプリ（無料・ブラウザのみ） |
+| 構成 | 単一 HTML ファイル（index.html）+ サブページ |
+| ライブラリ | SunCalc.js 1.9.0（BSD） / Chart.js 4.4.0 / Noto Sans JP |
+| デプロイ | GitHub Pages |
+| 本番 URL | https://kokingbeach-netizen.github.io/sunny-app/ |
+| 将来目標 | 不動産プラットフォーム（SUUMO 等）への BtoB 組み込み |
 
-## 画像ファイル一覧
-- sunnylady.png：TOPヒーローセクションの女性イラスト
-- hand.png：撮影方法ガイド（横向き45°上向き）
-- windowshoot.png：室内からの撮影ガイドイラスト
-- balconyshoot.png：バルコニーからの撮影ガイドイラスト
-- rooftopshoot.png：ルーフバルコニーからの撮影ガイドイラスト
-- landshoot.png：建築前リサーチ（更地）の撮影ガイドイラスト
-- sunorbits_2.png：太陽軌道図（how_it_works用）
-- sunnyinn_2.png：遮蔽角度説明図（how_it_works用）
+---
 
-## 実装済み機能
-- 緯度経度入力（Decimal・DMS両形式対応）
-- 現在地取得ボタン（Geolocation API・enableHighAccuracy:true）
-- 住所自動入力（Nominatim逆ジオコーディング・町名レベル）
-- 窓の向き選択（8方位・コンパス配置）
-- 用途選択（室内・バルコニー・ルーフバルコニーの3択）
-- 用途選択後に屋根・庇の奥行き選択が表示（〜1m・1〜1.5m・1.5m〜）
-- 用途別撮影ガイド（hand.png＋用途別イラストの横並び表示）
-- 階数・建物情報の入力
-- 写真アップロード（3方向・SVF解析）
-- 月別日照率ヒートマップ（窓別表示）
-- PROPERTY SCORE（OR計算による総合スコア）
-- 季節別スコア（春夏秋冬・カウントアップアニメーション）
-- 最も日照が多い月（上位2ヶ月）
-- 用途別・向き別・季節性を考慮したコメント
-- 窓別詳細表示（季節スコア＋ヒートマップ＋コメント縦並び）
-- 樹木補正（常緑樹・落葉樹の季節別補正）
-- 必須項目バリデーション（緯度経度・用途・窓の向き）
-- 遮蔽物ラベルが窓の向きに連動して自動変更
-- 結果URLコピー・スクリーンショット表示
-- 建築前リサーチモード（方角別・更地撮影）
-- フッター（プライバシーポリシー・利用規約・お問い合わせへのリンク）
-- 入力完了オレンジ枠フィードバック（緯度・経度・住所・階数・用途・窓の向き・遮蔽物選択）
-- 写真カードの枠ルール改善（未追加：枠なし、追加済み：オレンジ枠）
-- 正方形判定カードデザイン（サマリー＋窓別・物件資料への貼り付け対応）
-- 窓1枚の場合はサマリーカード1枚のみ表示（総合＋窓コメント統合）
-- 窓2枚以上の場合はサマリー＋窓別カードを自動生成
-- 判定結果・スクリーンショット画面を同一カードデザインで統一
-- 前向きコメント自動生成（スコア・窓の向き別）
-- スマホ入力時のiOS自動ズーム防止（font-size:16px統一）
-- BtoB向けランディングページ（sunny_lp.html）を新規作成
-- ナビゲーションバーに「Sunnyとは？」リンクを追加（sunny_lp.htmlへ遷移）
-- LPに戻るボタン追加（sunny_lp.html→index.html）
-- LPのCTAボタンをindex.htmlにリンク
-- ユースケース名称変更（居住用不動産→物件・室内、建築前リサーチ→土地・屋外）
-- タイトル・ナビサブタイトルを「日当たり算出ツール」に変更
-- 誤差表現を修正（「天候・雲量は含まれません」削除→「周辺建物・地形等による」に統一）
-- 土地・屋外モードに階数タブ切り替え＋方角別スコア表示を追加
-- スクショカードに階数表示を追加（buildSummaryCard floor引数）
-- 土地・屋外モードの設計アドバイスコメント自動生成（getConstructionAdvice）
+## 2. ファイル構成
 
-## 用途別計算ロジック
-- 室内（living）：obstAngleをそのまま適用
-- balcony/veranda：obstAngle × 0.5
-- rooftop：obstAngle = 0（遮蔽なし）
+```
+index.html              メインアプリ（全ロジック・UI を含む単一ファイル）
+sunny_lp.html           BtoB 向けランディングページ
+sunny_how_it_works.html 計算手法の解説ページ
+sunny_contact.html      お問い合わせページ
+sunny_privacy.html      プライバシーポリシー
+sunny_terms.html        利用規約
 
-## 屋根・庇の補正ロジック
-roofDepth（メートル）が0より大きい場合：
-roofObstAngle = arctan(roofDepth ÷ 2.3) ※天井高2.3m
-obstBase = Math.max(obstBase, roofObstAngle)
-ルーフバルコニーは補正なし（roofDepth=0固定）
+sunnylady.png           ヒーローセクション女性イラスト
+hand.png                撮影ガイド（横向き45°上向き）
+windowshoot.png         室内からの撮影ガイド
+balconyshoot.png        バルコニーからの撮影ガイド
+skybalconyshoot.png     ルーフバルコニーからの撮影ガイド
+landshoot.png           更地・土地からの撮影ガイド
+sunorbits_2.png         太陽軌道図（how_it_works 用）
+sunnyinn_2.png          遮蔽角度説明図（how_it_works 用）
+```
 
-## PROPERTY SCOREの計算方法
-各時間スロットで「いずれかの窓で日照あり」のOR計算。
-単純平均ではなく、複数窓の相乗効果を反映。
+---
 
-## 遮蔽物までの距離の選択肢（value値）
-- 接近 〜5m：value=3
-- 近い 5〜10m：value=7
-- やや近い 10〜20m：value=15（デフォルト）
-- 普通 20〜35m：value=27
-- 遠い 35m〜：value=45
+## 3. ローカル開発環境
 
-## チェックボックス項目（写っているものを選択）
-- 樹木（常緑樹・1年中葉がある）→ 全季節-15%
-- 樹木（落葉樹・冬に葉が落ちる）→ 冬-5% 秋-10% 春夏-15%
-- 看板・広告板 → 遮蔽として計算（+8°）
-- 隣接する建物の壁面（真横）→ 遮蔽として計算（+20°）
-- 上記に該当するものは写っていない
-※電柱・電線は計算に影響しないため削除済み
+```bash
+# 起動
+python3 -m http.server 8080
 
-## sunny_how_it_works.html の構成
-h1：自然界の法則と、あなたの家の周りの遮蔽物から算出しています。
-h2①：自然界の法則（緯度・地軸の傾き・南中高度）
-h2②：あなたの家の情報（階数・窓の向き/写真）
-h2③：遮蔽物（向かいの建物の高さ・距離）
-EXAMPLE：計算の流れ（STEP1〜3・判定表）
-ENGINE：SunCalc.js
-ACCURACY：精度と限界
-SOURCE：SunCalc.js・Sky View Factor・Nominatim
+# 確認
+open http://127.0.0.1:8080/index.html
 
-## ライセンス確認済み
-- SunCalc.js：BSDライセンス・商用利用OK
-- Sky View Factor（Oke 1981）：学術概念の参照・問題なし
-- Nominatim（OpenStreetMap）：ODbLライセンス・逆ジオコーディングのみ使用
+# 停止
+lsof -ti:8080 | xargs kill
 
-## 直近のTODO
+# デプロイ
+git add . && git commit -m "..." && git push
+```
+
+---
+
+## 4. 主要ステート変数
+
+`index.html` の `<script>` 冒頭（948行目付近）で `var` 宣言されている。
+
+| 変数名 | 型 | 説明 |
+|--------|----|------|
+| `windowStates` | Array | 各窓オブジェクトの配列。`makeDefaultWindow(i)` で生成 |
+| `selectedYoto` | string | 用途（`'living'` / `'balcony'` / `'rooftop'`） |
+| `roofDepth` | number | 屋根・庇の奥行き（m）。`selRoofDepth()` で更新 |
+| `selectedMode` | string | 現在未使用（将来用。`'A'` 固定） |
+| `selectedUsecase` | string | `'物件・室内'` または `'土地・屋外'`（初期値：`'物件・室内'`） |
+| `lastSeasonScores` | object\|null | 最後に計算した季節スコア `{spring, summer, autumn, winter}` |
+| `constructionResults` | Array | 土地・屋外モードの計算結果 `[{floor: N, data: {south,east,west,north}}]` |
+| `selectedConstructionFloor` | number | 現在表示中の階数タブ（土地・屋外モード） |
+| `storedHeatmaps` | Array | 物件・室内モードの計算済みヒートマップ（スクショ再描画用） |
+| `cState` | object | 土地・屋外モードの方角別入力 `{south, southeast, southwest, east, west, north}` 各要素: `{bldH, bldDist, surroundings[], svf?}` |
+| `cAddedDirs` | Array | 追加済みの方角キーリスト（土地・屋外モード） |
+
+### windowState オブジェクト構造
+
+```js
+{
+  name: '窓1',          // 自動生成: autoNameWindow() で「南の窓・大サイズ」形式に更新
+  dir: '',              // '南'|'東'|'西'|'北'|'南東'|'南西'|'北東'|'北西'
+  size: '中',           // '小'|'中'|'大'
+  surroundings: [],     // ['evergreen'|'deciduous'|'signboard'|'wall'|'none']
+  bldH: 0,              // 正面建物高さ (m)
+  bldDist: 15,          // 正面建物距離 (m)
+  bldDistSelected: false,
+  photos: { left:null, center:null, right:null },  // base64 or null
+  svf:    { left:null, center:null, right:null },  // 0〜1 or null
+  activeTab: 'center'
+}
+```
+
+---
+
+## 5. 主要関数一覧
+
+### 計算系
+
+| 関数名 | 説明 |
+|--------|------|
+| `calcWindowHeatmap(w, floorNum)` | 1窓の12×6ヒートマップ（月×時間帯）を計算。遮蔽仰角・樹木補正を含む |
+| `calcConstructionHeatmap(floorNum)` | 土地・屋外モード用。4方角（南東西北）× 1階分のヒートマップを返す |
+| `buildObstructionMap(floorNum, bldH, bldDist)` | 南向き仰角（±45°）を Float32Array で返す（旧ロジック・一部残存） |
+| `applyWindowObstruction(obstMap, ...)` | 窓方向中心 ±60° に仰角をセット |
+| `applySVFtoMap(obstMap, svfVal)` | SVF 値から全方位に仰角を設定 |
+| `computeOrHeatmap(heatmaps)` | OR 結合: `1 - ∏(1 - p_i)` で物件スコアを算出 |
+| `computeAggHeatmap(heatmaps)` | 単純平均ヒートマップ（現在 OR に置き換え済み、参照のみ） |
+| `getSeasonScoresFromMatrix(matrix)` | 12×6 matrix から春夏秋冬スコアを返す |
+| `calcSeasonScores(matrix)` | `getSeasonScoresFromMatrix` + カウントアップアニメーション起動 |
+| `calcPeakMonth(matrix)` | 日照最大の上位2ヶ月を返す |
+| `analyzeSVF(img)` | 写真（Image 要素）のピクセル解析で SVF 値（0〜1）を返す |
+| `cAnalyzeSky(dataUrl, dir)` | 土地・屋外モード用の空ピクセル割合解析（`cState[dir].svf` に保存） |
+
+### UI系
+
+| 関数名 | 説明 |
+|--------|------|
+| `renderWindowCard(w, i)` | 1窓カードの HTML 文字列を返す |
+| `renderAllWindows()` | 全窓カードを `#windowsContainer` に描画 |
+| `rerenderWindow(i)` | 指定インデックスの窓カードのみ再描画 |
+| `renderPhotoCards(i, w)` | 3方向写真カード + 遮蔽物入力 HTML を返す |
+| `renderSurroundingCheckboxes(i, selected)` | チェックボックスリスト HTML を返す |
+| `autoNameWindow(i)` | 方向・サイズから「南の窓・大サイズ」形式で窓名を自動更新 |
+| `setWinDir(i, dir)` | 方向セット → autoNameWindow → rerenderWindow → updatePrecision |
+| `setWinSize(i, size)` | サイズセット → autoNameWindow → rerenderWindow |
+| `addWindow()` | 窓を最大4枚まで追加 |
+| `deleteWindow(i)` | 指定窓を削除し全再描画 |
+| `selYoto(el, val)` | 用途ボタン選択（`selectedYoto` 更新・屋根庇UIの表示切替） |
+| `selRoofDepth(el, val)` | 屋根庇奥行き選択（`roofDepth` 更新） |
+| `updatePrecision()` | 入力完了判定 → オレンジ枠フィードバック + `checkCalcReady()` |
+| `checkCalcReady()` | 計算ボタンの活性/非活性を判定 |
+| `handlePhoto(i, tabKey, input)` | 写真アップロード → `analyzeSVF()` → `updatePrecision()` |
+| `deletePhoto(i, tabKey)` | 写真削除 |
+| `switchPhotoTab(i, tabKey)` | 写真タブ切替 |
+| `displayResults(score, winScores, heatmaps)` | 物件・室内モードの結果表示（#results に innerHTML） |
+| `countUp(el, target, duration, suffix)` | カウントアップアニメーション |
+| `buildHeatmapHtml(matrix)` | インタラクティブなヒートマップ HTML（タブ切替あり）を生成 |
+| `buildHeatmapForCard(matrix)` | スクショカード用の簡易ヒートマップテーブル HTML を生成 |
+| `renderHeatmapTable(matrix)` | ヒートマップの table 要素 HTML を生成 |
+| `switchHeatmapTab(tabId)` | 結果タブ（総合/窓別）の表示切替 |
+| `openScreenshot()` / `closeScreenshot()` | スクショオーバーレイの開閉 |
+| `buildSummaryCard(score, seasons, matrix, addr, comment, floor)` | 正方形サマリーカード HTML を生成（floor あり → 「N階」プレフィックス） |
+| `buildWindowCard(w, i, score, seasons, matrix, comment)` | 窓別カード HTML を生成 |
+| `resetAll()` | 全入力リセット |
+| `copyResultUrl()` | 入力状態を URL hash に保存してクリップボードにコピー |
+| `restoreFromHash()` | URL hash から入力状態を復元（初期化時に呼ばれる） |
+| `showCopyToast()` | 「URLをコピーしました」トースト表示 |
+| `showError(msg)` / `hideError()` | エラーボックスの表示/非表示 |
+| `getGeolocation()` | Geolocation API で現在地を取得 → Nominatim で住所を逆引き |
+| `openHowModal()` / `closeHowModal()` | 仕組みモーダル（iframe）の開閉 |
+| `openMapGuideModal()` / `closeMapGuideModal()` | Google Map 取得方法モーダルの開閉（中身は未実装） |
+| `openPhotoLightbox(src)` / `closePhotoLightbox()` | 写真拡大表示 |
+
+### コメント・テキスト生成系
+
+| 関数名 | 説明 |
+|--------|------|
+| `getScoreText(score)` | スコアと selectedUsecase に応じた総評テキストを返す |
+| `getSolarAltitudeComment()` | 用途別の太陽軌道コメントを返す |
+| `getDirComment(dir)` | 方向別の日照特性コメントを返す |
+| `getYotoComment(level)` | 用途 × スコアレベル別コメントを返す |
+| `getScreenshotComment(score, windows)` | スクショカード用コメントを生成 |
+| `getWindowComment(dir)` | 窓別カード用コメントを返す |
+
+### 土地・屋外モード専用
+
+| 関数名 | 説明 |
+|--------|------|
+| `displayConstructionResults(maxFloor)` | 階数タブUI + 方角別スコアを `#results` に描画 |
+| `switchConstructionFloor(floor)` | タブクリック時に `selectedConstructionFloor` を更新し再描画 |
+| `renderConstructionFloor(floor)` | 選択中の階のスコアバー + サマリーカードを `#c-floor-result` に描画 |
+| `getConstructionAdvice(floor, dirScores)` | 階 + 最良方角に応じたアドバイス文を生成 |
+| `cHandlePhoto(input, dir)` | 写真アップロード → DOM 更新 → `cAnalyzeSky()` |
+| `cToggleCheck(key, val, checked)` | チェックボックス変更 → `cState[key].surroundings` を更新 |
+| `cSelect(el, groupId)` | グループ内の選択切替（`.c-sel`） |
+| `cToggle(dir)` | 方角ブロックのアコーディオン開閉 |
+| `cToggleAddPanel()` | 「方角を追加」パネルの表示切替 |
+| `cAddSpecificDir(key, arrow, name, el)` | 追加方角ブロックを動的に生成 |
+| `cRemoveDir(key)` | 追加した方角ブロックを削除 |
+
+### 設定・初期化系
+
+| 関数名 | 説明 |
+|--------|------|
+| `makeDefaultWindow(i)` | 窓オブジェクトのデフォルト値を返す |
+| `getCurrentConfig()` | `usecaseConfig[selectedUsecase]` を返す |
+| `updateStep2()` | ユースケース切替時に STEP2 の UI を更新 |
+| `updateStep3()` | ユースケース切替時に STEP3 の UI を更新 |
+| `selectCard(el, group)` | カード選択の active クラス切替 |
+| `startWithUsecase()` | STEP1 にスクロール |
+| `toggleBldDist(selectEl, distId)` | 建物高さ選択時に距離選択を表示/非表示 |
+| `runCalculation()` | 計算ボタン押下時のエントリポイント |
+
+---
+
+## 6. 計算ロジック概要
+
+### サンプリング方法
+
+```
+月（1〜12） × 時間帯（6区間） × 分（0,10,20...110 = 12点）
+= 月の15日を代表日とし、各2時間スロットを10分刻みでサンプリング
+
+TIME_SLOTS = [6, 8, 10, 12, 14, 16]  // 各スロットの開始時刻
+```
+
+### 方位角フィルタ
+
+- 太陽方位角（azDeg）と窓方向（windowAz）の差が 90° 以内のときのみ日照とみなす
+- ルーフバルコニー（`rooftop`）は全方位受光するためフィルタをスキップ
+
+### 遮蔽仰角の合成
+
+```
+formulaObst = atan2(建物高さ - 自分の高さ, 距離)  // 数式入力
+photoObst   = (1 - meanSVF) × 30°               // 写真SVF
+両方ある場合 → 平均値
+片方のみ    → その値を使用
+
+edgeFactor = cos(方位角差)  // 窓正面ほど遮蔽が強く、窓縁は遮蔽なし
+obstAngle  = obstBase × edgeFactor
+```
+
+### 用途別補正
+
+| 用途 | obstAngle への係数 |
+|------|--------------------|
+| `living` / `bedroom` 等 | ×1.0 |
+| `balcony` / `veranda` | ×0.5 |
+| `rooftop` | 0（遮蔽なし） |
+
+### 屋根・庇の補正
+
+```
+roofObstAngle = atan2(roofDepth, 2.3)  // 天井高 2.3m
+obstBase = max(obstBase, roofObstAngle)
+※ ルーフバルコニーは補正なし（roofDepth = 0 固定）
+```
+
+### チェックボックス補正
+
+| チェック項目 | 効果 |
+|------------|------|
+| 常緑樹 | 全季節 -15% |
+| 落葉樹 | 冬 -5% / 秋 -10% / 春夏 -15% |
+| 看板・広告板 | `obstBase = max(obstBase, 8°)` |
+| 隣接壁（真横） | `obstBase = max(obstBase, 20°)` |
+
+### PROPERTY SCORE（OR 結合）
+
+```
+物件スコア = 各時間スロットで「いずれかの窓が日照あり」の確率
+= 1 - ∏(1 - p_i)   // 複数窓の相乗効果を反映
+```
+
+### SVF 画像解析（`analyzeSVF` / `cAnalyzeSky`）
+
+ピクセルを走査して「空」と判定する条件：
+- **晴天**: `b > 100 && b > r+10 && b > g×0.85`
+- **曇天**: 上半分 60% かつグレー系（R,G,B 均等 150〜245）
+- **除外**: 下部 40% の白壁ピクセル（R,G,B > 220 かつ均等）
+
+---
+
+## 7. UI 定数
+
+```js
+DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 }
+SIZE_MULT = { '小':0.85, '中':1.0, '大':1.1 }
+TIME_SLOTS  = [6, 8, 10, 12, 14, 16]
+TIME_LABELS = ['6-8時','8-10時','10-12時','12-14時','14-16時','16-18時']
+MONTH_LABELS = ['1月',...,'12月']
+
+// 窓の方角に応じた3方向写真タブのラベルマップ
+PHOTO_TAB_MAP = {
+  '南': { left:'南東', center:'南', right:'南西' },
+  // ... 8方位すべて定義
+}
+
+// usecaseConfig（5ユースケース定義）
+// 現在 UI で選択可能: '物件・室内' / '土地・屋外'
+// 定義済みだが未実装: '農業・園芸' / 'ソーラー・エネルギー' / '商業・施設'
+```
+
+---
+
+## 8. カラーパレット（CSS 変数）
+
+| 変数 | 値 | 用途 |
+|------|----|------|
+| `--bg` | `#F5F4F0` | ページ背景 |
+| `--white` | `#FFFFFF` | カード背景 |
+| `--black` | `#1A1A1A` | 主テキスト・ヘッダー |
+| `--amber` | `#F5A623` | ブランドカラー（アクティブ・スコア） |
+| `--amber-dk` | `#D4880F` | ラベル・リンク |
+| `--gray` | `#6B7280` | サブテキスト |
+| `--gray-lt` | `#EFEFEC` | 入力欄背景 |
+| `--border` | `rgba(0,0,0,0.08)` | 通常の枠線 |
+| `--border-md` | `rgba(0,0,0,0.12)` | やや強い枠線 |
+| `--red` | `#EF4444` | エラー・必須ラベル |
+| `--green` | `#10B981` | 完了バッジ |
+
+入力完了フィードバック：`borderColor: '#F5A623'`, `background: 'rgba(245,166,35,0.06)'`
+
+---
+
+## 9. 2つのモード
+
+### 物件・室内モード（selectedUsecase = '物件・室内'）
+
+1. 窓ごとに `calcWindowHeatmap(w, floorNum)` → 12×6 の確率行列
+2. `computeOrHeatmap(heatmaps)` → PROPERTY SCORE
+3. `displayResults()` → サマリーカード + 窓別カード（2枚以上の場合）
+4. `storedHeatmaps` に保存 → スクショ用に再利用
+
+### 土地・屋外モード（selectedUsecase = '土地・屋外'）
+
+1. `runCalculation()` → 1〜N 階ループ
+2. 各階で `calcConstructionHeatmap(f)` → `{south, east, west, north}` の4方角 matrix
+3. `constructionResults = [{floor: N, data: {...}}]` に保存
+4. `displayConstructionResults(maxFloor)` → 階数タブ UI を生成
+5. `renderConstructionFloor(floor)` → 選択階の方角別スコアバー + サマリーカード
+
+---
+
+## 10. 実装済み機能（2026-04 時点）
+
+- 緯度経度入力（Decimal・DMS・カッコ形式に対応）
+- 現在地取得（Geolocation API・`enableHighAccuracy:true`）
+- Nominatim 逆ジオコーディング（町名レベル）
+- 用途選択見出し「どこの日当たりを調べる？」
+- 物件カード「お部屋の日当たりを調べる」/ 土地カード「土地や屋外の日当たりを調べる」
+- 用途ボタンのアイコン削除（室内 / ベランダ・バルコニー / ルーフバルコニー）
+- STEP2 タイトル「物件・お部屋の情報」
+- 窓の向きコンパス選択（8方位グリッド配置）
+- 窓名の自動生成（`autoNameWindow`）: 「南の窓・大サイズ」形式
+- 用途別撮影ガイド（hand.png + 用途別イラスト）
+- 写真アップロード（3方向）+ SVF 自動解析
+- 月別日照率ヒートマップ（窓別タブ表示）
+- 季節別スコア（カウントアップアニメーション）
+- PROPERTY SCORE（OR 計算）
+- 正面の遮蔽物入力を「正面に見える遮蔽物について」に統一
+- 樹木補正・看板補正・隣接壁補正
+- 正方形判定カードデザイン（サマリー + 窓別）
+- 土地・屋外モード：階数タブ切替 + 方角別スコアバー + 設計アドバイス
+- スクショカードに階数表示（floor 引数）
+- URL コピー（物件・室内・土地・屋外 両モード対応）
+- URL hash からの入力復元
+- iOS 自動ズーム防止（`font-size: 16px` 統一）
+- BtoB LP（sunny_lp.html）
+- ナビゲーション「Sunnyとは？」リンク
+
+---
+
+## 11. 今後の TODO
 
 ### フェーズ1（今すぐ・進行中）
-- Google Map緯度経度取得方法モーダルの中身を作成（UIのみ実装済み・内容未記入）
-- FAQページ作成
-- 3ページのフッター追加（sunny_privacy・sunny_terms・sunny_contact）
+- Google Map 緯度経度取得モーダルの中身実装（UI のみ済み）
+- FAQ ページ作成
+- サブページ（sunny_privacy・sunny_terms・sunny_contact）のフッター追加
 
-### フェーズ2（オープン化のタイミングで）
+### フェーズ2（オープン化のタイミング）
 - ドメイン取得（sunnyin.com / sunnyin.jp 候補）
-- URL構成整理（LP→トップ、ツール→/app）
-- PWA化（manifest.json + Service Worker）
-- Supabase導入・データ蓄積
-  - 算出日時・緯度経度・用途・スコア結果・任意でメアド/会社名
-- LPに「導入実績」セクション追加（営業活動後）
-- SUUMOへのBtoB提案準備
+- URL 構成整理（LP → トップ、ツール → /app）
+- PWA 化（manifest.json + Service Worker）
+- Supabase 導入・データ蓄積（算出日時・緯度経度・用途・スコア）
+- LP「導入実績」セクション追加（営業活動後）
+- SUUMO 等への BtoB 提案
 
-## ビジネス戦略
+---
 
-### 現在の方針
-- クローズドβ：営業した不動産会社・建築会社だけに使ってもらう
-- 実績を積んでからLPに「導入実績」として掲載
-- 将来的にSUUMO等へのAPI連携・BtoB営業を目指す
+## 12. ビジネス戦略
 
-### ターゲット
-- 主：不動産仲介・売買会社、建築・設計会社、賃貸管理会社
+**現在の方針**：クローズドβ。営業した不動産・建築会社に使ってもらい実績を積む → LP「導入実績」掲載 → SUUMO 等へ API 連携・BtoB 営業。
+
+**ターゲット**：
+- 主：不動産仲介・売買、建築・設計会社、賃貸管理会社
 - 副：一般ユーザー（購入検討者・テレワーカー・ベランダ菜園等）
 
-### 権威性確保（検討中）
-- 都内の建築士・住環境研究者ブロガーへの監修依頼を検討中
-- X・noteで発信している建築士に直接コンタクトする方針
-
+**権威性確保**（検討中）：X・note で発信している都内建築士への監修依頼を直接コンタクトで進める方針。
