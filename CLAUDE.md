@@ -348,13 +348,13 @@ PHOTO_TAB_MAP = {
 - iOS 自動ズーム防止（`font-size: 16px` 統一）
 - BtoB LP（sunny_lp.html）
 - ナビゲーション「Sunnyとは？」リンク
+- Google Map から緯度経度を取得する方法モーダルを実装（スマホ・PC 別の手順＋画像表示）
 
 ---
 
 ## 11. 今後の TODO
 
 ### フェーズ1（今すぐ・進行中）
-- Google Map 緯度経度取得モーダルの中身実装（UI のみ済み）
 - FAQ ページ作成
 - サブページ（sunny_privacy・sunny_terms・sunny_contact）のフッター追加
 
