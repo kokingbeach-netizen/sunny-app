@@ -774,7 +774,8 @@
             <input type="file" accept="image/*" id="c-file-south" style="display:none;" onchange="cHandlePhoto(this,'south')">
           </div>
           <div class="photo-check-section">
-            <p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>
+            <p class="photo-check-label">日照に影響する遮蔽物を選んでください<span class="photo-check-opt">（日を大きく遮るもののみ）</span></p>
+            <p style="font-size:11px;color:#6B7280;margin-bottom:8px;line-height:1.6;">遠くにある・小さい・窓の正面でないなど、明らかに日照に影響しないものはチェック不要です。</p>
             <div class="photo-check-items" id="c-checks-south">
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（常緑樹・1年中葉がある）</span><span class="photo-check-tag warn">→ 全季節-15%</span></label>
               <label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck('south',this.value,this.checked)"><span class="photo-check-text">樹木（落葉樹・冬に葉が落ちる）</span><span class="photo-check-tag warn">→ 冬-5% 秋-10% 春夏-15%</span></label>
@@ -961,8 +962,8 @@ var selectedConstructionFloor = 1;
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
 var SIZE_MULT = { '小':0.85, '中':1.0, '大':1.1 };
 var SAMPLE_DAYS = [1, 8, 15, 22];
-var TIME_SLOTS = [6, 8, 10, 12, 14, 16];
-var TIME_LABELS = ['6-8時','8-10時','10-12時','12-14時','14-16時','16-18時'];
+var TIME_SLOTS = [4, 6, 8, 10, 12, 14, 16, 18];
+var TIME_LABELS = ['4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時'];
 var MONTH_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
 var PHOTO_TAB_MAP = {
@@ -1398,7 +1399,8 @@ function renderWindowCard(w, i) {
     + renderPhotoCards(i, w)
 
     + '<div class="photo-check-section">'
-    + '<p class="photo-check-label">\u5199\u3063\u3066\u3044\u308b\u3082\u306e\u3092\u5168\u3066\u9078\u3093\u3067\u304f\u3060\u3055\u3044<span class="photo-check-opt">\uff08\u8907\u6570\u9078\u629e\u53ef\uff09</span></p>'
+    + '<p class="photo-check-label">\u65e5\u7167\u306b\u5f71\u97ff\u3059\u308b\u9060\u853d\u7269\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044<span class="photo-check-opt">\uff08\u65e5\u3092\u5927\u304d\u304f\u9065\u308b\u3082\u306e\u306e\u307f\uff09</span></p>'
+    + '<p style="font-size:11px;color:#6B7280;margin-bottom:8px;line-height:1.6;">\u9060\u304f\u306b\u3042\u308b\u30fb\u5c0f\u3055\u3044\u30fb\u7a93\u306e\u6b63\u9762\u3067\u306a\u3044\u306a\u3069\u3001\u660e\u3089\u304b\u306b\u65e5\u7167\u306b\u5f71\u97ff\u3057\u306a\u3044\u3082\u306e\u306f\u30c1\u30a7\u30c3\u30af\u4e0d\u8981\u3067\u3059\u3002</p>'
     + '<div class="photo-check-items">'
     + renderSurroundingCheckboxes(i, w.surroundings)
     + '</div>'
@@ -1758,7 +1760,7 @@ function calcWindowHeatmap(w, floorNum) {
 
   for (var m = 0; m < 12; m++) {
     var row = [];
-    for (var t = 0; t < 6; t++) {
+    for (var t = 0; t < 8; t++) {
 
       // 月の15日を10分刻びでサンプリング
       var sunlit = 0;
@@ -1831,7 +1833,7 @@ function calcConstructionHeatmap(floorNum) {
     var matrix = [];
     for (var m = 0; m < 12; m++) {
       var row = [];
-      for (var t = 0; t < 6; t++) {
+      for (var t = 0; t < 8; t++) {
         var sunlit = 0, total = 0;
         for (var dt = 0; dt < 120; dt += 10) {
           var date = new Date(2024, m, 15, TIME_SLOTS[t], dt, 0);
@@ -2110,18 +2112,18 @@ function displayResults(score, winScores, heatmaps) {
 function computeAggHeatmap(heatmaps) {
   var agg = [];
   for (var m = 0; m < 12; m++) {
-    agg.push(new Array(6).fill(0));
+    agg.push(new Array(8).fill(0));
   }
   heatmaps.forEach(function(hm) {
     for (var m = 0; m < 12; m++) {
-      for (var t = 0; t < 6; t++) {
+      for (var t = 0; t < 8; t++) {
         agg[m][t] += hm[m][t];
       }
     }
   });
   var n = heatmaps.length || 1;
   for (var m = 0; m < 12; m++) {
-    for (var t = 0; t < 6; t++) {
+    for (var t = 0; t < 8; t++) {
       agg[m][t] = Math.min(1, agg[m][t] / n);
     }
   }
@@ -2132,10 +2134,10 @@ function computeAggHeatmap(heatmaps) {
 function computeOrHeatmap(heatmaps) {
   var or = [];
   for (var m = 0; m < 12; m++) {
-    or.push(new Array(6).fill(0));
+    or.push(new Array(8).fill(0));
   }
   for (var m = 0; m < 12; m++) {
-    for (var t = 0; t < 6; t++) {
+    for (var t = 0; t < 8; t++) {
       var noSunProb = 1;
       heatmaps.forEach(function(hm) { noSunProb *= (1 - hm[m][t]); });
       or[m][t] = 1 - noSunProb;
@@ -2148,8 +2150,8 @@ function getSeasonScoresFromMatrix(matrix) {
   var monthlyAvg = [];
   for (var m = 0; m < 12; m++) {
     var sum = 0;
-    for (var t = 0; t < 6; t++) { sum += matrix[m][t]; }
-    monthlyAvg.push(sum / 6);
+    for (var t = 0; t < 8; t++) { sum += matrix[m][t]; }
+    monthlyAvg.push(sum / 8);
   }
   return {
     spring: Math.round((monthlyAvg[2] + monthlyAvg[3] + monthlyAvg[4]) / 3 * 100),
@@ -2175,7 +2177,7 @@ function buildHeatmapHtml(matrix) {
   html += '</tr></thead><tbody>';
   for (var m = 0; m < 12; m++) {
     html += '<tr><td class="hm-row-label hm-mn">' + escHtml(MONTH_LABELS[m]) + '</td>';
-    for (var t = 0; t < 6; t++) {
+    for (var t = 0; t < 8; t++) {
       var val = matrix[m][t];
       var info = getHeatInfo(val);
       html += '<td><div class="hm-cell" style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
@@ -2230,7 +2232,7 @@ function renderHeatmapTable(matrix) {
 
   for (var m = 0; m < 12; m++) {
     html += '<tr><td class="hm-row-label hm-mn">' + escHtml(MONTH_LABELS[m]) + '</td>';
-    for (var t = 0; t < 6; t++) {
+    for (var t = 0; t < 8; t++) {
       var val = matrix[m][t];
       var info = getHeatInfo(val);
       html += '<td><div class="hm-cell" style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
@@ -2256,8 +2258,8 @@ function calcPeakMonth(matrix) {
   var monthlyAvg = [];
   for (var m = 0; m < 12; m++) {
     var sum = 0;
-    for (var t = 0; t < 6; t++) { sum += matrix[m][t]; }
-    monthlyAvg.push(sum / 6);
+    for (var t = 0; t < 8; t++) { sum += matrix[m][t]; }
+    monthlyAvg.push(sum / 8);
   }
   var top2Months = monthlyAvg
     .map(function(val, i) { return { month: i + 1, val: val }; })
@@ -2281,8 +2283,8 @@ function calcSeasonScores(matrix) {
   var monthlyAvg = [];
   for (var m = 0; m < 12; m++) {
     var sum = 0;
-    for (var t = 0; t < 6; t++) { sum += matrix[m][t]; }
-    monthlyAvg.push(sum / 6);
+    for (var t = 0; t < 8; t++) { sum += matrix[m][t]; }
+    monthlyAvg.push(sum / 8);
   }
   var spring = Math.round((monthlyAvg[2] + monthlyAvg[3] + monthlyAvg[4]) / 3 * 100);
   var summer = Math.round((monthlyAvg[5] + monthlyAvg[6] + monthlyAvg[7]) / 3 * 100);
@@ -2448,13 +2450,13 @@ function resetAll() {
 }
 
 function buildHeatmapForCard(matrix) {
-  var times = ['6','8','10','12','14','16'];
+  var times = ['4','6','8','10','12','14','16','18'];
   var html = '<table class="sc-hm-table"><thead><tr><th class="sc-hm-rl"></th>';
   times.forEach(function(t) { html += '<th class="sc-hm-th">' + t + '</th>'; });
   html += '</tr></thead><tbody>';
   MONTH_LABELS.forEach(function(lbl, m) {
     html += '<tr><td class="sc-hm-rl">' + lbl + '</td>';
-    for (var t = 0; t < 6; t++) {
+    for (var t = 0; t < 8; t++) {
       var v = matrix[m][t];
       var bg = v >= 0.9 ? '#E8420A' : v >= 0.6 ? '#F5A623' : v >= 0.3 ? '#F5D080' : v >= 0.05 ? '#F5ECD0' : '#F0EFE9';
       html += '<td class="sc-hm-cell" style="background:' + bg + '"></td>';
@@ -2973,7 +2975,8 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '<input type="file" accept="image/*" id="c-file-' + key + '" style="display:none;" onchange="cHandlePhoto(this,\'' + key + '\')">'  
     + '</div>'
     + '<div class="photo-check-section">'
-    + '<p class="photo-check-label">写っているものを全て選んでください<span class="photo-check-opt">（複数選択可）</span></p>'
+    + '<p class="photo-check-label">\u65e5\u7167\u306b\u5f71\u97ff\u3059\u308b\u9060\u853d\u7269\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044<span class="photo-check-opt">\uff08\u65e5\u3092\u5927\u304d\u304f\u9065\u308b\u3082\u306e\u306e\u307f\uff09</span></p>'
+    + '<p style="font-size:11px;color:#6B7280;margin-bottom:8px;line-height:1.6;">\u9060\u304f\u306b\u3042\u308b\u30fb\u5c0f\u3055\u3044\u30fb\u7a93\u306e\u6b63\u9762\u3067\u306a\u3044\u306a\u3069\u3001\u660e\u3089\u304b\u306b\u65e5\u7167\u306b\u5f71\u97ff\u3057\u306a\u3044\u3082\u306e\u306f\u30c1\u30a7\u30c3\u30af\u4e0d\u8981\u3067\u3059\u3002</p>'
     + '<div class="photo-check-items">'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="evergreen" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">\u6a39\u6728\uff08\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b\uff09</span><span class="photo-check-tag warn">\u2192 \u5168\u5b63\u7bc0-15%</span></label>'
     + '<label class="photo-check-item"><input type="checkbox" class="photo-check-box" value="deciduous" onchange="cToggleCheck(\''+key+'\',this.value,this.checked)"><span class="photo-check-text">\u6a39\u6728\uff08\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b\uff09</span><span class="photo-check-tag warn">\u2192 \u51ac-5% \u79cb-10% \u6625\u590f-15%</span></label>'
