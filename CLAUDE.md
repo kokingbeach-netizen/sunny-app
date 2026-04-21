@@ -349,6 +349,7 @@ PHOTO_TAB_MAP = {
 - BtoB LP（sunny_lp.html）
 - ナビゲーション「Sunnyとは？」リンク
 - Google Map から緯度経度を取得する方法モーダルを実装（スマホ・PC 別の手順＋画像表示）
+- sunny_hiatari.html：「日当たりって大切？」コラムページを追加（エビデンス・データ・ユーザーの声・CTA含む）
 
 ---
 
