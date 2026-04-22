@@ -201,6 +201,7 @@
       .page-hero h1 { font-size: 30px; }
       .grid3, .stats-row, .ref-grid { grid-template-columns: 1fr; }
       .voice-grid { grid-template-columns: 1fr; }
+      .reason-grid2 { grid-template-columns: 1fr !important; }
       .topbar { padding: 0 16px; }
       .wrap { padding: 40px 16px 64px; }
       .cta-block { padding: 28px 20px; }
@@ -232,7 +233,7 @@
   <div class="page-hero">
     <div class="label">☀ COLUMN</div>
     <h1>日当たりって、<br><em>大切</em>なの？</h1>
-    <p>「なんとなく南向きがいい」で終わらせず、<br>データと実際の声から日当たりの影響を整理しました。</p>
+    <p>実際の声から「日当たり」についてを整理しました。</p>
   </div>
 
   <!-- 01 なぜ大切？ -->
@@ -240,21 +241,46 @@
     <div class="section-label">01 — なぜ大切なのか</div>
     <h2>暮らしの満足度に、<br>じわじわ効いてくる。</h2>
     <p class="section-lead">価格・駅距離・間取り。物件選びは条件で絞り込めます。でも「住んでみてわかった」後悔の多くは、日当たりに関係しています。</p>
-    <div class="grid3">
-      <div class="reason-card">
-        <div class="reason-icon">💡</div>
-        <div class="reason-title">節約・コスト</div>
-        <p class="reason-body">照明を使う時間、暖房の効き、洗濯物の乾きやすさ。日々の小さなストレスとコストに直結します。</p>
-      </div>
+    <div class="reason-grid2" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
       <div class="reason-card">
         <div class="reason-icon">🌤</div>
         <div class="reason-title">気持ち良さ</div>
-        <p class="reason-body">光が入る部屋は在宅時間の満足度が上がりやすい。内見時の第一印象にも大きく影響します。</p>
+        <p class="reason-body">光が入る部屋は在宅時間の満足度が上がりやすい。</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;">
+          <a class="ref-link" href="https://suumo.jp/article/oyakudachi/oyaku/sumai_nyumon/lifestyle/madori-hiatari/" target="_blank">日当たりと間取りの関係｜SUUMO</a>
+          <a class="ref-link" href="https://www.e-life.jp/column/comfortable_house/page02.html" target="_blank">快適な住まいと日当たり｜e-Life</a>
+          <a class="ref-link" href="https://www.besthousing.co.jp/blog-20190501/" target="_blank">部屋探しで本当に重視すべきこと｜不動産仲介歴29年の視点</a>
+        </div>
+      </div>
+      <div class="reason-card">
+        <div class="reason-icon">💡</div>
+        <div class="reason-title">節約・コスト</div>
+        <p class="reason-body">照明を使う時間、暖房の効き、洗濯物の乾きやすさ。</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;">
+          <a class="ref-link" href="https://www.sayama-f.co.jp/fudosan_column/id/24" target="_blank">日当たりと光熱費の関係｜狭山不動産</a>
+          <a class="ref-link" href="https://finance.recruit.co.jp/article/n187/" target="_blank">住まいの向きと電気代｜リクルート</a>
+          <a class="ref-link" href="https://www.joinushome.com/blog/blog-3-3aba13" target="_blank">日当たりと生活コスト｜JoinUsHome</a>
+        </div>
       </div>
       <div class="reason-card">
         <div class="reason-icon">🏥</div>
         <div class="reason-title">健康・ストレス</div>
-        <p class="reason-body">暗さ・湿気・寒さは後悔の原因になりやすい要素。住んでから気づく、地味に大きな差です。</p>
+        <p class="reason-body">暗さ・湿気・寒さは後悔の原因になりやすい要素。</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;">
+          <a class="ref-link" href="https://friend-home.jp/chintai-column/10854.html" target="_blank">日当たりと健康の関係｜フレンドホーム</a>
+          <a class="ref-link" href="https://diamond.jp/articles/-/250386" target="_blank">住環境とストレス｜ダイヤモンド・オンライン</a>
+          <a class="ref-link" href="https://www.libretto-house.jp/column/30077/" target="_blank">暗い部屋のデメリット｜Libretto House</a>
+        </div>
+      </div>
+      <div class="reason-card">
+        <div class="reason-icon">☀</div>
+        <div class="reason-title">夏の暑さ対策</div>
+        <p class="reason-body">夏は日射熱の侵入や室温上昇が課題。</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;">
+          <a class="ref-link" href="https://www.cigr.co.jp/media/buy/22" target="_blank">「日当たりは南向きがいいって本当？」｜不動産各社の整理</a>
+          <a class="ref-link" href="https://finance.recruit.co.jp/article/n187/" target="_blank">住まいの向きと夏の室温｜リクルート</a>
+          <a class="ref-link" href="https://tou-sei.co.jp/column/20250328/" target="_blank">夏の日射対策と方角の選び方｜東誠不動産</a>
+        </div>
       </div>
     </div>
   </div>
@@ -265,19 +291,34 @@
   <div class="section">
     <div class="section-label">02 — データで見る</div>
     <h2>「気にする人」は、<br>思った以上に多い。</h2>
-    <p class="section-lead">「好みの問題でしょ」と思いきや、アンケートを見ると日当たりは明確に住まい選びの決め手になっています。</p>
+    <p class="section-lead">アンケートを見ると日当たりは明確に住まい選びの決め手になっています。</p>
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-num">71<span class="stat-unit">%</span></div>
         <p class="stat-label">方角を重視すると<br>答えた人の割合</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;">
+          <a class="ref-link" href="https://prtimes.jp/main/html/rd/p/000000263.000055654.html" target="_blank">住みたい家の方角・風水調査｜PRTimes</a>
+          <a class="ref-link" href="https://www.ur-net.go.jp/chintai/college/202211/000978.html" target="_blank">住まい選びと方角｜UR都市機構</a>
+          <a class="ref-link" href="https://www.suumo.jp/article/oyakudachi/oyaku/sumai_nyumon/lifestyle/madori-hiatari/" target="_blank">日当たりと間取りの関係｜SUUMO</a>
+        </div>
       </div>
       <div class="stat-card">
         <div class="stat-num">56<span class="stat-unit">%</span></div>
         <p class="stat-label">住みたい方角 1位<br>「南向き」の回答率</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;">
+          <a class="ref-link" href="https://prtimes.jp/main/html/rd/p/000000263.000055654.html" target="_blank">住みたい家の方角・風水調査｜PRTimes</a>
+          <a class="ref-link" href="https://www.cigr.co.jp/media/buy/22" target="_blank">「南向きがいいって本当？」｜不動産各社の整理</a>
+          <a class="ref-link" href="https://www.goodrooms.jp/journal/?p=56658" target="_blank">南向き物件の実態｜goodrooms</a>
+        </div>
       </div>
       <div class="stat-card">
         <div class="stat-num">20<span class="stat-unit">%</span></div>
         <p class="stat-label">日当たりが悪いと<br>査定額が下がる上限目安</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;">
+          <a class="ref-link" href="https://www.f-madoguchi.co.jp/blog/entry-340887/" target="_blank">「日当たりが悪いと売却価格が下がる」｜3〜20%の値下がり率</a>
+          <a class="ref-link" href="https://hokusho-fudousan.jp/column/knowledge/not-sunny-house-sale/" target="_blank">「日照・採光は査定項目」｜最大20%下がる可能性</a>
+          <a class="ref-link" href="https://www.preste.jp/blog/entry-504883/" target="_blank">日当たりと不動産査定｜preste</a>
+        </div>
       </div>
     </div>
     <div class="bar-section">
@@ -302,7 +343,7 @@
         <div class="bar-track"><div class="bar-fill" style="width:7.2%;opacity:0.2"></div></div>
         <div class="bar-val">7.2%</div>
       </div>
-      <div style="margin-top:14px;font-size:11px;color:var(--gray);">出典：住みたい家の方角・風水調査（PRTimes）</div>
+      <div style="margin-top:14px;font-size:11px;color:var(--gray);">出典：<a href="https://prtimes.jp/main/html/rd/p/000000263.000055654.html" target="_blank" style="color:var(--amber-dk);text-decoration:underline;">住みたい家の方角・風水調査（PRTimes）</a></div>
     </div>
   </div>
 
