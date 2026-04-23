@@ -353,6 +353,8 @@ PHOTO_TAB_MAP = {
 - ナビゲーションに「日当たりって大切？」リンクを追加（index.html・sunny_lp.html）
 - TOP ファーストビューの CTA ボタンを「日当たりって大切？」へ変更
 - sunny_lp.html に「詳しい算出方法をみる」リンクを追加
+- sunny_hiatari.html：各セクションに出典リンクを追加（01〜04全セクション）
+- sunny_hiatari.html：参考データ・記事セクションを削除（各セクションに出典を統合）
 
 ---
 
