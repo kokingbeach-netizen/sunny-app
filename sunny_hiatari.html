@@ -52,7 +52,7 @@
     .sec-en { font-size: 10px; letter-spacing: 4px; color: #bbb; text-transform: uppercase; margin-bottom: 6px; }
     .sec-h2 { font-size: 39px; font-weight: 500; color: #1a1a1a; line-height: 1.3; margin-bottom: 8px; }
     .sec-h2 strong { font-weight: 700; }
-    .sec-h3 { font-size: 25px; font-weight: 300; color: #888; line-height: 1.7; margin-bottom: 40px; }
+    .sec-h3 { font-size: 25px; font-weight: 300; color: #555; line-height: 1.7; margin-bottom: 40px; }
 
     /* ── リンク共通 ── */
     .ref-link {
@@ -67,13 +67,11 @@
     .ref-link:hover { color: #c17d10; }
 
     /* ── 01 Sunlight 2×2グリッド ── */
-    .sunlight-grid { display: grid; grid-template-columns: 1fr 1fr; }
-    .sunlight-item { padding: 28px 40px 28px 0; border-bottom: 0.5px solid #f0f0f0; }
-    .sunlight-item:nth-child(even) { padding-left: 40px; padding-right: 0; border-left: 0.5px solid #f0f0f0; }
-    .sunlight-item:nth-last-child(-n+2) { border-bottom: none; padding-bottom: 0; }
-    .si-num { font-size: 10px; letter-spacing: 2px; color: #ddd; margin-bottom: 12px; font-family: 'DM Mono', monospace; }
+    .sunlight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sunlight-item { background: #f8f8f6; border-radius: 8px; padding: 28px; }
+    .si-num { font-size: 10px; letter-spacing: 2px; color: #aaa; margin-bottom: 12px; font-family: 'DM Mono', monospace; }
     .si-title { font-size: 21px; font-weight: 700; margin-bottom: 8px; }
-    .si-body { font-size: 14px; color: #888; line-height: 1.9; }
+    .si-body { font-size: 14px; color: #333; line-height: 1.9; }
     .si-links { margin-top: 12px; display: flex; flex-direction: column; }
 
     /* ── 02 Data ── */
@@ -84,7 +82,7 @@
     .data-stat:last-child { border-bottom: none; }
     .data-num { font-family: 'Noto Sans JP', sans-serif; font-size: 62px; font-weight: 700; color: #1a1a1a; line-height: 1; }
     .data-num span { color: #F5A623; }
-    .data-label { font-size: 13px; color: #aaa; margin-top: 4px; }
+    .data-label { font-size: 13px; color: #666; margin-top: 4px; }
     .data-links { margin-top: 8px; display: flex; flex-direction: column; }
 
     .bar-wrap { padding-top: 4px; }
@@ -98,23 +96,19 @@
     .bar-val { font-family: 'DM Mono', monospace; font-size: 12px; color: #aaa; width: 36px; text-align: right; flex-shrink: 0; }
 
     /* ── 03 Voice 2×2グリッド ── */
-    .voice-grid { display: grid; grid-template-columns: 1fr 1fr; }
-    .voice-item { padding: 28px 40px 28px 0; border-bottom: 0.5px solid #f0f0f0; }
-    .voice-item:nth-child(even) { padding-left: 40px; padding-right: 0; border-left: 0.5px solid #f0f0f0; }
-    .voice-item:nth-last-child(-n+2) { border-bottom: none; padding-bottom: 0; }
-    .voice-tag { font-size: 10px; letter-spacing: 2px; color: #F5A623; text-transform: uppercase; margin-bottom: 10px; }
+    .voice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .voice-item { background: #f8f8f6; border-radius: 8px; padding: 28px; }
+    .voice-tag { font-size: 10px; letter-spacing: 2px; color: #1a1a1a; text-transform: uppercase; margin-bottom: 10px; }
     .voice-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .voice-body { font-size: 14px; color: #888; line-height: 1.9; }
+    .voice-body { font-size: 14px; color: #333; line-height: 1.9; }
     .voice-links { margin-top: 12px; display: flex; flex-direction: column; }
 
     /* ── 04 Professional 3カラム ── */
-    .pro-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
-    .pro-item { padding-right: 40px; border-right: 0.5px solid #f0f0f0; }
-    .pro-item:last-child { border-right: none; padding-right: 0; padding-left: 40px; }
-    .pro-item:nth-child(2) { padding: 0 40px; }
-    .pro-num { font-size: 10px; letter-spacing: 2px; color: #ddd; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
+    .pro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .pro-item { background: #f8f8f6; border-radius: 8px; padding: 28px; }
+    .pro-num { font-size: 10px; letter-spacing: 2px; color: #aaa; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
     .pro-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .pro-body { font-size: 14px; color: #888; line-height: 1.9; }
+    .pro-body { font-size: 14px; color: #333; line-height: 1.9; }
     .pro-links { margin-top: 12px; display: flex; flex-direction: column; }
 
     /* ── CTA ── */
@@ -125,7 +119,7 @@
     .cta-en { font-size: 10px; letter-spacing: 4px; color: #bbb; text-transform: uppercase; margin-bottom: 6px; }
     .cta-h2 { font-size: 39px; font-weight: 500; line-height: 1.3; margin-bottom: 8px; }
     .cta-h2 strong { font-weight: 700; }
-    .cta-h3 { font-size: 25px; font-weight: 300; color: #888; line-height: 1.7; margin-bottom: 32px; }
+    .cta-h3 { font-size: 25px; font-weight: 300; color: #555; line-height: 1.7; margin-bottom: 32px; }
     .cta-btn {
       display: inline-flex; align-items: center; gap: 8px;
       background: #F5A623; color: #fff;
@@ -155,12 +149,10 @@
       .section { padding: 48px 20px; }
       .sec-h3 { font-size: 22px; }
       .sunlight-grid, .voice-grid { grid-template-columns: 1fr; }
-      .sunlight-item, .voice-item { padding: 24px 0 !important; border-left: none !important; border-bottom: 0.5px solid #f0f0f0 !important; }
-      .sunlight-item:last-child, .voice-item:last-child { border-bottom: none !important; }
+      .sunlight-item, .voice-item { padding: 20px !important; }
       .data-wrap { grid-template-columns: 1fr; gap: 32px; }
       .pro-grid { grid-template-columns: 1fr; }
-      .pro-item { padding: 24px 0 !important; border-right: none !important; border-bottom: 0.5px solid #f0f0f0; }
-      .pro-item:last-child { border-bottom: none; }
+      .pro-item { padding: 20px !important; }
       .cta-sec { padding: 48px 20px; }
       footer { padding: 24px 20px; }
     }
