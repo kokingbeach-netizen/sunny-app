@@ -144,10 +144,6 @@
     .dir-center { display: flex; align-items: center; justify-content: center; font-size: 16px; color: #D1D5DB; pointer-events: none; }
 
     /* Size grid */
-    .size-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-    .size-btn { border: 1.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 8px 6px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 700; color: #6B7280; background: #fff; user-select: none; transition: all 0.15s; }
-    .size-btn:hover { border-color: #F5A623; color: #D4880F; }
-    .size-btn.active { border-color: #F5A623; background: rgba(245,166,35,0.1); color: #D4880F; }
 
     /* Photo tabs */
     .photo-tabs { display: flex; gap: 0; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; overflow: hidden; }
@@ -1025,7 +1021,6 @@ var constructionResults = [];
 var selectedConstructionFloor = 1;
 
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
-var SIZE_MULT = { '小':0.85, '中':1.0, '大':1.1 };
 var SAMPLE_DAYS = [1, 8, 15, 22];
 var TIME_SLOTS = [4, 6, 8, 10, 12, 14, 16, 18];
 var TIME_LABELS = ['4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時'];
@@ -1240,7 +1235,6 @@ function makeDefaultWindow(i) {
   return {
     name: (typeof selectedUsecase !== 'undefined' && selectedUsecase === '土地・屋外' ? '方觓' : '窓') + (i + 1),
     dir: '',
-    size: '',
     surroundings: [],
     obstructionType: 'none',
     bldH: null,
@@ -1514,25 +1508,15 @@ function cSetBldDist(key, val) {
 }
 
 // ============================================================
-// Auto-name window based on direction and size
+// Auto-name window based on direction
 // ============================================================
 function autoNameWindow(i) {
   var w = windowStates[i];
   var defaultPattern = /^窓\d+$/;
-  var dirPattern = /^(南|東|西|北|南東|南西|北東|北西)(の窓)?(・(小|中|大)サイズ)?$/;
+  var dirPattern = /^(南|東|西|北|南東|南西|北東|北西)(の窓)?$/;
   if (!defaultPattern.test(w.name) && !dirPattern.test(w.name)) return;
 
-  var name = '';
-  if (w.dir && w.size) {
-    name = w.dir + 'の窓・' + w.size + 'サイズ';
-  } else if (w.dir) {
-    name = w.dir + 'の窓';
-  } else if (w.size) {
-    name = w.size + 'サイズ';
-  } else {
-    name = '窓' + (i + 1);
-  }
-  w.name = name;
+  w.name = w.dir ? w.dir + 'の窓' : '窓' + (i + 1);
 }
 
 // ============================================================
@@ -1544,12 +1528,6 @@ function renderWindowCard(w, i) {
     return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + escHtml(d) + '</button>';
   }).join('');
 
-  var sizes = ['\u5c0f','\u4e2d','\u5927'];
-  var sizeBtns = sizes.map(function(s) {
-    return '<button class="size-btn' + (w.size === s ? ' active' : '') + '" onclick="setWinSize(' + i + ',\'' + s + '\')">' + s + '</button>';
-  }).join('');
-
-
   var delBtn = i > 0 ? '<button class="del-btn" onclick="deleteWindow(' + i + ')">\u524a\u9664</button>' : '';
 
   return '<div class="window-card" id="win-card-' + i + '">'
@@ -1560,9 +1538,6 @@ function renderWindowCard(w, i) {
 
     + '<label>\u7a93\u306e\u5411\u304d<span class="req">\u2605\u5fc5\u9808</span></label>'
     + '<div class="dir-grid">' + dirBtns + '</div>'
-
-    + '<label>\u7a93\u306e\u30b5\u30a4\u30ba</label>'
-    + '<div class="size-grid">' + sizeBtns + '</div>'
 
     + '<label>\u7a93\u304b\u3089\u306e\u5199\u771f\uff083\u65b9\u89d2\uff09</label>'
     + '<div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.22);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#6B4A0A;line-height:1.7;">'
@@ -1612,15 +1587,6 @@ function setWinDir(i, dir) {
       card.style.background  = '';
     }
   });
-}
-
-// ============================================================
-// Size set
-// ============================================================
-function setWinSize(i, size) {
-  windowStates[i].size = size;
-  autoNameWindow(i);
-  rerenderWindow(i);
 }
 
 // ============================================================
@@ -2516,71 +2482,84 @@ function showLightSim(winIdx, monthIdx, timeIdx) {
   ctx.lineWidth = 1;
   ctx.stroke();
 
-  // ── Light beam ──
+  // ── Light beam (eave geometry) ──
+  var PX_PER_METER = SCALE;  // px per metre (= roomH / 2.3)
   var penetrationM = 0;
   if (sunFacing) {
-    var sunAltRad   = sunAltDeg * Math.PI / 180;
-    var winTopHM    = (floorY - winTopY) / SCALE;  // window top height in metres
-    var winTopEffM  = winTopHM;
+    var altRad  = sunAltDeg * Math.PI / 180;
+    var tanAlt  = Math.tan(altRad);
 
-    // Overhang clips beam top
-    if (roofDepth > 0) {
-      var ovAngleDeg = Math.atan2(2.3, roofDepth) * 180 / Math.PI;
-      if (sunAltDeg < ovAngleDeg) {
-        winTopEffM = Math.min(winTopEffM, roofDepth * Math.tan(sunAltRad));
-      }
-    }
+    // Eave tip X (wall face minus eave length; equals wallX when roofDepth = 0)
+    var eaveLenPx   = roofDepth * PX_PER_METER;
+    var eaveEdgeX   = wallX - eaveLenPx;
+    // Underside of eave/ceiling slab
+    var eaveBottomY = ceilY;
 
-    penetrationM = Math.min(winTopEffM / Math.tan(sunAltRad), 8);
-    var penetPx  = penetrationM * SCALE;
-    var beamTopY = floorY - winTopEffM * SCALE;
+    // Light ray from eave tip hits floor at:
+    var dxFromEave  = (floorY - eaveBottomY) / tanAlt;
+    var lightEndX   = eaveEdgeX + dxFromEave;
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(wallX + wallThk, ceilY, cW - wallX - wallThk, roomH + 16);
-    ctx.clip();
+    // Penetration inside room (from interior wall face)
+    var lightDepthPx = Math.max(0, lightEndX - (wallX + wallThk));
+    penetrationM     = Math.min(lightDepthPx / PX_PER_METER, 8);
 
-    // Beam polygon
-    ctx.beginPath();
-    ctx.moveTo(wallX + wallThk, beamTopY);
-    ctx.lineTo(wallX + wallThk + penetPx, floorY);
-    ctx.lineTo(wallX + wallThk, floorY);
-    ctx.closePath();
-    var beamGrad = ctx.createLinearGradient(wallX + wallThk, 0, wallX + wallThk + penetPx, 0);
-    beamGrad.addColorStop(0,    'rgba(245,166,35,0.52)');
-    beamGrad.addColorStop(0.40, 'rgba(245,166,35,0.28)');
-    beamGrad.addColorStop(1,    'rgba(245,166,35,0.03)');
-    ctx.fillStyle = beamGrad;
-    ctx.fill();
+    // Beam top Y at the interior wall face
+    var dxToWallInner = (wallX + wallThk) - eaveEdgeX;
+    var beamTopY      = eaveBottomY + dxToWallInner * tanAlt;
+    beamTopY          = Math.max(winTopY, Math.min(beamTopY, floorY));
 
-    // Upper edge ray line
-    ctx.beginPath();
-    ctx.moveTo(wallX + wallThk, beamTopY);
-    ctx.lineTo(wallX + wallThk + penetPx, floorY);
-    ctx.strokeStyle = 'rgba(245,166,35,0.50)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([]);
-    ctx.stroke();
-    ctx.restore();
+    if (lightDepthPx > 0) {
+      var penetPx = lightDepthPx;
 
-    // Penetration arrow
-    if (penetrationM >= 0.1) {
-      var arwY = floorY + 10;
-      var arwE = wallX + wallThk + penetPx;
-      ctx.strokeStyle = '#D4880F';
-      ctx.lineWidth   = 1.5;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(wallX + wallThk, ceilY, cW - wallX - wallThk, roomH + 16);
+      ctx.clip();
+
+      // Beam polygon
+      ctx.beginPath();
+      ctx.moveTo(wallX + wallThk, beamTopY);
+      ctx.lineTo(wallX + wallThk + penetPx, floorY);
+      ctx.lineTo(wallX + wallThk, floorY);
+      ctx.closePath();
+      var beamGrad = ctx.createLinearGradient(wallX + wallThk, 0, wallX + wallThk + penetPx, 0);
+      beamGrad.addColorStop(0,    'rgba(245,166,35,0.52)');
+      beamGrad.addColorStop(0.40, 'rgba(245,166,35,0.28)');
+      beamGrad.addColorStop(1,    'rgba(245,166,35,0.03)');
+      ctx.fillStyle = beamGrad;
+      ctx.fill();
+
+      // Upper edge ray line
+      ctx.beginPath();
+      ctx.moveTo(wallX + wallThk, beamTopY);
+      ctx.lineTo(wallX + wallThk + penetPx, floorY);
+      ctx.strokeStyle = 'rgba(245,166,35,0.50)';
+      ctx.lineWidth = 1;
       ctx.setLineDash([]);
-      ctx.beginPath(); ctx.moveTo(wallX + wallThk, arwY); ctx.lineTo(arwE, arwY); ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(wallX + wallThk + 5, arwY - 3.5); ctx.lineTo(wallX + wallThk, arwY); ctx.lineTo(wallX + wallThk + 5, arwY + 3.5);
       ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(arwE - 5, arwY - 3.5); ctx.lineTo(arwE, arwY); ctx.lineTo(arwE - 5, arwY + 3.5);
-      ctx.stroke();
-      ctx.fillStyle = '#D4880F';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('\u5dee\u3057\u8fbc\u307f ' + penetrationM.toFixed(1) + 'm', wallX + wallThk + penetPx / 2, arwY - 5);
+      ctx.restore();
+
+      // Penetration arrow
+      if (penetrationM >= 0.1) {
+        var arwY = floorY + 10;
+        var arwE = wallX + wallThk + penetPx;
+        ctx.strokeStyle = '#D4880F';
+        ctx.lineWidth   = 1.5;
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(wallX + wallThk, arwY); ctx.lineTo(arwE, arwY); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(wallX + wallThk + 5, arwY - 3.5); ctx.lineTo(wallX + wallThk, arwY); ctx.lineTo(wallX + wallThk + 5, arwY + 3.5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(arwE - 5, arwY - 3.5); ctx.lineTo(arwE, arwY); ctx.lineTo(arwE - 5, arwY + 3.5);
+        ctx.stroke();
+        ctx.fillStyle = '#D4880F';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('\u5dee\u3057\u8fbc\u307f ' + penetrationM.toFixed(1) + 'm', wallX + wallThk + penetPx / 2, arwY - 5);
+      }
+    } else {
+      ctx.save(); ctx.restore(); // keep save/restore balanced
     }
   } else if (sunAltDeg > 0.5) {
     // Sun up but not facing window
@@ -3094,7 +3073,7 @@ function copyResultUrl() {
     floor: document.getElementById('floor').value,
     yoto: selectedYoto,
     windows: windowStates.map(function(w) {
-      return { name: w.name, dir: w.dir, size: w.size, surroundings: w.surroundings || [], obstructionType: w.obstructionType || 'none', bldH: w.bldH, bldDist: w.bldDist, treeH: w.treeH, treeDist: w.treeDist };
+      return { name: w.name, dir: w.dir, surroundings: w.surroundings || [], obstructionType: w.obstructionType || 'none', bldH: w.bldH, bldDist: w.bldDist, treeH: w.treeH, treeDist: w.treeDist };
     })
   };
   window.location.hash = encodeURIComponent(JSON.stringify(data));
@@ -3138,7 +3117,7 @@ function restoreFromHash() {
     if (data.windows && data.windows.length > 0) {
       windowStates = data.windows.map(function(w, i) {
         var def = makeDefaultWindow(i);
-        return Object.assign(def, { name: w.name || def.name, dir: w.dir || '南', size: w.size || '中', surroundings: Array.isArray(w.surroundings) ? w.surroundings : [], obstructionType: w.obstructionType || 'none', bldH: w.bldH != null ? parseFloat(w.bldH) : null, bldDist: parseFloat(w.bldDist) || 10, bldDistSelected: !!w.bldDistSelected, treeH: w.treeH != null ? parseFloat(w.treeH) : null, treeDist: parseFloat(w.treeDist) || 15 });
+        return Object.assign(def, { name: w.name || def.name, dir: w.dir || '南', surroundings: Array.isArray(w.surroundings) ? w.surroundings : [], obstructionType: w.obstructionType || 'none', bldH: w.bldH != null ? parseFloat(w.bldH) : null, bldDist: parseFloat(w.bldDist) || 10, bldDistSelected: !!w.bldDistSelected, treeH: w.treeH != null ? parseFloat(w.treeH) : null, treeDist: parseFloat(w.treeDist) || 15 });
       });
       renderAllWindows();
     }
