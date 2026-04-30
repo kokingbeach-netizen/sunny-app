@@ -340,6 +340,11 @@
     .copy-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1A1A1A; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 20000; }
     .copy-toast.show { opacity: 1; }
 
+    /* Simulation heatmap */
+    .hm-cell.sim-clickable { cursor: pointer; border-radius: 3px; transition: transform 0.1s, box-shadow 0.1s; }
+    .hm-cell.sim-clickable:hover { transform: scale(1.2); box-shadow: 0 2px 8px rgba(0,0,0,0.25); position: relative; z-index: 1; }
+    .hm-cell.sim-clickable.sim-selected { outline: 2px solid #F5A623; outline-offset: 1px; position: relative; z-index: 2; }
+
     /* Responsive */
     @media (max-width: 700px) {
       .topbar { padding: 0 16px; }
@@ -979,13 +984,13 @@
   <div style="font-family:'DM Mono',monospace;font-size:13px;color:#F5A623;letter-spacing:3px;margin-bottom:20px;">☀ SUNNY</div>
   <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:20px;">
     <a href="sunny_hiatari.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">日当たりって大切？</a>
-    <a href="sunny_lp.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">SUNNYとは？</a>
-    <a href="sunny_how_it_works.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">算出方法</a>
+    <a href="sunny_lp.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">日当たり算出ツールSUNNYとは？</a>
+    <a href="sunny_how_it_works.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">算出計算方法</a>
     <a href="sunny_contact.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">お問い合わせ</a>
     <a href="sunny_privacy.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">プライバシーポリシー</a>
     <a href="sunny_terms.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">利用規約</a>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,0.3);">© 2026 SUNNY — 日照率チェッカー</div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.3);">© 2026 SUNNY — 日当たり算出ツール</div>
 </footer>
 
 <!-- Screenshot overlay -->
@@ -2245,6 +2250,36 @@ function displayResults(score, winScores, heatmaps) {
 
   html += '</div>';
 
+  // ── Interactive simulation section ──
+  html += '<div style="padding:20px 16px 8px;">';
+
+  // Window selector tabs (shown when 2+ windows)
+  if (heatmaps.length >= 2) {
+    html += '<div id="simWinTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">';
+    heatmaps.forEach(function(hm, i) {
+      var w = windowStates[i];
+      html += '<button class="hm-tab' + (i === 0 ? ' active' : '') + '" onclick="switchSimWin(' + i + ')">' + escHtml(w.name || ('\u7a93' + (i + 1))) + '</button>';
+    });
+    html += '</div>';
+  }
+
+  // Interactive heatmap (first window by default)
+  html += '<div id="simHeatmapWrap" style="overflow-x:auto;">' + buildHeatmapHtml(heatmaps[0], 0) + '</div>';
+
+  // Simulation area with card design
+  html += '<div id="lightSimArea" style="margin-top:16px;background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;">';
+  html += '<div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--amber);">';
+  html += '\u2600 \u65e5\u5f53\u305f\u308a\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3';
+  html += '<span style="font-size:11px;font-weight:400;color:var(--gray);margin-left:8px;">\u30d2\u30fc\u30c8\u30de\u30c3\u30d7\u306e\u30de\u30b9\u3092\u30bf\u30c3\u30d7</span>';
+  html += '</div>';
+  html += '<div id="lightSimContent" style="padding:16px;">';
+  html += '<div style="text-align:center;padding:24px;font-size:13px;color:var(--gray);">';
+  html += '\u30d2\u30fc\u30c8\u30de\u30c3\u30d7\u306e\u30de\u30b9\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u3001\u305d\u306e\u6708\u30fb\u6642\u9593\u5e2f\u306e\u65e5\u5dee\u3057\u306e\u5165\u308a\u65b9\u3092\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3\u3057\u307e\u3059';
+  html += '</div></div>';
+  html += '</div>'; // lightSimArea
+
+  html += '</div>'; // simulation section
+
   html += '<p style="font-size:11px;color:#9CA3AF;margin:0 16px 16px;line-height:1.7;text-align:center;">⚠️ この数値は参考値です。誤差±20〜30%（周辺建物の反射・地形等による）。</p>';
 
   html += '<div style="padding:0 16px 32px;">'
@@ -2328,7 +2363,8 @@ function winSeasonBlock(emoji, label, pct) {
     + '</div>';
 }
 
-function buildHeatmapHtml(matrix) {
+function buildHeatmapHtml(matrix, winIdx) {
+  var wi = (winIdx !== undefined && winIdx !== null) ? winIdx : -1;
   var html = '<table class="heatmap-table"><thead><tr><th class="hm-row-label"></th>';
   TIME_LABELS.forEach(function(lbl) {
     html += '<th>' + escHtml(lbl) + '</th>';
@@ -2339,7 +2375,13 @@ function buildHeatmapHtml(matrix) {
     for (var t = 0; t < 8; t++) {
       var val = matrix[m][t];
       var info = getHeatInfo(val);
-      html += '<td><div class="hm-cell" style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
+      var cellClass = 'hm-cell';
+      var cellOnclick = '';
+      if (wi >= 0) {
+        cellClass += ' sim-clickable';
+        cellOnclick = ' onclick="showLightSim(' + wi + ',' + m + ',' + t + ')"';
+      }
+      html += '<td><div class="' + cellClass + '"' + cellOnclick + ' style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
     }
     html += '</tr>';
   }
@@ -2347,8 +2389,264 @@ function buildHeatmapHtml(matrix) {
   html += '<div class="hm-legend" style="font-size:12px;color:#555;margin-top:10px;line-height:2;">'
     + '\ud83d\udfe5 100%\u3000\ud83d\udfe7 \u826f\u597d\u3000\ud83d\udfe8 \u8584\u65e5\u3000\u2b1c \u308f\u305a\u304b'
     + '</div>';
-  html += '<p class="hm-desc">\u5404\u30de\u30b9\u306f\u305d\u306e\u6642\u9593\u5e2f\uff082\u6642\u9593\uff09\u306e\u65e5\u7167\u7387\u3092\u793a\u3057\u3066\u3044\u307e\u3059\u3002</p>';
+  if (wi >= 0) {
+    html += '<p class="hm-desc" style="color:#888;margin-top:6px;">\u30de\u30b9\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u305d\u306e\u6642\u9593\u5e2f\u306e\u65e5\u5f53\u305f\u308a\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3\u3092\u8868\u793a\u3057\u307e\u3059\u3002</p>';
+  } else {
+    html += '<p class="hm-desc">\u5404\u30de\u30b9\u306f\u305d\u306e\u6642\u9593\u5e2f\uff082\u6642\u9593\uff09\u306e\u65e5\u7167\u7387\u3092\u793a\u3057\u3066\u3044\u307e\u3059\u3002</p>';
+  }
   return html;
+}
+
+// ============================================================
+// Light simulation (cross-section diagram)
+// ============================================================
+function showLightSim(winIdx, monthIdx, timeIdx) {
+  var content = document.getElementById('lightSimContent');
+  if (!content) return;
+
+  // Highlight selected cell
+  document.querySelectorAll('.hm-cell.sim-selected').forEach(function(el) { el.classList.remove('sim-selected'); });
+  var cells = document.querySelectorAll('#simHeatmapWrap .hm-cell.sim-clickable');
+  var cellIdx = monthIdx * 8 + timeIdx;
+  if (cells[cellIdx]) cells[cellIdx].classList.add('sim-selected');
+
+  var matrix = storedHeatmaps[winIdx];
+  if (!matrix) return;
+  var val = matrix[monthIdx][timeIdx];
+  var pct = Math.round(val * 100);
+
+  // TIME_LABELS = ['4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時']
+  var HOUR_CENTERS = [5, 7, 9, 11, 13, 15, 17, 19];
+  var hour = HOUR_CENTERS[timeIdx];
+
+  // Sun position via SunCalc
+  var lat = parseFloat(document.getElementById('lat').value) || 35.68;
+  var lng = parseFloat(document.getElementById('lng').value) || 139.69;
+  var simDate = new Date(2025, monthIdx, 15, hour, 0, 0);
+  var sunPos   = SunCalc.getPosition(simDate, lat, lng);
+  var sunAltDeg = sunPos.altitude * 180 / Math.PI;
+  var sunAzDeg  = ((sunPos.azimuth * 180 / Math.PI) + 180) % 360;
+
+  // Window direction facing check
+  var w       = windowStates[winIdx];
+  var winDir  = w.dir || '南';
+  var winAz   = DIR_AZ[winDir] || 180;
+  var azDiff  = Math.abs(((sunAzDeg - winAz + 180) % 360) - 180);
+  var sunFacing = (azDiff <= 90) && (sunAltDeg > 0.5);
+
+  // Inject canvas + chips + label HTML
+  content.innerHTML =
+    '<canvas id="lightSimCanvas" style="width:100%;border-radius:8px;display:block;"></canvas>' +
+    '<div id="lightSimChips" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"></div>' +
+    '<div id="lightSimLabel" style="margin-top:8px;font-size:12px;color:var(--gray);line-height:1.7;"></div>';
+
+  var canvas = document.getElementById('lightSimCanvas');
+  var dpr    = window.devicePixelRatio || 1;
+  var cW     = canvas.offsetWidth || content.offsetWidth || 360;
+  canvas.style.height = '340px';
+  canvas.width  = Math.round(cW * dpr);
+  canvas.height = Math.round(340 * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // ── Layout constants ──
+  var wallX   = Math.round(cW * 0.36);
+  var floorY  = 296;
+  var ceilY   = 62;
+  var roomH   = floorY - ceilY;   // px for 2.3m
+  var SCALE   = roomH / 2.3;      // px per metre
+  var wallThk = 10;
+
+  // ── Sky / outdoor background ──
+  var skyTop = sunAltDeg > 15 ? '#87CEEB' : sunAltDeg > 0 ? '#FFD580' : '#2C3E6B';
+  var skyMid = sunAltDeg > 10 ? '#C8E8F5' : sunAltDeg > 0 ? '#FFEEA0' : '#4A5A8A';
+  var skyGrad = ctx.createLinearGradient(0, 0, 0, floorY);
+  skyGrad.addColorStop(0, skyTop);
+  skyGrad.addColorStop(0.65, skyMid);
+  skyGrad.addColorStop(1, '#E8F4F8');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, wallX, floorY);
+
+  // Ground outside
+  ctx.fillStyle = '#B0C090';
+  ctx.fillRect(0, floorY, wallX, 340 - floorY);
+
+  // ── Room interior ──
+  ctx.fillStyle = '#FDFCFA';
+  ctx.fillRect(wallX + wallThk, ceilY, cW - wallX - wallThk, roomH);
+
+  // Ceiling slab (inside)
+  ctx.fillStyle = '#F0EDE8';
+  ctx.fillRect(wallX + wallThk, ceilY - 10, cW - wallX - wallThk, 10);
+
+  // Floor slab (inside)
+  ctx.fillStyle = '#D8CFC0';
+  ctx.fillRect(wallX + wallThk, floorY, cW - wallX - wallThk, 16);
+
+  // Wall slab
+  ctx.fillStyle = '#C8BFB0';
+  ctx.fillRect(wallX, ceilY, wallThk, floorY - ceilY + 16);
+
+  // ── Overhang / 庇 ──
+  var ovPx = Math.round(roofDepth * SCALE);
+  if (ovPx > 0) {
+    ctx.fillStyle = '#B8B0A0';
+    ctx.fillRect(wallX - ovPx, ceilY - 10, ovPx + wallThk, 10);
+    // Underside shadow
+    var ovShadow = ctx.createLinearGradient(0, ceilY, 0, ceilY + 20);
+    ovShadow.addColorStop(0, 'rgba(0,0,0,0.15)');
+    ovShadow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = ovShadow;
+    ctx.fillRect(wallX - ovPx, ceilY, ovPx, 20);
+  }
+
+  // ── Window glass ──
+  var winTopY = ceilY + 8;
+  var winBotY = floorY - 18;
+  var winH    = winBotY - winTopY;
+  ctx.fillStyle = 'rgba(160,210,245,0.45)';
+  ctx.fillRect(wallX, winTopY, wallThk, winH);
+  ctx.strokeStyle = 'rgba(80,140,200,0.60)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(wallX + 0.75, winTopY, wallThk - 1.5, winH);
+  ctx.beginPath();
+  ctx.moveTo(wallX, winTopY + winH * 0.5);
+  ctx.lineTo(wallX + wallThk, winTopY + winH * 0.5);
+  ctx.strokeStyle = 'rgba(80,140,200,0.35)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // ── Light beam ──
+  var penetrationM = 0;
+  if (sunFacing) {
+    var sunAltRad   = sunAltDeg * Math.PI / 180;
+    var winTopHM    = (floorY - winTopY) / SCALE;  // window top height in metres
+    var winTopEffM  = winTopHM;
+
+    // Overhang clips beam top
+    if (roofDepth > 0) {
+      var ovAngleDeg = Math.atan2(2.3, roofDepth) * 180 / Math.PI;
+      if (sunAltDeg < ovAngleDeg) {
+        winTopEffM = Math.min(winTopEffM, roofDepth * Math.tan(sunAltRad));
+      }
+    }
+
+    penetrationM = Math.min(winTopEffM / Math.tan(sunAltRad), 8);
+    var penetPx  = penetrationM * SCALE;
+    var beamTopY = floorY - winTopEffM * SCALE;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(wallX + wallThk, ceilY, cW - wallX - wallThk, roomH + 16);
+    ctx.clip();
+
+    // Beam polygon
+    ctx.beginPath();
+    ctx.moveTo(wallX + wallThk, beamTopY);
+    ctx.lineTo(wallX + wallThk + penetPx, floorY);
+    ctx.lineTo(wallX + wallThk, floorY);
+    ctx.closePath();
+    var beamGrad = ctx.createLinearGradient(wallX + wallThk, 0, wallX + wallThk + penetPx, 0);
+    beamGrad.addColorStop(0,    'rgba(245,166,35,0.52)');
+    beamGrad.addColorStop(0.40, 'rgba(245,166,35,0.28)');
+    beamGrad.addColorStop(1,    'rgba(245,166,35,0.03)');
+    ctx.fillStyle = beamGrad;
+    ctx.fill();
+
+    // Upper edge ray line
+    ctx.beginPath();
+    ctx.moveTo(wallX + wallThk, beamTopY);
+    ctx.lineTo(wallX + wallThk + penetPx, floorY);
+    ctx.strokeStyle = 'rgba(245,166,35,0.50)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.stroke();
+    ctx.restore();
+
+    // Penetration arrow
+    if (penetrationM >= 0.1) {
+      var arwY = floorY + 10;
+      var arwE = wallX + wallThk + penetPx;
+      ctx.strokeStyle = '#D4880F';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(wallX + wallThk, arwY); ctx.lineTo(arwE, arwY); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(wallX + wallThk + 5, arwY - 3.5); ctx.lineTo(wallX + wallThk, arwY); ctx.lineTo(wallX + wallThk + 5, arwY + 3.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(arwE - 5, arwY - 3.5); ctx.lineTo(arwE, arwY); ctx.lineTo(arwE - 5, arwY + 3.5);
+      ctx.stroke();
+      ctx.fillStyle = '#D4880F';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u5dee\u3057\u8fbc\u307f ' + penetrationM.toFixed(1) + 'm', wallX + wallThk + penetPx / 2, arwY - 5);
+    }
+  } else if (sunAltDeg > 0.5) {
+    // Sun up but not facing window
+    ctx.fillStyle = 'rgba(200,200,200,0.10)';
+    ctx.fillRect(wallX + wallThk, ceilY, cW - wallX - wallThk, roomH);
+  }
+
+  // ── Section labels (室外 / 室内) ──
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(107,114,128,0.70)';
+  ctx.font = '10px Noto Sans JP, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('\u5ba4\u5916', wallX * 0.50, 28);
+  ctx.fillText('\u5ba4\u5185', wallX + wallThk + (cW - wallX - wallThk) * 0.50, 28);
+
+  // ── Chips (colors unified with heatmap getHeatInfo) ──
+  var chips = document.getElementById('lightSimChips');
+  if (chips) {
+    var hInfo     = getHeatInfo(val);
+    var chipBg    = hInfo.bg    !== 'transparent' ? hInfo.bg    : '#F0EEDE';
+    var chipColor = hInfo.color !== 'transparent' ? hInfo.color : '#9CA3AF';
+    var chipLabel = hInfo.label ? hInfo.label : '\u65e5\u7167\u306a\u3057';
+    chips.innerHTML =
+      '<span style="background:#1A1A1A;color:#F5A623;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;">' + escHtml(MONTH_LABELS[monthIdx]) + '</span>' +
+      '<span style="background:#1A1A1A;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;">' + escHtml(TIME_LABELS[timeIdx]) + '</span>' +
+      '<span style="background:' + chipBg + ';color:' + chipColor + ';padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;">' + escHtml(chipLabel) + ' ' + pct + '%</span>';
+  }
+
+  // ── Label text ──
+  var lbl = document.getElementById('lightSimLabel');
+  if (lbl) {
+    if (sunAltDeg <= 0.5) {
+      lbl.innerHTML = '\u3053\u306e\u6642\u9593\u5e2f\u306f\u65e5\u6ca1\u5f8c\u307e\u305f\u306f\u65e5\u306e\u51fa\u524d\u306e\u305f\u3081\u3001\u65e5\u5dee\u3057\u306f\u3042\u308a\u307e\u305b\u3093\u3002';
+    } else if (!sunFacing) {
+      lbl.innerHTML = '\u592a\u967d\u9ad8\u5ea6 <strong>' + Math.round(sunAltDeg) + '\u00b0</strong>\u3000\u3053\u306e\u6642\u9593\u5e2f\u306f\u592a\u967d\u304c\u7a93\u306e\u5411\u304d\uff08' + escHtml(winDir) + '\uff09\u3068\u53cd\u5bfe\u5074\u306b\u3042\u308a\u307e\u3059\u3002';
+    } else {
+      lbl.innerHTML =
+        '\u592a\u967d\u9ad8\u5ea6 <strong>' + Math.round(sunAltDeg) + '\u00b0</strong>\u3000' +
+        (penetrationM > 0.05
+          ? '\u5dee\u3057\u8fbc\u307f <strong>' + penetrationM.toFixed(1) + 'm</strong>'
+          : '\u65e5\u5dee\u3057\u306f\u5165\u308a\u307e\u305b\u3093\uff08\u5e87\u30fb\u9057\u8300\u306b\u3088\u308b\uff09') +
+        (roofDepth > 0 ? '\u3000\u5e87 ' + roofDepth + 'm' : '');
+    }
+  }
+
+  setTimeout(function() {
+    var area = document.getElementById('lightSimArea');
+    if (area) area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function switchSimWin(winIdx) {
+  // Update active tab
+  document.querySelectorAll('#simWinTabs .hm-tab').forEach(function(b, i) {
+    if (i === winIdx) b.classList.add('active'); else b.classList.remove('active');
+  });
+  // Re-render heatmap for this window
+  var wrap = document.getElementById('simHeatmapWrap');
+  if (wrap && storedHeatmaps[winIdx]) {
+    wrap.innerHTML = buildHeatmapHtml(storedHeatmaps[winIdx], winIdx);
+  }
+  // Reset lightSimContent to placeholder
+  var content = document.getElementById('lightSimContent');
+  if (content) {
+    content.innerHTML = '<div style="text-align:center;padding:24px;font-size:13px;color:var(--gray);">\u30d2\u30fc\u30c8\u30de\u30c3\u30d7\u306e\u30de\u30b9\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u3001\u305d\u306e\u6708\u30fb\u6642\u9593\u5e2f\u306e\u65e5\u5dee\u3057\u306e\u5165\u308a\u65b9\u3092\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3\u3057\u307e\u3059</div>';
+  }
 }
 
 function switchHeatmapTab(tabId) {
