@@ -47,9 +47,23 @@ body {
 
 /* ── Hero ── */
 .hero {
-  max-width: 760px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 64px 32px 48px;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+.hero-text { flex: 1; min-width: 0; }
+.hero-img-wrap {
+  flex-shrink: 0;
+  width: 340px;
+}
+.hero-img-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
 }
 .hero-tag {
   font-family: 'DM Mono', monospace;
@@ -64,12 +78,11 @@ body {
 .hero-h1 strong { font-weight: 700; }
 .hero-sub {
   font-size: 13px; color: var(--gray); line-height: 1.9;
-  max-width: 460px;
 }
 
 /* ── Article List ── */
 .article-list {
-  max-width: 760px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 32px 96px;
 }
@@ -182,6 +195,10 @@ footer {
 .footer-copy { font-size: 10px; color: rgba(255,255,255,0.25); width: 100%; margin-top: 8px; }
 
 /* ── Responsive ── */
+@media (max-width: 760px) {
+  .hero { flex-direction: column; gap: 32px; }
+  .hero-img-wrap { width: 100%; }
+}
 @media (max-width: 600px) {
   .topbar { padding: 0 16px; }
   .logo-div, .logo-sub { display: none; }
@@ -212,9 +229,14 @@ footer {
 
 <!-- Hero -->
 <section class="hero">
-  <span class="hero-tag">COLUMN</span>
-  <h1 class="hero-h1">日当たりの<br><strong>知識と考え方。</strong></h1>
-  <p class="hero-sub">日当たりに関する基礎知識から、不動産・暮らし・健康への影響まで。SUNNYが届けるコラムシリーズ。</p>
+  <div class="hero-text">
+    <span class="hero-tag">COLUMN</span>
+    <h1 class="hero-h1">日当たりの<br><strong>知識と考え方。</strong></h1>
+    <p class="hero-sub">日当たりに関する基礎知識から、不動産・暮らし・健康への影響まで。SUNNYが届けるコラムシリーズ。</p>
+  </div>
+  <div class="hero-img-wrap">
+    <img src="../ColumnTOPs.png" alt="コラムイメージ">
+  </div>
 </section>
 
 <!-- Article List -->
