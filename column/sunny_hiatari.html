@@ -39,9 +39,21 @@
 
     /* ── Hero ── */
     .hero {
+      position: relative;
+      overflow: hidden;
       text-align: center;
       padding: 80px 40px 72px;
       border-bottom: 0.5px solid #f0f0f0;
+    }
+    .hero-overlay-img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0.18;
+      pointer-events: none;
+      user-select: none;
     }
     .hero-en { font-size: 10px; letter-spacing: 4px; color: #bbb; text-transform: uppercase; margin-bottom: 20px; }
     .hero-h1 { font-size: 62px; font-weight: 300; line-height: 1.4; color: #1a1a1a; }
@@ -176,6 +188,7 @@
 
 <!-- Hero -->
 <div class="hero">
+  <img src="../SuunyImportant.png" alt="" class="hero-overlay-img">
   <div class="hero-en">Column</div>
   <h1 class="hero-h1">日当たりって、<br><span class="accent">大切</span>なの？</h1>
 </div>
