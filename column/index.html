@@ -47,23 +47,32 @@ body {
 
 /* ── Hero ── */
 .hero {
-  position: relative;
   border-bottom: 0.5px solid rgba(0,0,0,0.08);
-  background-image: url('../SunnyColumntop2.png');
-  min-height: 520px;
-  background-size: auto 100%;
-  background-position: right center;
-  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.hero-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
 }
 .hero-text {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 48px 48px;
-  max-width: 560px;
-  min-height: 520px;
+  flex: 1;
+  padding: 48px 0;
+}
+.hero-img-wrap {
+  flex-shrink: 0;
+  width: 420px;
+  height: 340px;
+  overflow: hidden;
+}
+.hero-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
 }
 .hero-tag {
   font-family: 'DM Mono', monospace;
@@ -197,20 +206,12 @@ footer {
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .hero {
-    min-height: 300px;
-    background-size: cover;
-    background-position: 85% 20%;
-    background-repeat: no-repeat;
-  }
-  .hero-text {
-    justify-content: flex-start;
-    padding: 24px 20px 0;
-    min-height: 300px;
-    max-width: 75%;
-  }
-  .hero-h1 { font-size: 22px; }
-  .hero-sub { font-size: 11px; }
+  .hero-inner { flex-direction: column; padding: 0; }
+  .hero-text { padding: 32px 20px 20px; }
+  .hero-img-wrap { width: 100%; height: 240px; }
+  .hero-img-wrap img { object-position: center 15%; }
+  .hero-h1 { font-size: 28px; }
+  .hero-sub { font-size: 12px; }
 }
 @media (max-width: 600px) {
   .topbar { padding: 0 16px; }
@@ -242,10 +243,15 @@ footer {
 
 <!-- Hero -->
 <section class="hero">
-  <div class="hero-text">
-    <span class="hero-tag">COLUMN</span>
-    <h1 class="hero-h1"><strong>日当たり<br><span style="font-size:0.55em;letter-spacing:0;vertical-align:middle;">について。</span></strong></h1>
-    <p class="hero-sub">不動産・暮らし・健康への影響。<br>SUNNYが届けるコラムシリーズ。</p>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <span class="hero-tag">COLUMN</span>
+      <h1 class="hero-h1"><strong>日当たり<br><span style="font-size:0.55em;letter-spacing:0;vertical-align:middle;">について。</span></strong></h1>
+      <p class="hero-sub">不動産・暮らし・健康への影響。<br>SUNNYが届けるコラムシリーズ。</p>
+    </div>
+    <div class="hero-img-wrap">
+      <img src="../SunnyColumntop2.png" alt="コラムイメージ">
+    </div>
   </div>
 </section>
 
