@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>コラム — SUNNY 日当たり算出ツール</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F4F0;
+  --white: #FFFFFF;
+  --black: #1A1A1A;
+  --amber: #F5A623;
+  --amber-dk: #D4880F;
+  --gray: #6B7280;
+  --border: rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--black);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  padding-bottom: 80px;
+}
+
+/* ── Topbar ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 56px;
+}
+.logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo-sun  { color: var(--amber); font-size: 17px; }
+.logo-text { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; letter-spacing: 3px; color: var(--black); }
+.logo-div  { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
+.logo-sub  { font-size: 11px; color: var(--gray); letter-spacing: 0.5px; }
+.nav-cta {
+  background: var(--black); color: #fff;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 8px 18px; border-radius: 6px;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.nav-cta:hover { opacity: 0.75; }
+.nav-col-link {
+  font-size: 12px; color: var(--gray); text-decoration: none;
+  font-family: 'DM Mono', monospace; letter-spacing: 1px;
+}
+.nav-col-link:hover { color: var(--black); }
+
+/* ── Hero ── */
+.hero {
+  border-bottom: 0.5px solid rgba(0,0,0,0.10);
+  padding: 56px 32px 48px;
+  background: #fff;
+}
+.hero-inner { max-width: 960px; margin: 0 auto; }
+.hero-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--amber); margin-bottom: 16px; display: block;
+}
+.hero-h1 {
+  font-size: 48px; font-weight: 300;
+  letter-spacing: -1.5px; line-height: 1.15;
+  color: var(--black); margin-bottom: 14px;
+}
+.hero-h1 strong { font-weight: 700; }
+.hero-sub { font-size: 13px; color: var(--gray); max-width: 520px; line-height: 1.8; }
+
+/* ── Articles grid ── */
+.section { max-width: 960px; margin: 0 auto; padding: 56px 32px 0; }
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 3px; color: var(--gray);
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.10);
+}
+.articles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ── Article card ── */
+.article-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.article-card.live:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+.article-card.coming { opacity: 0.4; pointer-events: none; }
+
+.card-top {
+  background: var(--black);
+  padding: 16px 20px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 22px; font-weight: 500; color: var(--amber);
+  letter-spacing: -0.5px;
+}
+.card-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: 2px;
+  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.07);
+  padding: 3px 8px; border-radius: 4px;
+}
+
+.card-body { padding: 20px 20px 12px; flex: 1; }
+.card-category {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--amber-dk);
+  margin-bottom: 10px; display: block;
+}
+.card-title {
+  font-size: 17px; font-weight: 700;
+  line-height: 1.45; color: var(--black);
+  margin-bottom: 10px;
+}
+.card-desc {
+  font-size: 12px; color: var(--gray);
+  line-height: 1.8;
+}
+
+.card-footer {
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-link {
+  font-size: 12px; font-weight: 700; color: var(--amber-dk);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 5px;
+  transition: gap 0.15s;
+}
+.card-link:hover { gap: 8px; }
+.card-coming-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 2px; color: var(--gray);
+}
+.card-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--gray);
+}
+
+/* ── Footer ── */
+footer {
+  background: var(--black);
+  padding: 32px 32px;
+  display: flex; flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px 0;
+  margin-top: 72px;
+}
+.footer-logo { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 4px; color: var(--black); display: flex; align-items: center; gap: 6px; width: 100%; margin-bottom: 4px; }
+.footer-logo-sun { color: var(--amber); }
+.footer-logo-text { color: var(--amber); }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; width: 100%; }
+.footer-link { font-size: 11px; color: rgba(255,255,255,0.5); text-decoration: none; }
+.footer-link:hover { color: #fff; }
+.footer-copy { font-size: 10px; color: rgba(255,255,255,0.25); width: 100%; margin-top: 8px; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .topbar { padding: 0 16px; }
+  .logo-div, .logo-sub { display: none; }
+  .hero { padding: 40px 20px 36px; }
+  .hero-h1 { font-size: 34px; }
+  .section { padding: 40px 16px 0; }
+  .articles { grid-template-columns: 1fr; gap: 14px; }
+  footer { padding: 28px 20px; }
+}
+@media (min-width: 701px) and (max-width: 960px) {
+  .articles { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="../index.html" class="logo">
+    <span class="logo-sun">☀</span>
+    <span class="logo-text">SUNNY</span>
+    <span class="logo-div"></span>
+    <span class="logo-sub">日当たり算出ツール</span>
+  </a>
+  <nav style="display:flex;align-items:center;gap:20px;">
+    <a href="./index.html" class="nav-col-link">COLUMN</a>
+    <a href="../index.html" class="nav-cta">ツールを使う</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <span class="hero-tag">COLUMN</span>
+    <h1 class="hero-h1">日当たりの<br><strong>知識と考え方。</strong></h1>
+    <p class="hero-sub">日当たりに関する基礎知識から、不動産・暮らし・健康への影響まで。SUNNYが届けるコラムシリーズ。</p>
+  </div>
+</section>
+
+<!-- Articles -->
+<div class="section">
+  <div class="section-label">ALL ARTICLES — 全 3 記事（準備中含む）</div>
+  <div class="articles">
+
+    <!-- 01: 公開済み -->
+    <div class="article-card live">
+      <div class="card-top">
+        <span class="card-num">01</span>
+        <span class="card-tag">PUBLISHED</span>
+      </div>
+      <div class="card-body">
+        <span class="card-category">LIVING &amp; HEALTH</span>
+        <h2 class="card-title">日当たりって、本当に大切？</h2>
+        <p class="card-desc">「なんとなく重要」と思われがちな日当たり。でも実際のデータは何を示しているのか。健康・資産価値・暮らしの満足度まで、エビデンスと共に解説。</p>
+      </div>
+      <div class="card-footer">
+        <a href="./sunny_hiatari.html" class="card-link">記事を読む →</a>
+        <span class="card-date">2025.04</span>
+      </div>
+    </div>
+
+    <!-- 02: Coming Soon -->
+    <div class="article-card coming">
+      <div class="card-top">
+        <span class="card-num">02</span>
+        <span class="card-tag">COMING SOON</span>
+      </div>
+      <div class="card-body">
+        <span class="card-category">REAL ESTATE</span>
+        <h2 class="card-title">南向きだけが正解？方角と日照の本当の関係</h2>
+        <p class="card-desc">「南向き絶対」という常識を疑う。緯度・季節・周辺環境によって変わる最適な窓の向きを、計算ロジックとともに解説。</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-coming-badge">COMING SOON</span>
+        <span class="card-date">準備中</span>
+      </div>
+    </div>
+
+    <!-- 03: Coming Soon -->
+    <div class="article-card coming">
+      <div class="card-top">
+        <span class="card-num">03</span>
+        <span class="card-tag">COMING SOON</span>
+      </div>
+      <div class="card-body">
+        <span class="card-category">TOOLS &amp; DATA</span>
+        <h2 class="card-title">庇・バルコニーは日照をどれだけ遮るのか</h2>
+        <p class="card-desc">建築的な遮蔽要素が室内の日照に与える影響を断面図シミュレーションで可視化。庇の奥行きと太陽高度の関係を具体的な数値で示す。</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-coming-badge">COMING SOON</span>
+        <span class="card-date">準備中</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">
+    <span class="footer-logo-sun">☀</span>
+    <span class="footer-logo-text">SUNNY</span>
+  </div>
+  <div class="footer-links">
+    <a href="./index.html" class="footer-link">コラム</a>
+    <a href="./sunny_hiatari.html" class="footer-link">日当たりって大切？</a>
+    <a href="../sunny_lp.html" class="footer-link">日当たり算出ツールSUNNYとは？</a>
+    <a href="../sunny_how_it_works.html" class="footer-link">算出計算方法</a>
+    <a href="../sunny_contact.html" class="footer-link">お問い合わせ</a>
+    <a href="../sunny_privacy.html" class="footer-link">プライバシーポリシー</a>
+    <a href="../sunny_terms.html" class="footer-link">利用規約</a>
+  </div>
+  <div class="footer-copy">© 2026 SUNNY — 日当たり算出ツール</div>
+</footer>
+
+</body>
+</html>
