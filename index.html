@@ -343,9 +343,12 @@
 
     /* Responsive */
     @media (max-width: 700px) {
-      .topbar { padding: 0 16px; }
-      .logo-sub, .logo-divider { display: none; }
-      .topbar-right .nav-link { display: none; }
+      .topbar { padding: 0 12px; }
+      .logo-text { font-size: 13px; }
+      .logo-sub { font-size: 10px; }
+      .topbar-right { gap: 12px; }
+      .nav-link { font-size: 11px; }
+      .topbar-right .nav-link.hide-sp { display: none; }
       .hero { padding: 0 16px 40px; }
       .hero-h1 { font-size: 32px; letter-spacing: -1px; }
       .container { padding: 16px 12px 60px; }
@@ -537,7 +540,7 @@
   </div>
   <div class="topbar-right">
     <a href="column/index.html" class="nav-link">コラム</a>
-    <a href="column/sunny_hiatari.html" class="nav-link">日当たりって大切？</a>
+    <a href="column/sunny_hiatari.html" class="nav-link hide-sp">日当たりって大切？</a>
     <a href="sunny_lp.html" class="nav-link">SUNNYとは？</a>
   </div>
 </header>
