@@ -49,20 +49,20 @@ body {
 .hero {
   position: relative;
   border-bottom: 0.5px solid rgba(0,0,0,0.08);
-}
-.hero-img {
-  display: block;
-  width: 100%;
-  height: auto;
+  min-height: 360px;
+  background-image: url('../SunnyColumntop.png');
+  background-size: cover;
+  background-position: center;
 }
 .hero-text {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 48px;
+  padding: 60px 48px;
   max-width: 560px;
+  min-height: 360px;
 }
 .hero-tag {
   font-family: 'DM Mono', monospace;
@@ -196,7 +196,8 @@ footer {
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .hero-text { padding: 0 20px; max-width: 100%; }
+  .hero { min-height: 260px; background-position: right center; }
+  .hero-text { padding: 40px 20px; min-height: 260px; max-width: 100%; }
   .hero-h1 { font-size: 28px; }
   .hero-sub { font-size: 12px; }
 }
@@ -230,7 +231,6 @@ footer {
 
 <!-- Hero -->
 <section class="hero">
-  <img src="../SunnyColumntop.png" alt="コラムイメージ" class="hero-img">
   <div class="hero-text">
     <span class="hero-tag">COLUMN</span>
     <h1 class="hero-h1"><strong>日当たり<span style="font-size:0.55em;letter-spacing:0;vertical-align:middle;">について。</span></strong></h1>
