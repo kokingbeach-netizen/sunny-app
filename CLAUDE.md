@@ -17,12 +17,15 @@
 ## 2. ファイル構成
 
 ```
-index.html              メインアプリ（全ロジック・UI を含む単一ファイル）
-sunny_lp.html           BtoB 向けランディングページ
-sunny_how_it_works.html 計算手法の解説ページ
-sunny_contact.html      お問い合わせページ
-sunny_privacy.html      プライバシーポリシー
-sunny_terms.html        利用規約
+index.html                       メインアプリ（全ロジック・UI を含む単一ファイル）
+sunny_lp.html                    BtoB 向けランディングページ
+sunny_how_it_works.html          計算手法の解説ページ
+sunny_contact.html               お問い合わせページ
+sunny_privacy.html               プライバシーポリシー
+sunny_terms.html                 利用規約
+
+column/                          コラムページディレクトリ（今後の記事はすべてここに追加）
+column/sunny_hiatari.html        「日当たりって大切？」コラムページ
 
 sunnylady.png           ヒーローセクション女性イラスト
 hand.png                撮影ガイド（横向き45°上向き）
