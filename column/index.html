@@ -47,23 +47,18 @@ body {
 
 /* ── Hero ── */
 .hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  padding: 60px 32px 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.08);
+}
+.hero-inner {
   max-width: 960px;
   margin: 0 auto;
-  padding: 64px 32px 48px;
-  display: flex;
-  align-items: center;
-  gap: 48px;
-}
-.hero-text { flex: 1; min-width: 0; }
-.hero-img-wrap {
-  flex-shrink: 0;
-  width: 340px;
-}
-.hero-img-wrap img {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 12px;
+  position: relative;
+  z-index: 1;
+  padding-bottom: 48px;
 }
 .hero-tag {
   font-family: 'DM Mono', monospace;
@@ -74,10 +69,22 @@ body {
   font-size: 42px; font-weight: 300;
   letter-spacing: -1.5px; line-height: 1.2;
   color: var(--black); margin-bottom: 16px;
+  max-width: 480px;
 }
 .hero-h1 strong { font-weight: 700; }
 .hero-sub {
   font-size: 13px; color: var(--gray); line-height: 1.9;
+  max-width: 400px;
+}
+.hero-img {
+  position: absolute;
+  right: 0; bottom: 0;
+  height: 110%;
+  max-height: 380px;
+  width: auto;
+  display: block;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* ── Article List ── */
@@ -196,8 +203,8 @@ footer {
 
 /* ── Responsive ── */
 @media (max-width: 760px) {
-  .hero { flex-direction: column; gap: 32px; }
-  .hero-img-wrap { width: 100%; }
+  .hero { min-height: 260px; padding: 44px 20px 0; }
+  .hero-img { max-height: 260px; opacity: 0.5; }
 }
 @media (max-width: 600px) {
   .topbar { padding: 0 16px; }
@@ -229,14 +236,12 @@ footer {
 
 <!-- Hero -->
 <section class="hero">
-  <div class="hero-text">
+  <div class="hero-inner">
     <span class="hero-tag">COLUMN</span>
     <h1 class="hero-h1">日当たりの<br><strong>知識と考え方。</strong></h1>
     <p class="hero-sub">日当たりに関する基礎知識から、不動産・暮らし・健康への影響まで。SUNNYが届けるコラムシリーズ。</p>
   </div>
-  <div class="hero-img-wrap">
-    <img src="../ColumnTOPs.png" alt="コラムイメージ">
-  </div>
+  <img src="../ColumnTOPs.png" alt="コラムイメージ" class="hero-img">
 </section>
 
 <!-- Article List -->
