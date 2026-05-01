@@ -383,6 +383,11 @@ PHOTO_TAB_MAP = {
 - column/index.html：コラムTOPページを追加（白ベース・リスト型カード。ヒーローに SunnyColumntop.png を全幅配置し、テキストをオーバーレイ）
 - 全ページナビ・フッターに「コラム」リンクを追加（column/index.html へ）
 - sunny_hiatari.html を column/ ディレクトリに移動し、全リンクを相対パスに修正
+- 全ページ「ツールを使う」CTAボタンをビビッドオレンジ（#FC5F0A / H21,S96,B99）に統一
+- 全ページフッターから「日当たりって大切？」リンクを削除
+- 全ページヘッダーロゴを絶対URL（sunny-app/index.html）リンクに統一
+- index.html モバイルヘッダー：「日当たり算出ツール」「コラム」「SUNNYとは？」を常時表示
+- column/sunny_hiatari.html：ヒーローに SuunyImportant.png をオーバーレイ表示（右寄せ・z-index調整済み）
 
 ---
 
