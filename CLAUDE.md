@@ -380,14 +380,16 @@ PHOTO_TAB_MAP = {
 - 全ページのフッター著作権を「日照率チェッカー」→「日当たり算出ツール」に統一
 - 全ページのフッターナビ「SUNNYとは？」→「日当たり算出ツールSUNNYとは？」、「算出方法」→「算出計算方法」に統一
 - 窓サイズ選択UIを削除（計算に未使用のため。ユーザーは日を入れたい窓＝大きい窓を前提に測定するため不要と判断）
-- column/index.html：コラムTOPページを追加（白ベース・リスト型カード。ヒーローに SunnyColumntop.png を全幅配置し、テキストをオーバーレイ）
+- column/index.html：コラムTOPページを追加（白ベース・リスト型カード。ヒーローに SunnyColumntop2.png を使用、PC=flex中央寄せ・スマホ=背景画像オーバーレイ）
 - 全ページナビ・フッターに「コラム」リンクを追加（column/index.html へ）
 - sunny_hiatari.html を column/ ディレクトリに移動し、全リンクを相対パスに修正
 - 全ページ「ツールを使う」CTAボタンをビビッドオレンジ（#FC5F0A / H21,S96,B99）に統一
+- sunny_lp.html CTAボタン（hero-cta・cta-btn）もオレンジに統一
 - 全ページフッターから「日当たりって大切？」リンクを削除
 - 全ページヘッダーロゴを絶対URL（sunny-app/index.html）リンクに統一
 - index.html モバイルヘッダー：「日当たり算出ツール」「コラム」「SUNNYとは？」を常時表示
 - column/sunny_hiatari.html：ヒーローに SuunyImportant.png をオーバーレイ表示（右寄せ・z-index調整済み）
+- index.html USE CASEセクションに max-width: 900px 中央寄せを追加（下セクションと幅統一）
 
 ---
 
