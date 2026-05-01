@@ -25,8 +25,10 @@ sunny_privacy.html               プライバシーポリシー
 sunny_terms.html                 利用規約
 
 column/                          コラムページディレクトリ（今後の記事はすべてここに追加）
+column/index.html                コラムTOPページ（白ベースリスト型・ヒーロー画像付き）
 column/sunny_hiatari.html        「日当たりって大切？」コラムページ
 
+SunnyColumntop.png      column/index.html ヒーロー画像（横長・画像上にテキストオーバーレイ）
 sunnylady.png           ヒーローセクション女性イラスト
 hand.png                撮影ガイド（横向き45°上向き）
 windowshoot.png         室内からの撮影ガイド
@@ -378,7 +380,7 @@ PHOTO_TAB_MAP = {
 - 全ページのフッター著作権を「日照率チェッカー」→「日当たり算出ツール」に統一
 - 全ページのフッターナビ「SUNNYとは？」→「日当たり算出ツールSUNNYとは？」、「算出方法」→「算出計算方法」に統一
 - 窓サイズ選択UIを削除（計算に未使用のため。ユーザーは日を入れたい窓＝大きい窓を前提に測定するため不要と判断）
-- column/index.html：コラムTOPページを追加（3記事グリッド、01公開済み・02,03 Coming Soon）
+- column/index.html：コラムTOPページを追加（白ベース・リスト型カード。ヒーローに SunnyColumntop.png を全幅配置し、テキストをオーバーレイ）
 - 全ページナビ・フッターに「コラム」リンクを追加（column/index.html へ）
 - sunny_hiatari.html を column/ ディレクトリに移動し、全リンクを相対パスに修正
 
