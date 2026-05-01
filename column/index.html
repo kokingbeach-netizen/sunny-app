@@ -47,32 +47,37 @@ body {
 
 /* ── Hero ── */
 .hero {
+  position: relative;
   border-bottom: 0.5px solid rgba(0,0,0,0.08);
-}
-.hero-text {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 60px 32px 40px;
-}
-.hero-tag {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px; letter-spacing: 3px;
-  color: var(--amber); margin-bottom: 20px; display: block;
-}
-.hero-h1 {
-  font-size: 42px; font-weight: 300;
-  letter-spacing: -1.5px; line-height: 1.2;
-  color: var(--black); margin-bottom: 16px;
-}
-.hero-h1 strong { font-weight: 700; }
-.hero-sub {
-  font-size: 13px; color: var(--gray); line-height: 1.9;
-  max-width: 440px;
 }
 .hero-img {
   display: block;
   width: 100%;
   height: auto;
+}
+.hero-text {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 48px;
+  max-width: 560px;
+}
+.hero-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--amber); margin-bottom: 16px; display: block;
+}
+.hero-h1 {
+  font-size: 42px; font-weight: 300;
+  letter-spacing: -1.5px; line-height: 1.2;
+  color: var(--black); margin-bottom: 14px;
+}
+.hero-h1 strong { font-weight: 700; }
+.hero-sub {
+  font-size: 13px; color: var(--gray); line-height: 1.9;
+  max-width: 380px;
 }
 
 /* ── Article List ── */
@@ -191,8 +196,9 @@ footer {
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .hero-text { padding: 44px 20px 32px; }
-  .hero-h1 { font-size: 32px; }
+  .hero-text { padding: 0 20px; max-width: 100%; }
+  .hero-h1 { font-size: 28px; }
+  .hero-sub { font-size: 12px; }
 }
 @media (max-width: 600px) {
   .topbar { padding: 0 16px; }
@@ -224,12 +230,12 @@ footer {
 
 <!-- Hero -->
 <section class="hero">
+  <img src="../SunnyColumntop.png" alt="コラムイメージ" class="hero-img">
   <div class="hero-text">
     <span class="hero-tag">COLUMN</span>
     <h1 class="hero-h1">日当たりの<br><strong>知識と考え方。</strong></h1>
     <p class="hero-sub">日当たりに関する基礎知識から、不動産・暮らし・健康への影響まで。SUNNYが届けるコラムシリーズ。</p>
   </div>
-  <img src="../SunnyColumntop.png" alt="コラムイメージ" class="hero-img">
 </section>
 
 <!-- Article List -->
