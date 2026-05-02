@@ -312,14 +312,14 @@
     .sc-score-num { font-size: 88px; font-weight: 900; color: #1A1A1A; line-height: 1; letter-spacing: -5px; }
     .sc-score-pct { font-size: 26px; color: #aaa; font-weight: 400; }
     .sc-detail { flex: 1; display: flex; overflow: hidden; }
-    .sc-left { flex: 1; display: grid; grid-template-columns: 1fr 1fr; padding: 10px; gap: 8px; align-content: center; }
-    .sc-seasons { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+    .sc-left { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 8px; justify-content: center; }
+    .sc-seasons { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 4px; }
     .sc-s { background: #F5F4F0; border-radius: 4px; padding: 4px 6px; display: flex; flex-direction: column; align-items: center; }
     .sc-s-top { display: flex; align-items: center; gap: 3px; margin-bottom: 1px; }
     .sc-s-e { font-size: 11px; }
     .sc-s-l { font-size: 9px; color: #555; font-weight: 700; }
     .sc-s-v { font-size: 15px; font-weight: 900; color: #1A1A1A; display: block; }
-    .sc-comment { font-size: 9px; color: #1A1A1A; line-height: 1.7; padding: 6px 8px; background: rgba(245,166,35,0.05); border-radius: 4px; border-left: 2px solid #F5A623; font-weight: 500; }
+    .sc-comment { font-size: 14px; color: #1A1A1A; line-height: 1.7; padding: 6px 8px; background: rgba(245,166,35,0.05); border-radius: 4px; border-left: 2px solid #F5A623; font-weight: 500; }
     .sc-right { display: flex; flex-direction: column; padding: 6px 6px 6px; justify-content: center; }
     .sc-hm-lbl { font-size: 7px; color: #1A1A1A; font-weight: 700; margin-bottom: 5px; }
     .sc-hm-table { border-collapse: separate; border-spacing: 1.5px; width: 100%; table-layout: fixed; }
@@ -1903,7 +1903,8 @@ function calcWindowHeatmap(w, floorNum) {
     var row = [];
     var ss = getSunriseSunset(m, lat, lng);
     for (var t = 0; t < 8; t++) {
-      var mid = TIME_SLOTS[t] + 1;
+      var slotWidth = (t + 1 < TIME_SLOTS.length) ? TIME_SLOTS[t+1] - TIME_SLOTS[t] : 2;
+      var mid = TIME_SLOTS[t] + slotWidth / 2;
       if (mid < ss.rise || mid > ss.set) { row.push(0); continue; }
 
       // 月の15日を10分刻びでサンプリング
@@ -1979,7 +1980,8 @@ function calcConstructionHeatmap(floorNum) {
       var row = [];
       var ss = getSunriseSunset(m, lat, lng);
       for (var t = 0; t < 8; t++) {
-        var mid = TIME_SLOTS[t] + 1;
+        var slotWidth = (t + 1 < TIME_SLOTS.length) ? TIME_SLOTS[t+1] - TIME_SLOTS[t] : 2;
+        var mid = TIME_SLOTS[t] + slotWidth / 2;
         if (mid < ss.rise || mid > ss.set) { row.push(0); continue; }
         var sunlit = 0, total = 0;
         for (var dt = 0; dt < 120; dt += 10) {
@@ -2039,7 +2041,7 @@ function runCalculation() {
 
   setTimeout(function() {
     try {
-      var heatmaps, windowScores, orMatrix, orAll, propertyScore;
+      var heatmaps, windowScores, orMatrix, propertyScore;
       if (selectedUsecase === '土地・屋外') {
         constructionResults = [];
         for (var f = 1; f <= floorNum; f++) {
@@ -2054,8 +2056,18 @@ function runCalculation() {
           return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
         });
         orMatrix = computeOrHeatmap(heatmaps);
-        orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
-        propertyScore = (orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100;
+        var validCells = [];
+        for (var m = 0; m < 12; m++) {
+          var ss = getSunriseSunset(m, lat, lng);
+          for (var t = 0; t < TIME_SLOTS.length; t++) {
+            var slotWidth = (t + 1 < TIME_SLOTS.length) ? TIME_SLOTS[t+1] - TIME_SLOTS[t] : 2;
+            var mid = TIME_SLOTS[t] + slotWidth / 2;
+            if (mid >= ss.rise && mid <= ss.set) {
+              validCells.push(orMatrix[m][t]);
+            }
+          }
+        }
+        propertyScore = (validCells.reduce(function(a,b){return a+b;},0) / validCells.length) * 100;
         storedHeatmaps = heatmaps;
         displayResults(propertyScore, windowScores, heatmaps);
       }
@@ -2331,6 +2343,7 @@ function getSunriseSunset(month, lat, lng) {
   return { rise: rise, set: set };
 }
 
+
 function getSeasonScoresFromMatrix(matrix) {
   var lat = parseFloat(document.getElementById('lat').value);
   var lng = parseFloat(document.getElementById('lng').value);
@@ -2340,7 +2353,8 @@ function getSeasonScoresFromMatrix(matrix) {
     var ss = getSunriseSunset(m, lat, lng);
     var sum = 0, count = 0;
     for (var t = 0; t < 8; t++) {
-      var mid = TIME_SLOTS[t] + 1;
+      var slotWidth = (t + 1 < TIME_SLOTS.length) ? TIME_SLOTS[t+1] - TIME_SLOTS[t] : 2;
+      var mid = TIME_SLOTS[t] + slotWidth / 2;
       if (mid >= ss.rise && mid <= ss.set) { sum += matrix[m][t]; count++; }
     }
     monthlyAvg.push(count > 0 ? sum / count : 0);
@@ -2363,15 +2377,22 @@ function winSeasonBlock(emoji, label, pct) {
 
 function buildHeatmapHtml(matrix, winIdx) {
   var wi = (winIdx !== undefined && winIdx !== null) ? winIdx : -1;
+  var currentMonth = new Date().getMonth() + 1; // 1-indexed
   var shortMonths = ['1','2','3','4','5','6','7','8','9','10','11','12'];
-  var html = '<table class="heatmap-table"><thead><tr><th class="hm-row-label"></th>';
-  shortMonths.forEach(function(lbl) {
-    html += '<th style="min-width:22px;padding:2px 1px;text-align:center;">' + lbl + '</th>';
+  var html = '<div style="font-size:10px;color:#F5A623;margin-bottom:8px;">▶ 現在は' + currentMonth + '月</div>';
+  html += '<div style="font-size:10px;color:#aaa;margin-bottom:6px;">横軸：月（1〜12月）　縦軸：時間帯</div>';
+  html += '<table class="heatmap-table"><thead><tr><th class="hm-row-label"></th>';
+  shortMonths.forEach(function(lbl, ci) {
+    var isCur = (ci + 1) === currentMonth;
+    html += '<th style="min-width:22px;padding:2px 1px;text-align:center;'
+      + (isCur ? 'color:#F5A623;font-weight:700;' : '') + '">'
+      + (isCur ? lbl + '▼' : lbl) + '</th>';
   });
   html += '</tr></thead><tbody>';
   for (var t = 0; t < 8; t++) {
     html += '<tr><td class="hm-row-label hm-mn">' + escHtml(TIME_LABELS[t]) + '</td>';
     for (var m = 0; m < 12; m++) {
+      var isCurCol = (m + 1) === currentMonth;
       var val = matrix[m][t];
       var info = getHeatInfo(val);
       var cellClass = 'hm-cell';
@@ -2380,7 +2401,8 @@ function buildHeatmapHtml(matrix, winIdx) {
         cellClass += ' sim-clickable';
         cellOnclick = ' onclick="showLightSim(' + wi + ',' + m + ',' + t + ')"';
       }
-      html += '<td><div class="' + cellClass + '"' + cellOnclick + ' style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
+      var tdStyle = isCurCol ? ' style="background:rgba(245,166,35,0.08);"' : '';
+      html += '<td' + tdStyle + '><div class="' + cellClass + '"' + cellOnclick + ' style="background:' + info.bg + ';color:' + info.color + ';font-size:' + info.fontSize + '" title="' + Math.round(val*100) + '%">' + info.label + '</div></td>';
     }
     html += '</tr>';
   }
