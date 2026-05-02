@@ -311,8 +311,8 @@
     .sc-catch-right { display: flex; align-items: baseline; gap: 2px; }
     .sc-score-num { font-size: 88px; font-weight: 900; color: #1A1A1A; line-height: 1; letter-spacing: -5px; }
     .sc-score-pct { font-size: 26px; color: #aaa; font-weight: 400; }
-    .sc-detail { flex: 1; display: grid; grid-template-columns: 1fr 140px; overflow: hidden; }
-    .sc-left { display: flex; flex-direction: column; padding: 8px; border-right: 0.5px solid rgba(0,0,0,0.06); gap: 4px; }
+    .sc-detail { flex: 1; display: flex; overflow: hidden; }
+    .sc-left { flex: 1; display: grid; grid-template-columns: 1fr 1fr; padding: 10px; gap: 8px; align-content: center; }
     .sc-seasons { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
     .sc-s { background: #F5F4F0; border-radius: 4px; padding: 4px 6px; display: flex; flex-direction: column; align-items: center; }
     .sc-s-top { display: flex; align-items: center; gap: 3px; margin-bottom: 1px; }
@@ -1899,7 +1899,10 @@ function calcWindowHeatmap(w, floorNum) {
 
   for (var m = 0; m < 12; m++) {
     var row = [];
+    var ss = getSunriseSunset(m, lat, lng);
     for (var t = 0; t < 8; t++) {
+      var mid = TIME_SLOTS[t] + 1;
+      if (mid < ss.rise || mid > ss.set) { row.push(0); continue; }
 
       // 月の15日を10分刻びでサンプリング
       var sunlit = 0;
@@ -1909,7 +1912,7 @@ function calcWindowHeatmap(w, floorNum) {
         var date = new Date(2024, m, 15, TIME_SLOTS[t], dt, 0);
         var pos = SunCalc.getPosition(date, lat, lng);
         var altDeg = pos.altitude * 180 / Math.PI;
-        total++; // 日没前後もカウント\uff08元からカウント\uff09
+        total++;
 
         if (altDeg <= 0) continue; // 地平線以下
 
@@ -1972,7 +1975,10 @@ function calcConstructionHeatmap(floorNum) {
     var matrix = [];
     for (var m = 0; m < 12; m++) {
       var row = [];
+      var ss = getSunriseSunset(m, lat, lng);
       for (var t = 0; t < 8; t++) {
+        var mid = TIME_SLOTS[t] + 1;
+        if (mid < ss.rise || mid > ss.set) { row.push(0); continue; }
         var sunlit = 0, total = 0;
         for (var dt = 0; dt < 120; dt += 10) {
           var date = new Date(2024, m, 15, TIME_SLOTS[t], dt, 0);
@@ -2269,7 +2275,7 @@ function displayResults(score, winScores, heatmaps) {
     + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="openScreenshot()">'
     + '<span style="font-size:20px;">📸</span><div><div style="font-size:13px;font-weight:700;">結果をスクリーンショット用に表示する</div><div style="font-size:11px;color:#6B7280;">シンプルな画面に切り替えて保存できます</div></div>'
     + '</div>'
-    + '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="copyResultUrl()">'
+    + '<div id="copyUrlBtn" style="display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;cursor:pointer;" onclick="copyResultUrl()">'
     + '<span style="font-size:20px;">🔗</span><div><div style="font-size:13px;font-weight:700;">結果URLをコピーする</div><div style="font-size:11px;color:#6B7280;">同じURLを開くと同じ結果が再現されます（写真以外）</div></div>'
     + '</div>'
     + '</div>'
@@ -2315,12 +2321,27 @@ function computeOrHeatmap(heatmaps) {
   return or;
 }
 
+function getSunriseSunset(month, lat, lng) {
+  var date = new Date(2024, month, 15);
+  var times = SunCalc.getTimes(date, lat, lng);
+  var rise = times.sunrise.getHours() + times.sunrise.getMinutes() / 60;
+  var set  = times.sunset.getHours()  + times.sunset.getMinutes() / 60;
+  return { rise: rise, set: set };
+}
+
 function getSeasonScoresFromMatrix(matrix) {
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+  if (isNaN(lat) || isNaN(lng)) { lat = 35.68; lng = 139.69; }
   var monthlyAvg = [];
   for (var m = 0; m < 12; m++) {
-    var sum = 0;
-    for (var t = 0; t < 8; t++) { sum += matrix[m][t]; }
-    monthlyAvg.push(sum / 8);
+    var ss = getSunriseSunset(m, lat, lng);
+    var sum = 0, count = 0;
+    for (var t = 0; t < 8; t++) {
+      var mid = TIME_SLOTS[t] + 1;
+      if (mid >= ss.rise && mid <= ss.set) { sum += matrix[m][t]; count++; }
+    }
+    monthlyAvg.push(count > 0 ? sum / count : 0);
   }
   return {
     spring: Math.round((monthlyAvg[2] + monthlyAvg[3] + monthlyAvg[4]) / 3 * 100),
@@ -2340,14 +2361,15 @@ function winSeasonBlock(emoji, label, pct) {
 
 function buildHeatmapHtml(matrix, winIdx) {
   var wi = (winIdx !== undefined && winIdx !== null) ? winIdx : -1;
+  var shortMonths = ['1','2','3','4','5','6','7','8','9','10','11','12'];
   var html = '<table class="heatmap-table"><thead><tr><th class="hm-row-label"></th>';
-  TIME_LABELS.forEach(function(lbl) {
-    html += '<th>' + escHtml(lbl) + '</th>';
+  shortMonths.forEach(function(lbl) {
+    html += '<th style="min-width:22px;padding:2px 1px;text-align:center;">' + lbl + '</th>';
   });
   html += '</tr></thead><tbody>';
-  for (var m = 0; m < 12; m++) {
-    html += '<tr><td class="hm-row-label hm-mn">' + escHtml(MONTH_LABELS[m]) + '</td>';
-    for (var t = 0; t < 8; t++) {
+  for (var t = 0; t < 8; t++) {
+    html += '<tr><td class="hm-row-label hm-mn">' + escHtml(TIME_LABELS[t]) + '</td>';
+    for (var m = 0; m < 12; m++) {
       var val = matrix[m][t];
       var info = getHeatInfo(val);
       var cellClass = 'hm-cell';
@@ -2382,7 +2404,7 @@ function showLightSim(winIdx, monthIdx, timeIdx) {
   // Highlight selected cell
   document.querySelectorAll('.hm-cell.sim-selected').forEach(function(el) { el.classList.remove('sim-selected'); });
   var cells = document.querySelectorAll('#simHeatmapWrap .hm-cell.sim-clickable');
-  var cellIdx = monthIdx * 8 + timeIdx;
+  var cellIdx = timeIdx * 12 + monthIdx;
   if (cells[cellIdx]) cells[cellIdx].classList.add('sim-selected');
 
   var matrix = storedHeatmaps[winIdx];
@@ -2973,10 +2995,6 @@ function buildSummaryCard(score, seasons, matrix, addr, comment, floor) {
     + '</div>'
     + '<div class="sc-comment">' + escHtml(comment) + '</div>'
     + '</div>'
-    + '<div class="sc-right">'
-    + '<div class="sc-hm-lbl">月別×時間帯</div>'
-    + buildHeatmapForCard(matrix)
-    + '</div>'
     + '</div>'
     + '<div class="sc-footer-total">'
     + '<span class="sc-f-note">誤差±20〜30%（周辺建物・地形等による）</span>'
@@ -3013,10 +3031,6 @@ function buildWindowCard(w, i, score, seasons, matrix, comment) {
     + '</div>'
     + '<div class="sc-comment">' + escHtml(comment) + '</div>'
     + '</div>'
-    + '<div class="sc-right">'
-    + '<div class="sc-hm-lbl">月別×時間帯</div>'
-    + buildHeatmapForCard(matrix)
-    + '</div>'
     + '</div>'
     + '<div class="sc-footer-window">'
     + '<span class="sc-f-note">誤差±20〜30%（周辺建物・地形等による）</span>'
@@ -3029,6 +3043,7 @@ function openScreenshot() {
   var addr = document.getElementById('address').value;
   var html;
 
+  var ssHeatmapHtml = '';
   if (selectedUsecase === '土地・屋外') {
     var result = null;
     for (var i = 0; i < constructionResults.length; i++) {
@@ -3044,6 +3059,10 @@ function openScreenshot() {
     var seasons = getSeasonScoresFromMatrix(result.data['south']);
     var comment = getConstructionAdvice(selectedConstructionFloor, dirScores);
     html = buildSummaryCard(dirScores['south'], seasons, result.data['south'], addr, comment, selectedConstructionFloor);
+    ssHeatmapHtml = '<div style="padding:16px;overflow-x:auto;">'
+      + '<div style="font-size:12px;font-weight:700;color:#F5A623;margin-bottom:8px;">月別×時間帯 日照率（南向き）</div>'
+      + buildHeatmapHtml(result.data['south'])
+      + '</div>';
   } else {
     var orMatrix = computeOrHeatmap(storedHeatmaps);
     var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
@@ -3062,9 +3081,15 @@ function openScreenshot() {
         html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
       });
     }
+    ssHeatmapHtml = '<div style="padding:16px;overflow-x:auto;">'
+      + '<div style="font-size:12px;font-weight:700;color:#F5A623;margin-bottom:8px;">月別×時間帯 日照率</div>'
+      + buildHeatmapHtml(orMatrix)
+      + '</div>';
   }
 
-  document.getElementById('ssContent').innerHTML = html;
+  document.getElementById('ssContent').innerHTML =
+    '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:16px;">' + html + '</div>'
+    + ssHeatmapHtml;
   document.getElementById('ssOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -3087,15 +3112,23 @@ function copyResultUrl() {
   };
   window.location.hash = encodeURIComponent(JSON.stringify(data));
   var url = window.location.href;
+  function onCopied() {
+    var btn = document.getElementById('copyUrlBtn');
+    if (btn) {
+      var inner = btn.querySelector('div > div:first-child');
+      if (inner) { inner.textContent = 'コピーしました！'; setTimeout(function() { inner.textContent = '結果URLをコピーする'; }, 2000); }
+    }
+    showCopyToast();
+  }
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(showCopyToast);
+    navigator.clipboard.writeText(url).then(onCopied);
   } else {
     var ta = document.createElement('textarea');
     ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select();
     try { document.execCommand('copy'); } catch(e) {}
     document.body.removeChild(ta);
-    showCopyToast();
+    onCopied();
   }
 }
 

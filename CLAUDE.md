@@ -390,6 +390,11 @@ PHOTO_TAB_MAP = {
 - index.html モバイルヘッダー：「日当たり算出ツール」「コラム」「SUNNYとは？」を常時表示
 - column/sunny_hiatari.html：ヒーローに SuunyImportant.png をオーバーレイ表示（右寄せ・z-index調整済み）
 - index.html USE CASEセクションに max-width: 900px 中央寄せを追加（下セクションと幅統一）
+- ヒートマップを縦向き（時間=縦・月=横）に変換（`buildHeatmapHtml` を行列転置）
+- 日の出・日の入りをスコア計算に反映（`getSunriseSunset` 追加・`calcWindowHeatmap`・`calcConstructionHeatmap`・`getSeasonScoresFromMatrix` で夜間スロットを分母から除外）
+- 結果カード内ミニヒートマップ削除・季節%とコメントを `grid-template-columns: 1fr 1fr` 横並びに変更
+- 「結果URLをコピーする」ボタンクリック時にボタンテキストを一時的に「コピーしました！」に変更
+- スクリーンショット用オーバーレイに縦向きヒートマップを追加
 
 ---
 
