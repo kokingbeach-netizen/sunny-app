@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — SUNNY 日当たり算出ツール</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fff;
+  --black: #1A1A1A;
+  --amber: #F5A623;
+  --amber-dk: #D4880F;
+  --gray: #6B7280;
+  --gray-lt: #f5f5f3;
+  --border: rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--black);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+/* ── Topbar ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 56px;
+}
+.logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo-sun  { color: var(--amber); font-size: 17px; }
+.logo-text { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; letter-spacing: 3px; color: var(--black); }
+.logo-div  { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
+.logo-sub  { font-size: 11px; color: var(--gray); letter-spacing: 0.5px; }
+.nav-cta {
+  background: #FC5F0A; color: #fff;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 8px 18px; border-radius: 6px;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.nav-cta:hover { opacity: 0.75; }
+
+/* ── Hero ── */
+.hero {
+  border-bottom: 0.5px solid rgba(0,0,0,0.08);
+  padding: 56px 32px 48px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.hero-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--amber); margin-bottom: 16px; display: block;
+}
+.hero-h1 {
+  font-size: 42px; font-weight: 300;
+  letter-spacing: -1.5px; line-height: 1.2;
+  color: var(--black); margin-bottom: 14px;
+}
+.hero-h1 strong { font-weight: 700; }
+.hero-sub {
+  font-size: 13px; color: var(--gray); line-height: 1.9;
+  max-width: 500px;
+}
+
+/* ── FAQ Body ── */
+.faq-body {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 32px 96px;
+}
+
+/* ── Category ── */
+.faq-category {
+  padding-top: 56px;
+}
+.category-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.10);
+  margin-bottom: 0;
+}
+.category-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 28px; font-weight: 500;
+  color: var(--amber); letter-spacing: -1px;
+  flex-shrink: 0;
+}
+.category-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--black);
+}
+.category-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: 2.5px;
+  color: var(--amber);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ── FAQ Item ── */
+.faq-item {
+  border-bottom: 0.5px solid rgba(0,0,0,0.07);
+}
+.faq-q {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px 0 22px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--black);
+  line-height: 1.6;
+}
+.faq-q:hover .faq-q-text { color: var(--amber-dk); }
+.faq-q-mark {
+  font-family: 'DM Mono', monospace;
+  font-size: 16px; font-weight: 700;
+  color: var(--amber);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.faq-q-text { flex: 1; }
+.faq-chevron {
+  font-size: 12px;
+  color: var(--gray);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  margin-top: 4px;
+}
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+.faq-a {
+  display: none;
+  padding: 0 0 22px 30px;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.9;
+  border-left: 2px solid rgba(245,166,35,0.3);
+  margin-left: 14px;
+  padding-left: 16px;
+}
+.faq-item.open .faq-a { display: block; }
+.faq-a a { color: var(--amber-dk); }
+.faq-a a:hover { text-decoration: none; }
+
+/* ── CTA ── */
+.faq-cta {
+  margin-top: 64px;
+  padding: 40px 32px;
+  background: var(--gray-lt);
+  border-radius: 12px;
+  text-align: center;
+}
+.faq-cta-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 3px;
+  color: var(--amber); margin-bottom: 14px;
+}
+.faq-cta-h {
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 10px;
+}
+.faq-cta-sub {
+  font-size: 13px; color: var(--gray);
+  margin-bottom: 24px;
+}
+.faq-cta-btn {
+  display: inline-block;
+  background: #FC5F0A; color: #fff;
+  font-size: 14px; font-weight: 700;
+  padding: 13px 36px; border-radius: 8px;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.faq-cta-btn:hover { opacity: 0.80; }
+
+/* ── Footer ── */
+footer {
+  background: var(--black);
+  padding: 32px 32px;
+  display: flex; flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px 0;
+}
+.footer-logo { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 4px; display: flex; align-items: center; gap: 6px; width: 100%; margin-bottom: 4px; }
+.footer-logo-sun { color: var(--amber); }
+.footer-logo-text { color: var(--amber); }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; width: 100%; }
+.footer-link { font-size: 11px; color: rgba(255,255,255,0.5); text-decoration: none; }
+.footer-link:hover { color: #fff; }
+.footer-copy { font-size: 10px; color: rgba(255,255,255,0.25); width: 100%; margin-top: 8px; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .topbar { padding: 0 16px; }
+  .logo-div, .logo-sub { display: none; }
+  .hero { padding: 40px 20px 36px; }
+  .hero-h1 { font-size: 30px; }
+  .faq-body { padding: 0 20px 72px; }
+  .faq-cta { padding: 32px 20px; }
+  footer { padding: 28px 20px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="https://kokingbeach-netizen.github.io/sunny-app/index.html" class="logo">
+    <span class="logo-sun">☀</span>
+    <span class="logo-text">SUNNY</span>
+    <span class="logo-div"></span>
+    <span class="logo-sub">日当たり算出ツール</span>
+  </a>
+  <nav>
+    <a href="index.html" class="nav-cta">ツールを使う</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <span class="hero-tag">FAQ</span>
+  <h1 class="hero-h1"><strong>よくある<br><span style="font-size:0.55em;letter-spacing:0;vertical-align:middle;">ご質問。</span></strong></h1>
+  <p class="hero-sub">SUNNY の使い方・計算の仕組み・結果の読み方について、<br>よくいただくご質問をまとめました。</p>
+</div>
+
+<!-- FAQ Body -->
+<div class="faq-body">
+
+  <!-- 01: 精度について -->
+  <div class="faq-category">
+    <div class="category-header">
+      <span class="category-num">01</span>
+      <span class="category-title">精度について</span>
+      <span class="category-tag">ACCURACY</span>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">どのくらいの精度ですか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        誤差 ±20〜30% を目安にお考えください。太陽の軌道は天文アルゴリズムで正確に計算していますが、周辺建物の実際の反射・地形の複雑な影響・気象条件（曇天の頻度など）は考慮していません。物件選定や設計の「参考値」としてご活用ください。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">気象データ（雨・曇り）は反映されていますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        いいえ。SUNNY は太陽の軌道と周辺環境の遮蔽に基づく「快晴時の日照可能率」を算出しています。実際の日照時間は気象条件によって大きく変動するため、気象庁の日照時間データなどと組み合わせてご判断ください。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">写真がなくても精度は出ますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        はい。正面建物の高さと距離を入力するだけでも計算できます。写真（空の SVF 解析）を追加することで遮蔽状況をより精密に反映できるため、可能であれば撮影いただくことをおすすめします。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">階数は結果に影響しますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        はい。階が高くなるほど正面建物の遮蔽仰角が小さくなり、日照率は上がる傾向があります。SUNNY では 1 階あたり 3m として自分の視点高さを計算に反映しています。土地・屋外モードでは 1〜5 階まで一括比較が可能です。
+      </div>
+    </div>
+  </div>
+
+  <!-- 02: 計算ロジックについて -->
+  <div class="faq-category">
+    <div class="category-header">
+      <span class="category-num">02</span>
+      <span class="category-title">計算ロジックについて</span>
+      <span class="category-tag">CALCULATION</span>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">日照率はどのように計算していますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        天文アルゴリズム（SunCalc.js）で太陽位置を算出し、各月 15 日を代表日として 10 分刻みでサンプリングします。各サンプル点で「太陽が窓の方向にあり、かつ遮蔽仰角より高い」場合を日照ありとカウントし、昼間サンプル数で割ることで日照率を求めます。詳細は <a href="sunny_how_it_works.html">算出計算方法</a> をご覧ください。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">PROPERTY SCORE はどう計算していますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        複数窓がある場合、OR 結合（1 − ∏(1 − p_i)）で「いずれかの窓に日が入る確率」を計算します。たとえば南窓 80%・東窓 60% なら、PROPERTY SCORE = 1 − (1−0.8)×(1−0.6) = 92% となります。窓が 1 つの場合はその窓のスコアがそのまま使われます。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">季節スコアはどう計算していますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        3〜5 月＝春、6〜8 月＝夏、9〜11 月＝秋、12〜2 月＝冬として、各月の日照率の平均を季節別にまとめています。日の出前・日没後のスロットは分母から除外しているため、実際の日照可能時間に対する割合として計算されます。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">樹木や看板などの補正はどう機能しますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        遮蔽物チェックボックスで以下の補正が適用されます。<br><br>
+        • 常緑樹：全季節 −15%<br>
+        • 落葉樹：春夏 −15%、秋 −10%、冬 −5%<br>
+        • 看板・広告板：遮蔽仰角を最低 8° に設定<br>
+        • 隣接壁（真横）：遮蔽仰角を最低 20° に設定
+      </div>
+    </div>
+  </div>
+
+  <!-- 03: 使い方について -->
+  <div class="faq-category">
+    <div class="category-header">
+      <span class="category-num">03</span>
+      <span class="category-title">使い方について</span>
+      <span class="category-tag">HOW TO USE</span>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">緯度経度はどうやって調べますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        Google マップで物件の場所を右クリック（スマホは長押し）すると緯度経度が表示されます。または SUNNY の「現在地を使う」ボタンで GPS から自動取得も可能です。取得方法の詳細は入力欄横の「？」をご確認ください。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">写真はどのように撮ればいいですか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        窓の前に立ち、スマートフォンを横向き・斜め 45° 上向きにして撮影してください。空がなるべく広く写るよう意識すると解析精度が上がります。正面・左斜め・右斜めの 3 方向を撮影することをおすすめします。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">窓はいくつまで登録できますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        最大 4 窓まで登録できます。リビングの南窓・寝室の東窓など、複数の窓を登録すると PROPERTY SCORE で「物件全体の日照ポテンシャル」として合算評価できます。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">「土地・屋外モード」とは何ですか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        建設予定地や屋外空間の日照を、1〜5 階など複数の高さで一括比較できるモードです。南・東・西・北の 4 方角ごとのスコアも確認でき、どの向きに窓や開口部を設けるべきかの設計判断に役立ちます。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">スマートフォンでも使えますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        はい。iOS・Android のブラウザ（Safari・Chrome）でお使いいただけます。写真撮影から解析まですべてスマートフォン上で完結します。アプリのインストールも不要です。
+      </div>
+    </div>
+  </div>
+
+  <!-- 04: 結果の活用について -->
+  <div class="faq-category">
+    <div class="category-header">
+      <span class="category-num">04</span>
+      <span class="category-title">結果の活用について</span>
+      <span class="category-tag">RESULTS</span>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">スコア何%以上なら「日当たり良好」ですか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        目安として以下を参考にしてください。<br><br>
+        • 70% 以上：日当たり良好。一年を通じて日差しが豊富<br>
+        • 50〜70%：バランス良好。季節による差は少ない<br>
+        • 30〜50%：やや控えめ。夏は涼しく、冬は日差しが少なめ<br>
+        • 30% 未満：穏やかな採光。遮蔽や方角の影響が大きい<br><br>
+        ただし、用途（リビング・ベランダ・農業など）によって求める日照量は異なります。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">結果を保存・共有するには？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        結果画面の「結果URLをコピーする」ボタンを押すと、入力データを含むURLがクリップボードにコピーされます。そのURLを開くと同じ条件で再計算されます（写真データは含まれません）。また「スクリーンショット用に表示する」からカード画像を保存することもできます。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">不動産営業や設計提案に使えますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        はい。スクリーンショット用画面から結果カードとヒートマップを画像として保存し、資料や提案書に活用いただけます。BtoB でのシステム連携・API 提供についてはお問い合わせください。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">ヒートマップの見方を教えてください。</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        縦軸が時間帯（4-6 時〜18-20 時）、横軸が月（1〜12 月）です。各マスの色が濃い赤・オレンジほど日照率が高く、白・薄色ほど日照が少ないことを表します。夏の高い太陽と冬の低い太陽による季節差が一目で分かります。マスをタップするとその時間帯の日差しシミュレーションが表示されます。
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="faq-cta">
+    <div class="faq-cta-tag">TRY SUNNY</div>
+    <div class="faq-cta-h">さっそく日当たりを調べてみる</div>
+    <p class="faq-cta-sub">緯度経度を入力するだけ。無料・登録不要。</p>
+    <a href="index.html" class="faq-cta-btn">ツールを使う →</a>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">
+    <span class="footer-logo-sun">☀</span>
+    <span class="footer-logo-text">SUNNY</span>
+  </div>
+  <div class="footer-links">
+    <a href="column/index.html" class="footer-link">コラム</a>
+    <a href="sunny_faq.html" class="footer-link">FAQ</a>
+    <a href="sunny_lp.html" class="footer-link">日当たり算出ツールSUNNYとは？</a>
+    <a href="sunny_how_it_works.html" class="footer-link">算出計算方法</a>
+    <a href="sunny_contact.html" class="footer-link">お問い合わせ</a>
+    <a href="sunny_privacy.html" class="footer-link">プライバシーポリシー</a>
+    <a href="sunny_terms.html" class="footer-link">利用規約</a>
+  </div>
+  <div class="footer-copy">© 2026 SUNNY — 日当たり算出ツール</div>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  var item = btn.closest('.faq-item');
+  var isOpen = item.classList.contains('open');
+  // Close all others in the same category
+  var category = item.closest('.faq-category');
+  category.querySelectorAll('.faq-item.open').forEach(function(el) {
+    el.classList.remove('open');
+  });
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+
+</body>
+</html>
