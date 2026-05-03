@@ -19,6 +19,7 @@
 - color: #fff
 - font-size: 13px
 - font-weight: 700
+- line-height: 1（body継承のline-heightを無効化するため必須）
 - padding: 8px 18px
 - border-radius: 6px
 - white-space: nowrap
