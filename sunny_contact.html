@@ -182,11 +182,11 @@ body {
 <body>
 
 <header class="topbar">
-  <div class="logo-area">
+  <a href="sunny_lp.html" class="logo-area" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
     <span style="color:var(--amber);font-size:18px;">☀</span>
     <span class="logo-text">SUNNY</span>
-  </div>
-  <button class="back-btn" onclick="history.back()">← 戻る</button>
+  </a>
+  <a href="index.html" class="nav-cta">ツールを使う</a>
 </header>
 
 <div class="hero">
@@ -216,6 +216,14 @@ body {
         <div class="uc-body">
           <div class="uc-title">取材・メディア掲載</div>
           <div class="uc-desc">記事・インタビュー・プレスリリースなどのメディア対応</div>
+        </div>
+        <div class="uc-check">✓</div>
+      </div>
+      <div class="usecase-card" onclick="selectType(this,'trial')" id="type-trial">
+        <div class="uc-icon">🆓</div>
+        <div class="uc-body">
+          <div class="uc-title">10日間無料トライアル</div>
+          <div class="uc-desc">期間限定でツールを試したい不動産業者・個人の方</div>
         </div>
         <div class="uc-check">✓</div>
       </div>
@@ -299,6 +307,10 @@ var templates = {
   media: {
     subject: '【取材・メディア掲載のご依頼】SUNNYについて',
     body: '〇〇（メディア名）の〇〇と申します。\n\nSUNNYについて取材させていただきたく、ご連絡いたしました。\n\n■媒体名・掲載予定\n（例：〇〇ブログ・2025年〇月掲載予定）\n\n■取材内容\n（例：開発の経緯、技術的な仕組みなど）\n\n■ご希望の対応\n□ メールインタビュー\n□ オンライン取材\n□ その他：\n\nよろしくお願いいたします。'
+  },
+  trial: {
+    subject: '【10日間無料トライアル】SUNNYを試したい',
+    body: 'お名前：\n\nご職業・ご所属（例：不動産会社、個人など）：\n\nトライアルを希望する理由・用途：\n\nよろしくお願いいたします。'
   },
   other: {
     subject: '【お問い合わせ】SUNNYについて',
