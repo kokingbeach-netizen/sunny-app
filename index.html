@@ -35,19 +35,30 @@
     .topbar {
       position: sticky; top: 0; z-index: 100;
       background: #fff;
-      border-bottom: 1px solid rgba(0,0,0,0.12);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 32px; height: 56px;
     }
-    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; }
+    .logo-sun {
+      display: inline-block; width: 14px; height: 14px;
+      background: var(--amber); border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 0 0 2.5px rgba(245,166,35,0.25);
+      animation: logoSunBreathe 3.5s ease-in-out infinite;
+      transform-origin: center;
+    }
+    @keyframes logoSunBreathe {
+      0%, 100% { transform: scale(1);    box-shadow: 0 0 0 2.5px rgba(245,166,35,0.25); }
+      50%       { transform: scale(1.35); box-shadow: 0 0 0 5px rgba(245,166,35,0.4), 0 0 12px rgba(245,166,35,0.3); }
+    }
     .logo-text { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: #1A1A1A; letter-spacing: 3px; }
-    .logo-divider { width: 1px; height: 20px; background: rgba(0,0,0,0.12); }
-    .logo-sub { font-size: 11px; color: #6B7280; }
-    .topbar-right { display: flex; align-items: center; gap: 20px; }
-    .nav-link { background: none; border: none; font-size: 12px; color: #6B7280; cursor: pointer; text-decoration: none; letter-spacing: 0; font-family: 'Noto Sans JP', sans-serif; }
+    .logo-div { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
+    .logo-sub { font-size: 11px; color: #6B7280; letter-spacing: 0; }
+    .topbar-nav { display: flex; align-items: center; gap: 20px; }
+    .nav-link { font-size: 12px; color: #6B7280; text-decoration: none; letter-spacing: 0; font-family: 'Noto Sans JP', sans-serif; }
     .nav-link:hover { color: #1A1A1A; }
-    .btn-black { background: #1A1A1A; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; text-decoration: none; display: inline-block; }
-    .btn-black:hover { background: #333; }
+    .nav-cta { font-size: 12px; font-weight: 700; background: #FC5F0A; color: #fff; padding: 8px 18px; border-radius: 6px; text-decoration: none; letter-spacing: 0; }
+    .nav-cta:hover { opacity: 0.75; }
 
     /* Hero */
     .hero { background: var(--bg); padding: 32px 24px 12px; position: relative; overflow: hidden; }
@@ -520,18 +531,16 @@
 
 <!-- Topbar -->
 <header class="topbar">
-  <div class="topbar-left">
-    <a href="sunny_lp.html" class="logo-block" style="display:flex;align-items:center;gap:6px;text-decoration:none;">
-      <span style="color:var(--amber);font-size:18px;">&#9728;</span>
-      <span class="logo-text">SUNNY</span>
-    </a>
-    <span class="logo-divider"></span>
+  <a href="sunny_lp.html" class="logo">
+    <span class="logo-sun"></span>
+    <span class="logo-text">SUNNY</span>
+    <span class="logo-div"></span>
     <span class="logo-sub">日当たり算出ツール</span>
-  </div>
-  <div class="topbar-right">
+  </a>
+  <nav class="topbar-nav">
     <a href="column/index.html" class="nav-link">コラム</a>
     <a href="sunny_how_it_works.html" class="nav-link">算出方法</a>
-  </div>
+  </nav>
 </header>
 
 <!-- Hero -->
