@@ -18,7 +18,7 @@
   --border: rgba(0,0,0,0.08);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { overflow-x: hidden; font-size: 18px; }
+html { overflow-x: clip; font-size: 18px; }
 body {
   background: var(--bg);
   color: var(--black);
@@ -33,7 +33,7 @@ body {
 .topbar {
   position: sticky; top: 0; z-index: 100;
   background: #fff;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 0.5px solid #e8e8e8;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 32px; height: 56px;
 }
@@ -987,19 +987,17 @@ body {
 </section>
 
 
-<footer class="hw-footer">
-  <div class="hw-footer-logo">☀ SUNNY</div>
-  <div class="hw-footer-links">
-    <a href="column/index.html" class="hw-footer-link">コラム</a>
-    <a href="sunny_faq.html" class="hw-footer-link">FAQ</a>
-    <a href="sunny_lp.html" class="hw-footer-link">日当たり算出ツールSUNNYとは？</a>
-    <a href="sunny_how_it_works.html" class="hw-footer-link">算出計算方法</a>
-    <a href="sunny_test_report.html" class="hw-footer-link">計算検証レポート</a>
-    <a href="sunny_contact.html" class="hw-footer-link">お問い合わせ</a>
-    <a href="sunny_privacy.html" class="hw-footer-link">プライバシーポリシー</a>
-    <a href="sunny_terms.html" class="hw-footer-link">利用規約</a>
+<footer style="background:#1A1A1A;padding:32px 24px;text-align:center;">
+  <div style="font-family:'DM Mono',monospace;font-size:13px;color:#F5A623;letter-spacing:3px;margin-bottom:20px;">☀ SUNNY</div>
+  <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:20px;">
+    <a href="column/sunny_hiatari.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">日当たりって大切？</a>
+    <a href="sunny_lp.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">SUNNYとは？</a>
+    <a href="sunny_faq.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">FAQ</a>
+    <a href="sunny_contact.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">お問い合わせ</a>
+    <a href="sunny_privacy.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">プライバシーポリシー</a>
+    <a href="sunny_terms.html" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">利用規約</a>
   </div>
-  <div class="hw-footer-copy">© 2026 SUNNY — 日当たり算出ツール</div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.3);">© 2026 SUNNY — 日当たり算出ツール</div>
 </footer>
 
 </body>
