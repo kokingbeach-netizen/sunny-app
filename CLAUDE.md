@@ -1,10 +1,57 @@
 # Sunny — 開発リファレンス
 
-## ヘッダー仕様
-- index.html以外の全ページ：ナビは「ツールを使う」ボタンのみ
-- ロゴクリック → sunny_lp.html
-- 「ツールを使う」→ index.html
-- CTAボタン色：#FC5F0A（オレンジ）・文字色：#fff
+## デザイン・UI統一仕様（必ず守ること）
+
+### ヘッダー（index.html以外の全ページ共通）
+- 高さ：56px固定（min-height・max-height共に56px）
+- 背景：#fff
+- 下線：border-bottom: 1px solid #e8e8e8
+- position: sticky / top: 0 / z-index: 100
+- ロゴクリック：sunny_lp.html へ遷移
+- ナビ：「ツールを使う」ボタンのみ（他のリンクは一切追加しない）
+- CTAボタン色：#FC5F0A（オレンジ）
+- CTAボタン文字色：#fff
+- CTAボタンリンク先：index.html（column/内は../index.html）
+- 全要素にwhite-space: nowrap を必ず指定
+
+### ヘッダーCTAボタン仕様（sunny_lp.htmlを基準とする）
+- background: #FC5F0A
+- color: #fff
+- font-size: 13px
+- font-weight: 700
+- padding: 8px 18px
+- border-radius: 6px
+- white-space: nowrap
+
+### フッター（全ページ共通）
+- 背景：#1A1A1A（黒）
+- レイアウト：縦並び・センター揃え（flex-direction: column / align-items: center）
+- ロゴ：☀ SUNNY（color: #F5A623）
+- メインリンク（font-size: 13px / color: rgba(255,255,255,0.6)）：
+  コラム / SUNNYとは？ / FAQ / お問い合わせ
+- サブリンク（font-size: 11px / color: rgba(255,255,255,0.35)）：
+  プライバシーポリシー / 利用規約
+- コピーライト：© 2026 SUNNY — 日当たり算出ツール
+  （font-size: 11px / color: rgba(255,255,255,0.25)）
+- 「算出計算方法」「計算検証レポート」はフッターに入れない
+
+### カラーパレット
+- アンバー（ブランド）：#F5A623
+- CTAボタン（オレンジ）：#FC5F0A
+- 黒（テキスト・ヘッダー）：#1A1A1A
+- グレー（サブテキスト）：#6B7280
+- 背景：#F5F4F0
+- 白：#FFFFFF
+
+### フォント
+- 本文：Noto Sans JP
+- ロゴ・数字：DM Mono
+
+### ヘッダー修正時の注意
+- ヘッダーを修正する際は必ずこのセクションを参照すること
+- ナビリンクを追加しないこと（ツールを使うのみ）
+- white-space: nowrapを必ず全要素に指定すること
+- CTAボタンの色は#FC5F0Aから変更しないこと
 
 ## 1. プロジェクト概要
 
