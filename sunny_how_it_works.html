@@ -38,9 +38,11 @@ body {
   padding: 0 24px; height: 56px;
 }
 .topbar-left { display: flex; align-items: center; gap: 12px; }
-.logo-text { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--black); letter-spacing: 3px; }
-.logo-divider { width: 1px; height: 20px; background: rgba(0,0,0,0.12); }
-.logo-sub { font-size: 11px; color: var(--gray); }
+.logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo-sun { color: var(--amber); font-size: 17px; }
+.logo-text { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--black); letter-spacing: 3px; }
+.logo-div { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
+.logo-sub { font-size: 11px; color: var(--gray); letter-spacing: 0.5px; }
 .topbar-right { display: flex; align-items: center; gap: 20px; }
 .nav-link { font-size: 13px; color: var(--gray); text-decoration: underline; font-family: 'Noto Sans JP', sans-serif; }
 .nav-link:hover { color: var(--black); }
@@ -385,12 +387,12 @@ body {
 <!-- ① Header -->
 <header class="topbar">
   <div class="topbar-left">
-    <a href="sunny_lp.html" style="display:flex;align-items:center;gap:6px;text-decoration:none;">
-      <span style="color:var(--amber);font-size:18px;">☀</span>
+    <a href="sunny_lp.html" class="logo">
+      <span class="logo-sun">☀</span>
       <span class="logo-text">SUNNY</span>
+      <span class="logo-div"></span>
+      <span class="logo-sub">日当たり算出ツール</span>
     </a>
-    <span class="logo-divider"></span>
-    <span class="logo-sub">日当たり算出ツール</span>
   </div>
   <div class="topbar-right">
     <a href="column/index.html" class="hw-nav-link">コラム</a>
