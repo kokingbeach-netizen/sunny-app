@@ -570,7 +570,7 @@
     "
   >
   <div class="hero-inner">
-    <h1 class="hero-h1">あなたの家の<br><span style="font-size:2em;line-height:1;display:inline-block;border-bottom:5px solid #F5A623;padding-bottom:2px;">日当たり</span>を<br>数値で知る。</h1>
+    <h1 class="hero-h1">どこの<br><span style="font-size:2em;line-height:1;display:inline-block;border-bottom:5px solid #F5A623;padding-bottom:2px;">日当たり</span>を<br>調べる？</h1>
     <p class="hero-sub"><span style="color:#1A1A1A;font-weight:600;">緯度経度・物件情報と、画像をアップするだけ。</span><br><br><span style="color:#555;font-weight:400;">NOAAの太陽軌道計算式を元にした<br>SunCalc.jsエンジンが、<br>1年分の日照を計算します。</span></p>
     <a href="column/sunny_hiatari.html" class="btn-black" style="font-size:15px;padding:14px 32px;border-radius:6px;display:inline-block;">日当たりって大切？ →</a>
   </div>
@@ -3160,6 +3160,91 @@ function showCopyToast() {
   var t = document.getElementById('copyToast');
   t.classList.add('show');
   setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ============================================================
+// テスト: 計算ロジック期待値チェック
+// ============================================================
+function runCalcTests() {
+  var latEl = document.getElementById('lat');
+  var lngEl = document.getElementById('lng');
+  var origLat = latEl.value, origLng = lngEl.value;
+  var origYoto = selectedYoto;
+
+  function makeWin(dir, bldH, bldDist) {
+    return {
+      name: dir + '向き',
+      dir: dir,
+      surroundings: [],
+      bldH: bldH || 0,
+      bldDist: bldDist || 15,
+      bldDistSelected: false,
+      photos: { left: null, center: null, right: null },
+      svf: { left: null, center: null, right: null },
+      activeTab: 'center'
+    };
+  }
+
+  function runCase(label, lat, lng, win, floorNum, checks) {
+    latEl.value = lat; lngEl.value = lng;
+    selectedYoto = 'living';
+    var hm = calcWindowHeatmap(win, floorNum);
+    var orMatrix = computeOrHeatmap([hm]);
+    var seasons = getSeasonScoresFromMatrix(orMatrix);
+    var validCells = [];
+    for (var m = 0; m < 12; m++) {
+      var ss = getSunriseSunset(m, lat, lng);
+      for (var t = 0; t < TIME_SLOTS.length; t++) {
+        var sw = (t + 1 < TIME_SLOTS.length) ? TIME_SLOTS[t+1] - TIME_SLOTS[t] : 2;
+        var mid = TIME_SLOTS[t] + sw / 2;
+        if (mid >= ss.rise && mid <= ss.set) validCells.push(orMatrix[m][t]);
+      }
+    }
+    var total = Math.round((validCells.reduce(function(a,b){return a+b;},0) / validCells.length) * 100);
+
+    var pass = checks.every(function(c) { return c.fn(total, seasons); });
+    console.log('=== ' + label + ' ===');
+    console.log('総合：' + total + '%');
+    console.log('春：' + seasons.spring + '% / 夏：' + seasons.summer + '% / 秋：' + seasons.autumn + '% / 冬：' + seasons.winter + '%');
+    var details = checks.map(function(c) { return c.fn(total, seasons) ? '✅ ' + c.desc : '❌ ' + c.desc; }).join('  ');
+    console.log('期待値クリア：' + (pass ? '✅' : '❌') + '  ' + details);
+    console.log('');
+    return { total: total, seasons: seasons };
+  }
+
+  console.log('');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('SUNNY 計算ロジック テスト');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  var r1 = runCase('テスト1：東京・南向き・遮蔽なし', 35.68, 139.69, makeWin('南'), 1, [
+    { desc: '総合70%以上',  fn: function(t)    { return t >= 70; } },
+    { desc: '夏60%以上',    fn: function(t, s) { return s.summer >= 60; } },
+    { desc: '冬70%以上',    fn: function(t, s) { return s.winter >= 70; } }
+  ]);
+
+  var r2 = runCase('テスト2：東京・北向き・遮蔽なし', 35.68, 139.69, makeWin('北'), 1, [
+    { desc: '総合30%以下',     fn: function(t)    { return t <= 30; } },
+    { desc: '南向きより低い', fn: function(t)    { return t < r1.total; } }
+  ]);
+
+  var r3 = runCase('テスト3：東京・南向き・10m先に10mビル', 35.68, 139.69, makeWin('南', 10, 10), 1, [
+    { desc: '遮蔽なし（' + r1.total + '%）より低い', fn: function(t) { return t < r1.total; } }
+  ]);
+
+  var r4 = runCase('テスト4：札幌・南向き・遮蔽なし', 43.06, 141.35, makeWin('南'), 1, [
+    { desc: '東京冬(' + r1.seasons.winter + '%)より低い', fn: function(t, s) { return s.winter < r1.seasons.winter; } }
+  ]);
+
+  runCase('テスト5：那覇・南向き・遮蔽なし', 26.21, 127.68, makeWin('南'), 1, [
+    { desc: '東京夏(' + r1.seasons.summer + '%)より高い', fn: function(t, s) { return s.summer > r1.seasons.summer; } }
+  ]);
+
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  // 元の値を復元
+  latEl.value = origLat; lngEl.value = origLng;
+  selectedYoto = origYoto;
 }
 
 // ============================================================
