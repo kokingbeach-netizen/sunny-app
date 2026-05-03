@@ -401,6 +401,10 @@ PHOTO_TAB_MAP = {
 - ヒートマップ：サブタイトル追加・現在月の列をアンバーでマーキング（▼バッジ付き）
 - PROPERTY SCORE：日の出・日の入り考慮の修正を総合スコアにも反映（validCells方式、12ヶ月×昼間スロットのみ集計）
 - sunny_test_report.html：計算検証レポートを追加（8テストケース・2026年5月実施）
+- 全ページヘッダーを構造から統一：`<a class="logo">` + `<nav class="topbar-nav">` パターン（topbar-left/right・hw-nav-link・btn-black 等を廃止）
+- 全ページ topbar CSS 統一：height 56px・padding 0 32px・border-bottom 1px solid rgba(0,0,0,0.08)
+- index.html ヘッダーロゴの太陽アイコンをCSSサークルに変更し呼吸アニメーション追加（`@keyframes logoSunBreathe`、scale + box-shadow、3.5s）
+- index.html ヘッダーサブテキストを「Launching...」オレンジ（#FC5F0A）に変更、opacity pulse アニメーション追加（2.4s）
 
 ---
 
