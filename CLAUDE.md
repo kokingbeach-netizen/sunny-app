@@ -459,6 +459,17 @@ PHOTO_TAB_MAP = {
 - 全ページ topbar CSS 統一：height 56px・padding 0 32px・border-bottom 1px solid rgba(0,0,0,0.08)
 - index.html ヘッダーロゴの太陽アイコンをCSSサークルに変更し呼吸アニメーション追加（`@keyframes logoSunBreathe`、scale + box-shadow、3.5s）
 - index.html ヘッダーサブテキストを「Launching...」オレンジ（#FC5F0A）に変更、opacity pulse アニメーション追加（2.4s）
+- 全ページヘッダーをツールを使うボタンのみに統一
+- 全ページフッターを黒背景・センター揃え・メイン4リンク＋サブ2リンクに統一
+- ロゴクリックでsunny_lp.htmlへ遷移に統一
+- sunny_lp.htmlにsunnylady.png・太陽モチーフを移植
+- sunny_lp.htmlのヒーローテキストを更新
+- sunny_how_it_works.htmlヘッダーをsticky固定に修正
+- 全ページヘッダーCTAボタンをsunny_lp.htmlのスタイルに完全統一
+- 古いコピーライト表記（2025・日照率チェッカー）を削除・統一
+- CLAUDE.mdにデザイン・UI統一仕様を追記
+- 計算検証レポート（sunny_test_report.html）追加
+- FAQの注意書きに「快晴時の日照可能率」の説明を追加
 
 ---
 
