@@ -58,6 +58,23 @@
       padding: 14px 28px; border-radius: 4px;
     }
     .hero-cta:hover { opacity: 0.88; }
+    .hero-sun-bg {
+      position: absolute; right: -20vw; top: -20vw;
+      width: 90vw; height: 90vw; max-width: 800px; max-height: 800px;
+      background: #F5A623; border-radius: 50%;
+      opacity: 0.5;
+      box-shadow:
+        0 0 80px rgba(245,166,35,0.5),
+        0 0 160px rgba(245,166,35,0.3),
+        0 0 280px rgba(245,166,35,0.15);
+      animation: sunPulse 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes sunPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 80px rgba(245,166,35,0.5), 0 0 160px rgba(245,166,35,0.3); }
+      50% { transform: scale(1.04); box-shadow: 0 0 120px rgba(245,166,35,0.6), 0 0 240px rgba(245,166,35,0.35); }
+    }
 
     /* ── Section ── */
     .section { padding: 64px 40px; border-bottom: 0.5px solid #f0f0f0; }
@@ -206,6 +223,7 @@
 
 <!-- Hero -->
 <div class="hero">
+  <div class="hero-sun-bg"></div>
   <div class="hero-en" style="position:relative;z-index:1;">About SUNNY</div>
   <h1 class="hero-h1" style="position:relative;z-index:1;">SUNNYとは？<br><strong>日当たりを数値化</strong>する。</h1>
   <p class="hero-sub" style="position:relative;z-index:1;"><span style="font-weight:700;color:#1a1a1a;">緯度経度・物件情報と、画像をアップするだけ。</span><br><br>物件の日照率を月別・時間帯別に算出。<br>「日当たり良好」だけでは伝わらない日当たりを、<br>NOAAの太陽軌道計算式を元にしたSunCalc.jsエンジンが、<br>1年分の日照を計算します。</p>
