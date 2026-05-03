@@ -22,23 +22,17 @@
     a { text-decoration: none; color: inherit; }
 
     /* ── Topbar ── */
-    .topbar {
-      position: sticky; top: 0; z-index: 100;
-      background: #fff;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px; height: 56px;
-    }
-    .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; }
-    .logo-sun { color: #F5A623; font-size: 17px; }
-    .logo-text { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; letter-spacing: 3px; color: #1a1a1a; }
-    .logo-div { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
-    .logo-sub { font-size: 11px; color: #6B7280; letter-spacing: 0; }
-    .topbar-nav { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
-    .nav-link { font-size: 12px; color: #888; letter-spacing: 0; text-decoration: none; white-space: nowrap; }
-    .nav-link:hover { color: #1a1a1a; }
-    .nav-cta { font-size: 12px; font-weight: 700; background: #FC5F0A; color: #fff; padding: 8px 18px; border-radius: 6px; letter-spacing: 0; white-space: nowrap; }
-    .nav-cta:hover { opacity: 0.75; }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     /* ── Hero ── */
     .hero {
@@ -185,7 +179,7 @@
 
     /* ── Responsive ── */
     @media (max-width: 760px) {
-      .topbar { padding: 0 20px; }
+      
       .hero { padding: 56px 20px 48px; }
       .hero-h1 { font-size: 40px; }
       .hero-sub { font-size: 14px; }
@@ -203,19 +197,33 @@
       .cta-h3 { font-size: 18px; }
       footer { padding: 24px 20px; }
     }
-  </style>
+  .topbar { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 0.5px solid #e8e8e8; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 56px; }
+.topbar a { text-decoration: none; color: inherit; }
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo-text { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; letter-spacing: 3px; color: #1A1A1A; }
+.logo-divider { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
+.logo-sub { font-size: 11px; color: #6B7280; }
+.nav { display: flex; align-items: center; gap: 24px; flex-shrink: 0; }
+.nav-link { font-size: 13px; color: #6B7280; text-decoration: none; white-space: nowrap; }
+.nav-cta { background: #1A1A1A; color: #fff; font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 6px; text-decoration: none; white-space: nowrap; }
+</style>
 </head>
 <body>
 
 <!-- Topbar -->
 <header class="topbar">
-  <a href="sunny_lp.html" class="logo">
-    <span class="logo-sun">☀</span>
-    <span class="logo-text">SUNNY</span>
-    <span class="logo-div"></span>
-    <span class="logo-sub">日当たり算出ツール</span>
+  <a href="sunny_lp.html">
+    <div class="logo">
+      <span style="color:#F5A623;font-size:18px;">☀</span>
+      <span class="logo-text">SUNNY</span>
+      <span class="logo-divider"></span>
+      <span class="logo-sub">日当たり算出ツール</span>
+    </div>
   </a>
-  <nav class="topbar-nav">
+  <nav class="nav">
+    <a href="column/index.html" class="nav-link">コラム</a>
+    <a href="sunny_lp.html" class="nav-link">SUNNYとは？</a>
+    <a href="sunny_faq.html" class="nav-link">FAQ</a>
     <a href="index.html" class="nav-cta">ツールを使う</a>
   </nav>
 </header>
