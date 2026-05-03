@@ -32,14 +32,18 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 24px; height: 56px;
 }
-.logo-area { display: flex; align-items: center; gap: 8px; }
-.logo-text { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; letter-spacing: 3px; }
-.back-btn {
-  font-size: 13px; color: var(--gray); background: none; border: none;
-  cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
-  display: flex; align-items: center; gap: 4px;
+.logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo-sun { color: var(--amber); font-size: 17px; }
+.logo-text { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; letter-spacing: 3px; color: var(--black); }
+.logo-div { width: 1px; height: 14px; background: rgba(0,0,0,0.15); }
+.logo-sub { font-size: 11px; color: var(--gray); letter-spacing: 0.5px; }
+.nav-cta {
+  background: #FC5F0A; color: #fff;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 8px 18px; border-radius: 6px;
+  text-decoration: none; transition: opacity 0.15s;
 }
-.back-btn:hover { color: var(--black); }
+.nav-cta:hover { opacity: 0.75; }
 .hero {
   background: var(--black);
   padding: 48px 24px 40px;
@@ -125,9 +129,11 @@ body {
 <body>
 
 <header class="topbar">
-  <a href="sunny_lp.html" class="logo-area" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
-    <span style="color:var(--amber);font-size:18px;">☀</span>
+  <a href="sunny_lp.html" class="logo">
+    <span class="logo-sun">☀</span>
     <span class="logo-text">SUNNY</span>
+    <span class="logo-div"></span>
+    <span class="logo-sub">日当たり算出ツール</span>
   </a>
   <a href="index.html" class="nav-cta">ツールを使う</a>
 </header>
