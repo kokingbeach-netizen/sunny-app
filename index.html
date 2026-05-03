@@ -51,26 +51,12 @@
 
     /* Hero */
     .hero { background: var(--bg); padding: 48px 24px 56px; position: relative; overflow: hidden; }
-    .hero-sun-bg {
-      position: absolute; right: -20vw; top: -20vw;
-      width: 90vw; height: 90vw; max-width: 800px; max-height: 800px;
-      background: #F5A623; border-radius: 50%;
-      opacity: 0.5;
-      box-shadow:
-        0 0 80px rgba(245,166,35,0.5),
-        0 0 160px rgba(245,166,35,0.3),
-        0 0 280px rgba(245,166,35,0.15);
-      animation: sunPulse 6s ease-in-out infinite;
-      pointer-events: none;
-    }
     @keyframes sunPulse {
       0%, 100% {
         transform: scale(1);
-        box-shadow: 0 0 80px rgba(245,166,35,0.5), 0 0 160px rgba(245,166,35,0.3);
       }
       50% {
         transform: scale(1.04);
-        box-shadow: 0 0 120px rgba(245,166,35,0.6), 0 0 240px rgba(245,166,35,0.35);
       }
     }
     .hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
@@ -552,23 +538,6 @@
 
 <!-- Hero -->
 <section class="hero">
-  <div class="hero-sun-bg"></div>
-  <img
-    src="sunnylady.png"
-    alt=""
-    style="
-      position: absolute;
-      right: -18px;
-      bottom: 0;
-      height: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      object-position: bottom;
-      z-index: 1;
-      pointer-events: none;
-      user-select: none;
-    "
-  >
   <div class="hero-inner">
     <h1 class="hero-h1">どこの<br><span style="font-size:2em;line-height:1;display:inline-block;border-bottom:5px solid #F5A623;padding-bottom:2px;">日当たり</span>を<br>調べる？</h1>
     <a href="column/sunny_hiatari.html" class="btn-black" style="font-size:15px;padding:14px 32px;border-radius:6px;display:inline-block;">日当たりって大切？ →</a>
