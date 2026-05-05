@@ -1509,7 +1509,7 @@ function renderWindowCard(w, i) {
   // コンパス配置: 3×3グリッド（中央はセンターマーク）
   var compassLayout = ['\u5317\u897f','\u5317','\u5317\u6771', '\u897f',null,'\u6771', '\u5357\u897f','\u5357','\u5357\u6771'];
   var dirBtns = compassLayout.map(function(d) {
-    if (d === null) return '<div class="dir-center">\u2295</div>';
+    if (d === null) return '<div class="dir-center"><img src="compass.svg" alt="方位磁石" style="width:48px;height:48px;opacity:0.6;"></div>';
     return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + escHtml(d) + '</button>';
   }).join('');
 
