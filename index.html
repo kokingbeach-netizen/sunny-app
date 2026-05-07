@@ -93,6 +93,20 @@
     .paste-hint { font-size: 11px; color: var(--gray); margin-bottom: 0; }
     .pluscode-error { margin-top: 8px; padding: 12px 14px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; font-size: 12px; color: #DC2626; line-height: 1.8; }
 
+    /* Mode select (STEP 2.5) */
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .mode-card { background: var(--white); border: 2px solid transparent; border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .mode-card:hover { border-color: var(--amber); background: #FFFBF5; }
+    .mode-card.selected { border-color: var(--amber); background: #FFFBF5; }
+    .mode-card.selected::after { content: '✓'; position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; background: var(--amber); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .mode-icon { font-size: 28px; margin-bottom: 10px; }
+    .mode-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .mode-desc { font-size: 12px; color: var(--gray); line-height: 1.7; }
+    .mode-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; margin-top: 8px; }
+    .badge-green { background: rgba(16,185,129,0.1); color: #059669; }
+    .badge-blue { background: rgba(59,130,246,0.1); color: #2563EB; }
+    .mode-note { background: var(--white); border-radius: 10px; border: 1px solid var(--border); padding: 12px 16px; font-size: 12px; color: var(--gray); line-height: 1.8; margin-bottom: 16px; }
+
     /* Form */
     label { display: block; font-size: 11px; color: #6B7280; font-weight: 700; margin-bottom: 4px; }
     .req { color: #EF4444; margin-left: 2px; }
@@ -761,6 +775,29 @@
     </div>
   </div>
 
+  <!-- STEP 2.5: モード選択（物件・室内モードのみ） -->
+  <div class="step-card" id="modeSelectSection" style="display:none;">
+    <div class="step-header">
+      <span class="step-badge">STEP 2.5</span>
+      <span class="step-title">モードを選択</span>
+    </div>
+    <div class="mode-grid">
+      <div class="mode-card" id="modePhoto" onclick="selectInputMode('photo')">
+        <div class="mode-icon">📷</div>
+        <div class="mode-name">現地撮影モード</div>
+        <div class="mode-desc">窓から外を撮影して、より正確に判定します。</div>
+        <div class="mode-badge badge-green">精度：高い</div>
+      </div>
+      <div class="mode-card" id="modePlan" onclick="selectInputMode('plan')">
+        <div class="mode-icon">📐</div>
+        <div class="mode-name">図面モード</div>
+        <div class="mode-desc">間取り図をアップして内見前でも確認できます。</div>
+        <div class="mode-badge badge-blue">内見前OK</div>
+      </div>
+    </div>
+    <div class="mode-note" id="modeNote" style="display:none;"></div>
+  </div>
+
   <!-- STEP 3 -->
   <div class="step-card" id="step3">
     <div class="step-header">
@@ -770,6 +807,21 @@
 
     <div id="windowsContainer"><!-- JS renders window cards here --></div>
     <button class="add-window-btn" id="addWindowBtn" onclick="addWindow()">＋ 窓を追加する</button>
+
+    <!-- 図面モード用 間取り図アップロード -->
+    <div id="step3FloorPlan" style="display:none;margin-top:16px;">
+      <label style="font-weight:700;font-size:13px;">間取り図をアップロード</label>
+      <p style="font-size:12px;color:var(--gray);margin:6px 0 12px;line-height:1.7;">JPG・PNG対応。内見前でも確認できます。<br>※写真なしのため現地撮影より精度がやや下がります。</p>
+      <div class="photo-upload-area" id="floorPlanUploadArea" onclick="document.getElementById('floorPlanInput').click()" style="padding:28px;max-width:400px;">
+        <input type="file" id="floorPlanInput" accept="image/*" style="display:none" onchange="handleFloorPlanUpload(this)">
+        <div class="upload-prompt">
+          <div style="font-size:32px;margin-bottom:8px;">📐</div>
+          <div style="font-size:14px;font-weight:700;color:#1A1A1A;">間取り図を選択</div>
+          <div style="font-size:12px;color:var(--gray);margin-top:4px;">タップして選択</div>
+        </div>
+        <img class="photo-preview-img" id="floorPlanImg" style="width:100%;border-radius:8px;" src="">
+      </div>
+    </div>
 
     <!-- 土地・屋外用STEP3 -->
     <div id="step3-construction" style="display:none;">
@@ -957,6 +1009,64 @@
     </div>
   </div>
 
+<!-- ============================================================
+     間取り図日当たりビジュアライザ
+     ============================================================ -->
+<div id="floorPlanSection" style="display:none;margin-top:32px;padding:0 16px 40px;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#D4880F;font-family:'DM Mono',monospace;margin-bottom:8px;">FLOOR PLAN</div>
+  <div style="font-size:20px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">間取り図で日当たりを確認</div>
+  <p style="font-size:13px;color:#6B7280;margin-bottom:20px;line-height:1.7;">間取り図をアップロードして窓位置をタップすると、日照率をオーバーレイ表示します。</p>
+
+  <!-- アップロードエリア -->
+  <div id="fpUploadArea" style="border:2px dashed rgba(0,0,0,0.15);border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:#fff;margin-bottom:16px;" onclick="document.getElementById('fpInput').click()">
+    <div style="font-size:28px;margin-bottom:8px;">🏠</div>
+    <div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">間取り図をアップロード</div>
+    <div style="font-size:12px;color:#6B7280;">JPG・PNG対応</div>
+    <input type="file" id="fpInput" accept="image/*" style="display:none;" onchange="fpLoadImage(this)">
+  </div>
+
+  <!-- キャンバスエリア（画像アップ後に表示） -->
+  <div id="fpCanvasArea" style="display:none;">
+    <!-- コントロール -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:16px;margin-bottom:12px;">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px;">
+        <div style="flex:1;min-width:140px;">
+          <div style="font-size:11px;font-weight:700;color:#6B7280;margin-bottom:4px;">月</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="range" id="fpMonthSlider" min="0" max="11" value="5" style="flex:1;" oninput="fpOnSlider()">
+            <span id="fpMonthLabel" style="font-size:12px;font-weight:700;color:#1A1A1A;min-width:28px;text-align:right;font-family:'DM Mono',monospace;">6月</span>
+          </div>
+        </div>
+        <div style="flex:1;min-width:140px;">
+          <div style="font-size:11px;font-weight:700;color:#6B7280;margin-bottom:4px;">時間帯</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="range" id="fpTimeSlider" min="0" max="7" value="3" style="flex:1;" oninput="fpOnSlider()">
+            <span id="fpTimeLabel" style="font-size:12px;font-weight:700;color:#1A1A1A;min-width:50px;text-align:right;font-family:'DM Mono',monospace;">12-14時</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#6B7280;margin-bottom:6px;font-weight:700;">窓マーカーを配置（窓を選択 → 間取り図をタップ）</div>
+      <div id="fpWindowBtns" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
+      <div id="fpSelectedWin" style="font-size:11px;color:#F5A623;font-weight:700;min-height:16px;"></div>
+    </div>
+
+    <!-- キャンバス -->
+    <div style="position:relative;border-radius:12px;overflow:hidden;background:#f0f0ec;line-height:0;">
+      <canvas id="fpCanvas" style="width:100%;max-width:100%;cursor:crosshair;display:block;touch-action:none;"></canvas>
+    </div>
+
+    <!-- 凡例 -->
+    <div style="display:flex;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap;">
+      <div style="font-size:11px;color:#6B7280;">日照率</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="width:40px;height:10px;border-radius:3px;background:linear-gradient(to right,rgba(100,100,100,0.3),rgba(245,166,35,0.7));"></div>
+        <span style="font-size:11px;color:#6B7280;">低 → 高</span>
+      </div>
+      <button onclick="fpClearMarkers()" style="margin-left:auto;font-size:11px;color:#6B7280;background:none;border:1px solid rgba(0,0,0,0.1);border-radius:6px;padding:4px 10px;cursor:pointer;">マーカーをリセット</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /container -->
 
 <footer style="background:#1A1A1A;padding:40px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">
@@ -1004,6 +1114,8 @@ var selectedUsecase = '物件・室内';
 var lastSeasonScores = null;
 var constructionResults = [];
 var selectedConstructionFloor = 1;
+
+var selectedInputMode = null; // 'photo' or 'plan'
 
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
 var SAMPLE_DAYS = [1, 8, 15, 22];
@@ -1524,11 +1636,13 @@ function renderWindowCard(w, i) {
     + '<label>\u7a93\u306e\u5411\u304d<span class="req">\u2605\u5fc5\u9808</span></label>'
     + '<div class="dir-grid">' + dirBtns + '</div>'
 
+    + '<div class="win-photo-section" id="win-photo-' + i + '" style="' + (selectedInputMode === 'plan' ? 'display:none;' : '') + '">'
     + '<label>\u7a93\u304b\u3089\u306e\u5199\u771f\uff083\u65b9\u89d2\uff09</label>'
     + '<div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.22);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#6B4A0A;line-height:1.7;">'
     + '\ud83d\udcf8 \u7a93\u304b\u3089\u306e\u5199\u771f\u8ffd\u52a0\u3067\u5927\u5e45\u306b\u7cbe\u5ea6\u304c\u5411\u4e0a\u3057\u307e\u3059\u3002\uff08\u203b3\u65b9\u5411\u64ae\u5f71\u63a8\u5968\uff09'
     + '</div>'
     + renderPhotoCards(i, w)
+    + '</div>'
 
     + '</div>';
 }
@@ -1595,6 +1709,18 @@ function switchPhotoTab(i, tabKey) {
 // ============================================================
 // Handle photo upload + SVF analysis
 // ============================================================
+function handleFloorPlanUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('floorPlanImg');
+    if (img) img.src = e.target.result;
+    var area = document.getElementById('floorPlanUploadArea');
+    if (area) area.classList.add('has-photo');
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
 function handlePhoto(i, tabKey, input) {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
@@ -2300,6 +2426,13 @@ function displayResults(score, winScores, heatmaps) {
     + '</div>';
 
   document.getElementById('results').innerHTML = html;
+
+  // 間取り図セクションを表示
+  var fps = document.getElementById('floorPlanSection');
+  if (fps) {
+    fps.style.display = 'block';
+    if (typeof fpBuildWindowBtns === 'function') fpBuildWindowBtns();
+  }
 }
 
 function computeAggHeatmap(heatmaps) {
@@ -3354,9 +3487,37 @@ document.querySelectorAll('.usecase-card').forEach(function(card) {
     });
     card.classList.add('active');
     selectedUsecase = card.dataset.usecase;
-      updateStep2();
+    updateStep2();
   });
 });
+
+// 初期表示（usecaseConfigが定義されたあとで実行）
+updateStep2();
+
+function selectInputMode(mode) {
+  selectedInputMode = mode;
+  document.getElementById('modePhoto').classList.toggle('selected', mode === 'photo');
+  document.getElementById('modePlan').classList.toggle('selected', mode === 'plan');
+  var note = document.getElementById('modeNote');
+  var notes = {
+    photo: '<strong style="color:#1A1A1A;">現地撮影モード</strong>を選択しました。<br>次のSTEPで窓の方向・遮蔽物を入力後、窓からの写真をアップロードしてください。',
+    plan: '<strong style="color:#1A1A1A;">図面モード</strong>を選択しました。<br>次のSTEPで窓の方向を入力後、間取り図をアップロードしてください。<br>※写真なしのため現地撮影より精度がやや下がります。'
+  };
+  note.style.display = 'block';
+  note.innerHTML = notes[mode];
+
+  // 各窓カードの写真セクションを切り替え
+  var isPhoto = mode === 'photo';
+  document.querySelectorAll('.win-photo-section').forEach(function(el) {
+    el.style.display = isPhoto ? '' : 'none';
+  });
+
+  // 図面モード用アップロードエリア
+  var planUpload = document.getElementById('step3FloorPlan');
+  if (planUpload) planUpload.style.display = isPhoto ? 'none' : 'block';
+
+  // 「窓を追加する」ボタン（図面モードでも残す）
+}
 
 function updateStep2() {
   const config = getCurrentConfig();
@@ -3364,12 +3525,15 @@ function updateStep2() {
   if (step2Title) step2Title.textContent = config.step2Title;
   const residential = document.getElementById('step2-residential');
   const construction = document.getElementById('step2-construction');
+  const modeSection = document.getElementById('modeSelectSection');
   if (selectedUsecase === '土地・屋外') {
     if (residential) residential.style.display = 'none';
     if (construction) construction.style.display = 'block';
+    if (modeSection) modeSection.style.display = 'none';
   } else {
     if (residential) residential.style.display = 'block';
     if (construction) construction.style.display = 'none';
+    if (modeSection) modeSection.style.display = 'block';
   }
   updateStep3();
 }
@@ -3382,12 +3546,20 @@ function updateStep3() {
     el.textContent = isConstruction ? '更地の中央に立つ' : '窓の前に立つ';
   });
   var guideText = document.getElementById('photo-guide-text');
-  var guideItems = '<li>スマホは横向きで45°上向きで撮影</li>'
-    + '<li>超広角カメラ（0.5×）使用は精度向上</li>'
-    + '<li>日中の撮影を推奨（夜間は精度が劣ります）</li>'
-    + '<li>窓わくが写らないように</li>'
-    + '<li>向かいの建物が高くて空が写らなくてもOK</li>'
-    + '<li>太陽は写らなくてOK</li>';
+  var guideItems;
+  if (selectedInputMode === 'plan') {
+    guideItems = '<li>間取り図または不動産広告をアップしてください</li>'
+      + '<li>写真撮影は不要です</li>'
+      + '<li>窓の向きは図面を見ながら手動で入力してください</li>';
+  } else {
+    guideItems = '<li>スマホは横向きで45°上向きで撮影</li>'
+      + '<li>超広角カメラ（0.5×）使用は精度向上</li>'
+      + '<li>日中の撮影を推奨（夜間は精度が劣ります）</li>'
+      + '<li>晴天・曇りどちらでもOK</li>'
+      + '<li>窓の外を正面から3方向撮影してください</li>'
+      + '<li>向かいの建物が高くて空が写らなくてもOK</li>'
+      + '<li>太陽は写らなくてOK</li>';
+  }
   if (guideText) guideText.innerHTML = guideItems;
   var disclaimer = document.getElementById('construction-disclaimer');
   if (disclaimer) disclaimer.style.display = isConstruction ? 'block' : 'none';
@@ -3711,6 +3883,229 @@ function cRemoveDir(key) {
   const addBtn = document.querySelector('.c-add-dir-btn');
   if (addBtn) addBtn.style.display = 'flex';
 }
+</script>
+
+<!-- ============================================================
+     間取り図ビジュアライザ JS
+     ============================================================ -->
+<script>
+(function() {
+  var FP = {
+    img: null,
+    markers: [],      // [{x, y, winIdx}] — canvas上の正規化座標(0-1)
+    selectedWin: -1,
+    month: 5,
+    timeSlot: 3,
+    MONTH_LABELS: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+    TIME_LABELS:  ['4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時'],
+  };
+
+  // MutationObserver で results が表示されたら floor plan セクションを出す
+  var observer = new MutationObserver(function() {
+    var res = document.getElementById('results');
+    if (res && res.style.display !== 'none' && res.innerHTML.trim() !== '') {
+      document.getElementById('floorPlanSection').style.display = 'block';
+      fpBuildWindowBtns();
+    }
+  });
+  var results = document.getElementById('results');
+  if (results) observer.observe(results, { attributes: true, childList: true, subtree: false });
+
+  // ── 窓ボタン生成 ──
+  window.fpBuildWindowBtns = function() {
+    var wrap = document.getElementById('fpWindowBtns');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    (window.windowStates || []).forEach(function(w, i) {
+      var btn = document.createElement('button');
+      btn.textContent = w.name || ('窓' + (i + 1));
+      btn.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;border:1.5px solid rgba(0,0,0,0.12);background:#fff;color:#1A1A1A;transition:all 0.15s;font-family:\'Noto Sans JP\',sans-serif;';
+      btn.onclick = (function(idx) { return function() { fpSelectWindow(idx); }; })(i);
+      btn.id = 'fpWinBtn' + i;
+      wrap.appendChild(btn);
+    });
+  };
+
+  window.fpSelectWindow = function(idx) {
+    FP.selectedWin = idx;
+    document.querySelectorAll('[id^="fpWinBtn"]').forEach(function(b, i) {
+      b.style.background = i === idx ? '#F5A623' : '#fff';
+      b.style.color = i === idx ? '#fff' : '#1A1A1A';
+      b.style.borderColor = i === idx ? '#F5A623' : 'rgba(0,0,0,0.12)';
+    });
+    var ws = (window.windowStates || [])[idx];
+    var sel = document.getElementById('fpSelectedWin');
+    if (sel) sel.textContent = ws ? ('選択中: ' + (ws.name || ('窓' + (idx + 1))) + (ws.dir ? ' (' + ws.dir + ')' : '')) : '';
+  };
+
+  // ── 画像ロード ──
+  window.fpLoadImage = function(input) {
+    if (!input.files || !input.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        FP.img = img;
+        FP.markers = [];
+        var area = document.getElementById('fpCanvasArea');
+        if (area) area.style.display = 'block';
+        document.getElementById('fpUploadArea').style.display = 'none';
+        fpResizeCanvas();
+        fpRender();
+        // canvas イベント設定
+        var canvas = document.getElementById('fpCanvas');
+        canvas.addEventListener('click', fpOnCanvasClick);
+        canvas.addEventListener('touchend', fpOnCanvasTouch, { passive: false });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  };
+
+  // ── canvas リサイズ ──
+  function fpResizeCanvas() {
+    var canvas = document.getElementById('fpCanvas');
+    if (!canvas || !FP.img) return;
+    var maxW = canvas.parentElement.offsetWidth || 360;
+    var scale = maxW / FP.img.width;
+    canvas.width  = FP.img.width  * scale;
+    canvas.height = FP.img.height * scale;
+  }
+
+  // ── スライダー ──
+  window.fpOnSlider = function() {
+    var ms = document.getElementById('fpMonthSlider');
+    var ts = document.getElementById('fpTimeSlider');
+    FP.month    = parseInt(ms.value);
+    FP.timeSlot = parseInt(ts.value);
+    document.getElementById('fpMonthLabel').textContent = FP.MONTH_LABELS[FP.month];
+    document.getElementById('fpTimeLabel').textContent  = FP.TIME_LABELS[FP.timeSlot];
+    fpRender();
+  };
+
+  // ── タップ・クリック ──
+  window.fpOnCanvasClick = function(e) {
+    if (FP.selectedWin < 0) {
+      alert('窓ボタンを選択してからタップしてください');
+      return;
+    }
+    var canvas = document.getElementById('fpCanvas');
+    var rect = canvas.getBoundingClientRect();
+    var scaleX = canvas.width  / rect.width;
+    var scaleY = canvas.height / rect.height;
+    var cx = (e.clientX - rect.left) * scaleX;
+    var cy = (e.clientY - rect.top)  * scaleY;
+    // 同じ窓の既存マーカーを削除して上書き
+    FP.markers = FP.markers.filter(function(m) { return m.winIdx !== FP.selectedWin; });
+    FP.markers.push({ x: cx / canvas.width, y: cy / canvas.height, winIdx: FP.selectedWin });
+    fpRender();
+  };
+
+  window.fpOnCanvasTouch = function(e) {
+    e.preventDefault();
+    if (!e.changedTouches || !e.changedTouches[0]) return;
+    var touch = e.changedTouches[0];
+    fpOnCanvasClick({ clientX: touch.clientX, clientY: touch.clientY });
+  };
+
+  // ── マーカーリセット ──
+  window.fpClearMarkers = function() {
+    FP.markers = [];
+    fpRender();
+  };
+
+  // ── スコア取得 ──
+  function fpGetScore(winIdx) {
+    var heatmaps = window.storedHeatmaps;
+    if (!heatmaps || !heatmaps[winIdx]) return null;
+    var matrix = heatmaps[winIdx];
+    if (!matrix[FP.month]) return null;
+    var val = matrix[FP.month][FP.timeSlot];
+    return (val !== null && val !== undefined) ? val : null;
+  }
+
+  // ── スコア→色 ──
+  function fpScoreColor(score, alpha) {
+    if (score === null) return 'rgba(150,150,150,' + alpha + ')';
+    // 0=グレー, 1=アンバー
+    var r = Math.round(100 + 145 * score);  // 100→245
+    var g = Math.round(100 + 66  * score);  // 100→166
+    var b = Math.round(100 - 65  * score);  // 100→35
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
+  // ── メイン描画 ──
+  window.fpRender = function() {
+    var canvas = document.getElementById('fpCanvas');
+    if (!canvas || !FP.img) return;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1. 間取り図
+    ctx.globalAlpha = 1;
+    ctx.drawImage(FP.img, 0, 0, canvas.width, canvas.height);
+
+    // 2. 日照オーバーレイ（放射状グラデーション）
+    FP.markers.forEach(function(m) {
+      var score = fpGetScore(m.winIdx);
+      var cx = m.x * canvas.width;
+      var cy = m.y * canvas.height;
+      var radius = Math.min(canvas.width, canvas.height) * 0.3;
+      var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      var alpha = score !== null ? (0.15 + score * 0.45) : 0.1;
+      grad.addColorStop(0,   fpScoreColor(score, alpha));
+      grad.addColorStop(0.5, fpScoreColor(score, alpha * 0.5));
+      grad.addColorStop(1,   fpScoreColor(score, 0));
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 3. マーカー（円 + ラベル）
+    FP.markers.forEach(function(m) {
+      var score = fpGetScore(m.winIdx);
+      var cx = m.x * canvas.width;
+      var cy = m.y * canvas.height;
+      var ws = (window.windowStates || [])[m.winIdx];
+      var label = ws ? (ws.name || ('窓' + (m.winIdx + 1))) : ('窓' + (m.winIdx + 1));
+      var scoreLabel = score !== null ? Math.round(score * 100) + '%' : '--';
+
+      // 外枠
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+      ctx.fillStyle = fpScoreColor(score, 0.9);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // スコア文字
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 11px "DM Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(scoreLabel, cx, cy);
+
+      // 窓名ラベル
+      ctx.font = 'bold 11px "Noto Sans JP", sans-serif';
+      ctx.fillStyle = '#1A1A1A';
+      ctx.textBaseline = 'top';
+      var tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillRect(cx - tw / 2 - 3, cy + 21, tw + 6, 16);
+      ctx.fillStyle = '#1A1A1A';
+      ctx.fillText(label, cx, cy + 22);
+    });
+  };
+
+  // リサイズ対応
+  window.addEventListener('resize', function() {
+    if (FP.img) { fpResizeCanvas(); fpRender(); }
+  });
+})();
 </script>
 
 
