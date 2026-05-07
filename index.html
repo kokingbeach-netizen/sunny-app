@@ -162,10 +162,11 @@
     .dir-center { display: flex; align-items: center; justify-content: center; font-size: 16px; color: #D1D5DB; pointer-events: none; }
     /* ライブコンパス */
     .compass-wrap { display:flex; align-items:center; justify-content:center; width:100%; height:100%; cursor:pointer; pointer-events:auto; position:relative; }
-    .compass-wrap svg { width:54px; height:54px; display:block; }
+    .compass-wrap svg { width:80px; height:80px; display:block; }
     .compass-needle { transform-origin: 50% 50%; transition: transform 0.3s ease; }
-    .compass-btn-hint { position:absolute; bottom:-2px; left:50%; transform:translateX(-50%); font-size:9px; color:#F5A623; white-space:nowrap; font-weight:700; opacity:0; transition:opacity 0.2s; pointer-events:none; }
-    .compass-wrap:hover .compass-btn-hint { opacity:1; }
+    .compass-popup { position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.72); color:#fff; font-size:11px; font-family:'Noto Sans JP',sans-serif; white-space:nowrap; padding:5px 11px; border-radius:20px; pointer-events:none; opacity:1; transition:opacity 0.4s; letter-spacing:0.3px; z-index:10; }
+    .compass-popup::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(0,0,0,0.72); }
+    .compass-popup.hidden { opacity:0 !important; }
 
     /* Size grid */
 
@@ -1170,6 +1171,9 @@ function _requestCompassPermission(cb) {
 }
 
 function compassTap(i) {
+  // ポップアップを消す
+  var popup = document.getElementById('compass-popup-' + i);
+  if (popup) popup.classList.add('hidden');
   function doSnap() {
     if (_compassHeading === null) {
       var wrap = document.getElementById('compass-wrap-' + i);
@@ -1702,20 +1706,30 @@ function renderWindowCard(w, i) {
   // コンパス配置: 3×3グリッド（中央はセンターマーク）
   var compassLayout = ['\u5317\u897f','\u5317','\u5317\u6771', '\u897f',null,'\u6771', '\u5357\u897f','\u5357','\u5357\u6771'];
   var dirBtns = compassLayout.map(function(d) {
-    if (d === null) return '<div class="dir-center"><div class="compass-wrap" id="compass-wrap-'+i+'" onclick="compassTap('+i+')" title="タップで現在の方位を自動入力">'
-      + '<svg viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">'
-      + '<circle cx="27" cy="27" r="25" fill="#F5F4F0" stroke="rgba(0,0,0,0.08)" stroke-width="1.5"/>'
-      + '<text x="27" y="9" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#9CA3AF">N</text>'
-      + '<text x="27" y="50" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#D1D5DB">S</text>'
-      + '<text x="7" y="30" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#D1D5DB">W</text>'
-      + '<text x="47" y="30" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#D1D5DB">E</text>'
+    if (d === null) return '<div class="dir-center"><div class="compass-wrap" id="compass-wrap-'+i+'" onclick="compassTap('+i+')">'
+      + '<div class="compass-popup" id="compass-popup-'+i+'">📡 タップで方位センサー起動</div>'
+      + '<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">'
+      + '<circle cx="40" cy="40" r="39" fill="#111" stroke="#3a3a3a" stroke-width="1.5"/>'
+      + '<circle cx="40" cy="40" r="34" fill="#1c1c1c"/>'
+      + '<line x1="40" y1="7"  x2="40" y2="14"  stroke="#555" stroke-width="1.2"/>'
+      + '<line x1="40" y1="66" x2="40" y2="73"  stroke="#555" stroke-width="1.2"/>'
+      + '<line x1="7"  y1="40" x2="14" y2="40"  stroke="#555" stroke-width="1.2"/>'
+      + '<line x1="66" y1="40" x2="73" y2="40"  stroke="#555" stroke-width="1.2"/>'
+      + '<line x1="67" y1="13" x2="62" y2="18"  stroke="#444" stroke-width="0.8"/>'
+      + '<line x1="13" y1="13" x2="18" y2="18"  stroke="#444" stroke-width="0.8"/>'
+      + '<line x1="13" y1="67" x2="18" y2="62"  stroke="#444" stroke-width="0.8"/>'
+      + '<line x1="67" y1="67" x2="62" y2="62"  stroke="#444" stroke-width="0.8"/>'
+      + '<text x="40" y="18"  text-anchor="middle" font-size="13" font-family="DM Mono,monospace" font-weight="900" fill="#ffffff">N</text>'
+      + '<text x="40" y="70"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">S</text>'
+      + '<text x="10" y="44"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">W</text>'
+      + '<text x="70" y="44"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">E</text>'
       + '<g class="compass-needle" id="compass-needle-'+i+'">'
-      + '<polygon points="27,9 23,27 27,24 31,27" fill="#F5A623"/>'
-      + '<polygon points="27,45 23,27 27,30 31,27" fill="#C0C0C0"/>'
+      + '<polygon points="40,12 35,40 40,34 45,40" fill="#E53E3E"/>'
+      + '<polygon points="40,68 35,40 40,46 45,40" fill="#e8e8e8" opacity="0.8"/>'
       + '</g>'
-      + '<circle cx="27" cy="27" r="3" fill="#fff" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>'
+      + '<circle cx="40" cy="40" r="6"   fill="#222" stroke="#555" stroke-width="1.5"/>'
+      + '<circle cx="40" cy="40" r="2.5" fill="#999"/>'
       + '</svg>'
-      + '<span class="compass-btn-hint">タップで入力</span>'
       + '</div></div>';
     return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + escHtml(d) + '</button>';
   }).join('');
@@ -1748,6 +1762,12 @@ function renderWindowCard(w, i) {
 function renderAllWindows() {
   var container = document.getElementById('windowsContainer');
   container.innerHTML = windowStates.map(function(w, i) { return renderWindowCard(w, i); }).join('');
+  // コンパスポップアップ：3秒後に半透明化
+  setTimeout(function() {
+    document.querySelectorAll('.compass-popup:not(.hidden)').forEach(function(p) {
+      p.style.opacity = '0.45';
+    });
+  }, 3000);
 }
 
 // ============================================================
