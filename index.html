@@ -93,7 +93,7 @@
     .paste-hint { font-size: 11px; color: var(--gray); margin-bottom: 0; }
     .pluscode-error { margin-top: 8px; padding: 12px 14px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; font-size: 12px; color: #DC2626; line-height: 1.8; }
 
-    /* Mode select (STEP 2.5) */
+    /* Mode select (STEP 3) */
     .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     .mode-card { background: var(--white); border: 2px solid transparent; border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s; position: relative; }
     .mode-card:hover { border-color: var(--amber); background: #FFFBF5; }
@@ -160,6 +160,12 @@
     .dir-btn:hover { border-color: #F5A623; color: #D4880F; }
     .dir-btn.active { border-color: #F5A623; background: rgba(245,166,35,0.1); color: #D4880F; }
     .dir-center { display: flex; align-items: center; justify-content: center; font-size: 16px; color: #D1D5DB; pointer-events: none; }
+    /* ライブコンパス */
+    .compass-wrap { display:flex; align-items:center; justify-content:center; width:100%; height:100%; cursor:pointer; pointer-events:auto; position:relative; }
+    .compass-wrap svg { width:54px; height:54px; display:block; }
+    .compass-needle { transform-origin: 50% 50%; transition: transform 0.3s ease; }
+    .compass-btn-hint { position:absolute; bottom:-2px; left:50%; transform:translateX(-50%); font-size:9px; color:#F5A623; white-space:nowrap; font-weight:700; opacity:0; transition:opacity 0.2s; pointer-events:none; }
+    .compass-wrap:hover .compass-btn-hint { opacity:1; }
 
     /* Size grid */
 
@@ -499,7 +505,7 @@
       color: #777;
     }
 
-    /* -- Construction STEP3 -- */
+    /* -- Construction STEP4 -- */
     .c-dir-block { background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:16px; margin:0 0 12px; overflow:hidden; }
     .c-dir-block.active { border-color:#F5A623; }
     .c-dir-head { display:flex; align-items:center; gap:8px; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,0.06); }
@@ -775,10 +781,10 @@
     </div>
   </div>
 
-  <!-- STEP 2.5: モード選択（物件・室内モードのみ） -->
+  <!-- STEP 3: モード選択（物件・室内モードのみ） -->
   <div class="step-card" id="modeSelectSection" style="display:none;">
     <div class="step-header">
-      <span class="step-badge">STEP 2.5</span>
+      <span class="step-badge">STEP 3</span>
       <span class="step-title">モードを選択</span>
     </div>
     <div class="mode-grid">
@@ -798,10 +804,10 @@
     <div class="mode-note" id="modeNote" style="display:none;"></div>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- STEP 4 -->
   <div class="step-card" id="step3">
     <div class="step-header">
-      <span class="step-badge">STEP 3</span>
+      <span class="step-badge">STEP 4</span>
       <span class="step-title" id="step3Title">窓の位置と周辺環境</span>
     </div>
 
@@ -823,7 +829,7 @@
       </div>
     </div>
 
-    <!-- 土地・屋外用STEP3 -->
+    <!-- 土地・屋外用STEP4 -->
     <div id="step3-construction" style="display:none;">
 
       <div id="construction-disclaimer" style="display:none;margin:0 0 16px;background:#FFF8E8;border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:14px 16px;"><div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:6px;">⚠️ 土地・屋外について</div><div style="font-size:11px;color:#555;line-height:1.9;">更地の中央から撮影した写真を使用します。<br>実際の窓の位置・階数によって誤差が生じる場合があります。<br>撮影者の身長・カメラ位置による誤差も計算上含まれます。<br><strong style="color:#555;">この結果は土地選定の参考値です。</strong><br>正確な日照シミュレーションは建築士・設計士にご相談ください。</div></div>
@@ -1118,6 +1124,81 @@ var selectedConstructionFloor = 1;
 var selectedInputMode = null; // 'photo' or 'plan'
 
 var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北':0, '北東':45, '北西':315 };
+
+// ============================================================
+// ライブコンパス
+// ============================================================
+var _compassHeading = null;
+
+function _initCompass() {
+  if (window._compassInited) return;
+  window._compassInited = true;
+
+  function handleOrientation(e) {
+    var alpha = null;
+    if (typeof e.webkitCompassHeading === 'number') {
+      alpha = e.webkitCompassHeading;
+    } else if (typeof e.alpha === 'number') {
+      alpha = (360 - e.alpha) % 360;
+    }
+    if (alpha === null) return;
+    _compassHeading = alpha;
+    document.querySelectorAll('[id^="compass-needle-"]').forEach(function(el) {
+      el.style.transform = 'rotate(' + alpha + 'deg)';
+    });
+  }
+
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission !== 'function') {
+    window.addEventListener('deviceorientation', handleOrientation, true);
+  }
+  window._compassOrientationHandler = handleOrientation;
+}
+
+function _requestCompassPermission(cb) {
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(function(state) {
+      if (state === 'granted') {
+        window.addEventListener('deviceorientation', window._compassOrientationHandler, true);
+      }
+      cb && cb(state === 'granted');
+    }).catch(function() { cb && cb(false); });
+  } else {
+    cb && cb(true);
+  }
+}
+
+function compassTap(i) {
+  function doSnap() {
+    if (_compassHeading === null) {
+      var wrap = document.getElementById('compass-wrap-' + i);
+      if (wrap) {
+        var hint = wrap.querySelector('.compass-btn-hint');
+        if (hint) {
+          hint.textContent = 'センサー取得中…';
+          hint.style.opacity = 1;
+          setTimeout(function(){ hint.style.opacity=''; hint.textContent='タップで入力'; }, 1800);
+        }
+      }
+      return;
+    }
+    var dirs = ['北','北東','東','南東','南','南西','西','北西'];
+    var azs  = [0, 45, 90, 135, 180, 225, 270, 315];
+    var h = _compassHeading;
+    var best = 0, bestDiff = 999;
+    azs.forEach(function(az, idx) {
+      var diff = Math.abs(((h - az + 540) % 360) - 180);
+      if (diff < bestDiff) { bestDiff = diff; best = idx; }
+    });
+    setWinDir(i, dirs[best]);
+  }
+  _requestCompassPermission(function() { doSnap(); });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  _initCompass();
+});
 var SAMPLE_DAYS = [1, 8, 15, 22];
 var TIME_SLOTS = [4, 6, 8, 10, 12, 14, 16, 18];
 var TIME_LABELS = ['4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時'];
@@ -1621,7 +1702,21 @@ function renderWindowCard(w, i) {
   // コンパス配置: 3×3グリッド（中央はセンターマーク）
   var compassLayout = ['\u5317\u897f','\u5317','\u5317\u6771', '\u897f',null,'\u6771', '\u5357\u897f','\u5357','\u5357\u6771'];
   var dirBtns = compassLayout.map(function(d) {
-    if (d === null) return '<div class="dir-center"><img src="compass.svg" alt="方位磁石" style="width:48px;height:48px;opacity:0.6;"></div>';
+    if (d === null) return '<div class="dir-center"><div class="compass-wrap" id="compass-wrap-'+i+'" onclick="compassTap('+i+')" title="タップで現在の方位を自動入力">'
+      + '<svg viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">'
+      + '<circle cx="27" cy="27" r="25" fill="#F5F4F0" stroke="rgba(0,0,0,0.08)" stroke-width="1.5"/>'
+      + '<text x="27" y="9" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#9CA3AF">N</text>'
+      + '<text x="27" y="50" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#D1D5DB">S</text>'
+      + '<text x="7" y="30" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#D1D5DB">W</text>'
+      + '<text x="47" y="30" text-anchor="middle" font-size="7" font-family="Noto Sans JP,sans-serif" font-weight="700" fill="#D1D5DB">E</text>'
+      + '<g class="compass-needle" id="compass-needle-'+i+'">'
+      + '<polygon points="27,9 23,27 27,24 31,27" fill="#F5A623"/>'
+      + '<polygon points="27,45 23,27 27,30 31,27" fill="#C0C0C0"/>'
+      + '</g>'
+      + '<circle cx="27" cy="27" r="3" fill="#fff" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>'
+      + '</svg>'
+      + '<span class="compass-btn-hint">タップで入力</span>'
+      + '</div></div>';
     return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + escHtml(d) + '</button>';
   }).join('');
 
@@ -3617,7 +3712,7 @@ function startWithUsecase() {
 }
 
 
-// -- Construction STEP3 JS --
+// -- Construction STEP4 JS --
 const cExtraDirs = [
   { key:'southwest', arrow:'↖', name:'南西' },
   { key:'east',      arrow:'→', name:'東' },
