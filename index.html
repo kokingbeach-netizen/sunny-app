@@ -3635,6 +3635,8 @@ function updateStep2() {
 
 function updateStep3() {
   var isConstruction = selectedUsecase === '土地・屋外';
+  var step3Badge = document.querySelector('#step3 .step-badge');
+  if (step3Badge) step3Badge.textContent = isConstruction ? 'STEP 3' : 'STEP 4';
   var step3Title = document.querySelector('#step3 .step-title');
   if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の位置と周辺環境';
   document.querySelectorAll('.guide-caption-1').forEach(function(el) {
