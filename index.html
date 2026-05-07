@@ -1144,9 +1144,17 @@ function _initCompass() {
     }
     if (alpha === null) return;
     _compassHeading = alpha;
-    document.querySelectorAll('[id^="compass-dial-"]').forEach(function(el) {
-      el.style.transform = 'rotate(' + (-alpha) + 'deg)';
-    });
+    var dials = document.querySelectorAll('[id^="compass-dial-"]');
+    if (dials.length > 0) {
+      dials.forEach(function(el) {
+        el.style.transform = 'rotate(' + (-alpha) + 'deg)';
+        el.style.transformOrigin = '40px 40px';
+      });
+    } else {
+      document.querySelectorAll('[id^="compass-needle-"]').forEach(function(el) {
+        el.style.transform = 'rotate(' + alpha + 'deg)';
+      });
+    }
   }
 
   if (typeof DeviceOrientationEvent !== 'undefined' &&
@@ -1174,15 +1182,29 @@ function compassTap(i) {
   // ポップアップを消す
   var popup = document.getElementById('compass-popup-' + i);
   if (popup) popup.classList.add('hidden');
+
   function doSnap() {
+    // dial を現在のheadingで即時更新（表示反映）
+    if (_compassHeading !== null) {
+      var dial = document.getElementById('compass-dial-' + i);
+      if (dial) {
+        dial.style.transform = 'rotate(' + (-_compassHeading) + 'deg)';
+        dial.style.transformOrigin = '40px 40px';
+      }
+    }
+
     if (_compassHeading === null) {
       var wrap = document.getElementById('compass-wrap-' + i);
       if (wrap) {
-        var hint = wrap.querySelector('.compass-btn-hint');
+        var hint = wrap.querySelector('.compass-popup');
         if (hint) {
+          hint.classList.remove('hidden');
           hint.textContent = 'センサー取得中…';
-          hint.style.opacity = 1;
-          setTimeout(function(){ hint.style.opacity=''; hint.textContent='タップで入力'; }, 1800);
+          hint.style.opacity = '1';
+          setTimeout(function() {
+            hint.style.opacity = '';
+            hint.textContent = '📡 タップで方位センサー起動';
+          }, 1800);
         }
       }
       return;
