@@ -1144,17 +1144,10 @@ function _initCompass() {
     }
     if (alpha === null) return;
     _compassHeading = alpha;
-    var dials = document.querySelectorAll('[id^="compass-dial-"]');
-    if (dials.length > 0) {
-      dials.forEach(function(el) {
-        el.style.transform = 'rotate(' + (-alpha) + 'deg)';
-        el.style.transformOrigin = '40px 40px';
-      });
-    } else {
-      document.querySelectorAll('[id^="compass-needle-"]').forEach(function(el) {
-        el.style.transform = 'rotate(' + alpha + 'deg)';
-      });
-    }
+    document.querySelectorAll('[id^="compass-needle-"]').forEach(function(el) {
+      el.style.transform = 'rotate(' + (-alpha) + 'deg)';
+      el.style.transformOrigin = '40px 40px';
+    });
   }
 
   if (typeof DeviceOrientationEvent !== 'undefined' &&
@@ -1184,12 +1177,12 @@ function compassTap(i) {
   if (popup) popup.classList.add('hidden');
 
   function doSnap() {
-    // dial を現在のheadingで即時更新（表示反映）
+    // 文字盤を現在のheadingで即時更新（表示反映）
     if (_compassHeading !== null) {
-      var dial = document.getElementById('compass-dial-' + i);
-      if (dial) {
-        dial.style.transform = 'rotate(' + (-_compassHeading) + 'deg)';
-        dial.style.transformOrigin = '40px 40px';
+      var needle = document.getElementById('compass-needle-' + i);
+      if (needle) {
+        needle.style.transform = 'rotate(' + (-_compassHeading) + 'deg)';
+        needle.style.transformOrigin = '40px 40px';
       }
     }
 
@@ -1733,24 +1726,27 @@ function renderWindowCard(w, i) {
       + '<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">'
       + '<circle cx="40" cy="40" r="39" fill="#111" stroke="#3a3a3a" stroke-width="1.5"/>'
       + '<circle cx="40" cy="40" r="34" fill="#1c1c1c"/>'
-      + '<g id="compass-dial-'+i+'">'
-      + '<line x1="40" y1="7"  x2="40" y2="14"  stroke="#555" stroke-width="1.2"/>'
-      + '<line x1="40" y1="66" x2="40" y2="73"  stroke="#555" stroke-width="1.2"/>'
-      + '<line x1="7"  y1="40" x2="14" y2="40"  stroke="#555" stroke-width="1.2"/>'
-      + '<line x1="66" y1="40" x2="73" y2="40"  stroke="#555" stroke-width="1.2"/>'
-      + '<line x1="67" y1="13" x2="62" y2="18"  stroke="#444" stroke-width="0.8"/>'
-      + '<line x1="13" y1="13" x2="18" y2="18"  stroke="#444" stroke-width="0.8"/>'
-      + '<line x1="13" y1="67" x2="18" y2="62"  stroke="#444" stroke-width="0.8"/>'
-      + '<line x1="67" y1="67" x2="62" y2="62"  stroke="#444" stroke-width="0.8"/>'
-      + '<text x="40" y="18"  text-anchor="middle" font-size="13" font-family="DM Mono,monospace" font-weight="900" fill="#ffffff">N</text>'
-      + '<text x="40" y="70"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">S</text>'
-      + '<text x="10" y="44"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">W</text>'
-      + '<text x="70" y="44"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">E</text>'
+      + '<g id="compass-needle-'+i+'" style="transform-origin:40px 40px;">'
+      + '<polygon points="40,9 37,20 43,20" fill="#E53E3E"/>'
+      + '<line x1="40" y1="7"  x2="40" y2="14"  stroke="#fff" stroke-width="1.5"/>'
+      + '<line x1="40" y1="66" x2="40" y2="73"  stroke="#555" stroke-width="1"/>'
+      + '<line x1="7"  y1="40" x2="14" y2="40"  stroke="#555" stroke-width="1"/>'
+      + '<line x1="66" y1="40" x2="73" y2="40"  stroke="#555" stroke-width="1"/>'
+      + '<line x1="65" y1="15" x2="61" y2="19"  stroke="#444" stroke-width="0.8"/>'
+      + '<line x1="15" y1="15" x2="19" y2="19"  stroke="#444" stroke-width="0.8"/>'
+      + '<line x1="15" y1="65" x2="19" y2="61"  stroke="#444" stroke-width="0.8"/>'
+      + '<line x1="65" y1="65" x2="61" y2="61"  stroke="#444" stroke-width="0.8"/>'
+      + '<text x="40" y="19" text-anchor="middle" font-size="11" font-family="DM Mono,monospace" font-weight="900" fill="#ffffff">N</text>'
+      + '<text x="40" y="71" text-anchor="middle" font-size="9"  font-family="DM Mono,monospace" font-weight="700" fill="#888">S</text>'
+      + '<text x="11" y="44" text-anchor="middle" font-size="9"  font-family="DM Mono,monospace" font-weight="700" fill="#888">W</text>'
+      + '<text x="69" y="44" text-anchor="middle" font-size="9"  font-family="DM Mono,monospace" font-weight="700" fill="#888">E</text>'
       + '</g>'
-      + '<polygon points="40,12 35,40 40,34 45,40" fill="#E53E3E"/>'
-      + '<polygon points="40,68 35,40 40,46 45,40" fill="#e8e8e8" opacity="0.8"/>'
-      + '<circle cx="40" cy="40" r="6"   fill="#222" stroke="#555" stroke-width="1.5"/>'
-      + '<circle cx="40" cy="40" r="2.5" fill="#999"/>'
+      + '<line x1="40" y1="28" x2="40" y2="36" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
+      + '<line x1="40" y1="44" x2="40" y2="52" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
+      + '<line x1="28" y1="40" x2="36" y2="40" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
+      + '<line x1="44" y1="40" x2="52" y2="40" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
+      + '<circle cx="40" cy="40" r="4" fill="#222" stroke="#555" stroke-width="1.2"/>'
+      + '<circle cx="40" cy="40" r="1.5" fill="#999"/>'
       + '</svg>'
       + '</div></div>';
     return '<button class="dir-btn' + (w.dir === d ? ' active' : '') + '" onclick="setWinDir(' + i + ',\'' + d + '\')">' + escHtml(d) + '</button>';
