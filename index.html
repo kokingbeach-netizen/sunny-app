@@ -1172,36 +1172,19 @@ function _requestCompassPermission(cb) {
 }
 
 function compassTap(i) {
-  // ポップアップを消す
-  var popup = document.getElementById('compass-popup-' + i);
-  if (popup) popup.classList.add('hidden');
+  // iOS: 初回タップで権限取得＆センサー起動
+  _requestCompassPermission(function() {
+    // センサー未取得の場合はそのまま待つ
+    if (_compassHeading === null) return;
 
-  function doSnap() {
-    // 文字盤を現在のheadingで即時更新（表示反映）
-    if (_compassHeading !== null) {
-      var needle = document.getElementById('compass-needle-' + i);
-      if (needle) {
-        needle.style.transform = 'rotate(' + (-_compassHeading) + 'deg)';
-        needle.style.transformOrigin = '40px 40px';
-      }
+    // 文字盤を現在のheadingで即時更新
+    var needle = document.getElementById('compass-needle-' + i);
+    if (needle) {
+      needle.style.transform = 'rotate(' + (-_compassHeading) + 'deg)';
+      needle.style.transformOrigin = '40px 40px';
     }
 
-    if (_compassHeading === null) {
-      var wrap = document.getElementById('compass-wrap-' + i);
-      if (wrap) {
-        var hint = wrap.querySelector('.compass-popup');
-        if (hint) {
-          hint.classList.remove('hidden');
-          hint.textContent = 'センサー取得中…';
-          hint.style.opacity = '1';
-          setTimeout(function() {
-            hint.style.opacity = '';
-            hint.textContent = '📡 タップで方位センサー起動';
-          }, 1800);
-        }
-      }
-      return;
-    }
+    // 最も近い8方位を選択
     var dirs = ['北','北東','東','南東','南','南西','西','北西'];
     var azs  = [0, 45, 90, 135, 180, 225, 270, 315];
     var h = _compassHeading;
@@ -1211,12 +1194,22 @@ function compassTap(i) {
       if (diff < bestDiff) { bestDiff = diff; best = idx; }
     });
     setWinDir(i, dirs[best]);
-  }
-  _requestCompassPermission(function() { doSnap(); });
+  });
+
+  // ポップアップは確定後に消す
+  var popup = document.getElementById('compass-popup-' + i);
+  if (popup) popup.classList.add('hidden');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   _initCompass();
+  // iOS 13+：ページ読み込み直後に権限リクエスト
+  // （ユーザージェスチャーが必要なため、最初のタップで取得）
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // iOSは最初のユーザー操作まで待つ必要があるため
+    // compassTap内で引き続き権限取得する（変更なし）
+  }
 });
 var SAMPLE_DAYS = [1, 8, 15, 22];
 var TIME_SLOTS = [4, 6, 8, 10, 12, 14, 16, 18];
@@ -1722,7 +1715,7 @@ function renderWindowCard(w, i) {
   var compassLayout = ['\u5317\u897f','\u5317','\u5317\u6771', '\u897f',null,'\u6771', '\u5357\u897f','\u5357','\u5357\u6771'];
   var dirBtns = compassLayout.map(function(d) {
     if (d === null) return '<div class="dir-center"><div class="compass-wrap" id="compass-wrap-'+i+'" onclick="compassTap('+i+')">'
-      + '<div class="compass-popup" id="compass-popup-'+i+'">📡 タップで方位センサー起動</div>'
+      + '<div class="compass-popup" id="compass-popup-'+i+'">🧭 タップで方位を確定</div>'
       + '<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">'
       + '<circle cx="40" cy="40" r="39" fill="#111" stroke="#3a3a3a" stroke-width="1.5"/>'
       + '<circle cx="40" cy="40" r="34" fill="#1c1c1c"/>'
@@ -1779,12 +1772,12 @@ function renderWindowCard(w, i) {
 function renderAllWindows() {
   var container = document.getElementById('windowsContainer');
   container.innerHTML = windowStates.map(function(w, i) { return renderWindowCard(w, i); }).join('');
-  // コンパスポップアップ：3秒後に半透明化
+  // コンパスポップアップ：1.5秒後に半透明化
   setTimeout(function() {
     document.querySelectorAll('.compass-popup:not(.hidden)').forEach(function(p) {
       p.style.opacity = '0.45';
     });
-  }, 3000);
+  }, 1500);
 }
 
 // ============================================================
