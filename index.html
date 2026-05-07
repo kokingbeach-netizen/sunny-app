@@ -1617,32 +1617,62 @@ function handlePhoto(i, tabKey, input) {
 // ============================================================
 // Analyze SVF (Sky View Factor) from image
 // ============================================================
+function calcHue(r, g, b, max, min) {
+  if (max === min) return 0;
+  var d = max - min;
+  var h;
+  var rn = r / 255, gn = g / 255, bn = b / 255;
+  var maxN = max / 255;
+  if (maxN === rn) h = ((gn - bn) / d * 255) % 6;
+  else if (maxN === gn) h = (bn - rn) / d * 255 / 255 * 255 + 2;
+  else h = (rn - gn) / d * 255 / 255 * 255 + 4;
+  // 正規化
+  var rf = r / 255, gf = g / 255, bf = b / 255;
+  var maxF = Math.max(rf, gf, bf), minF = Math.min(rf, gf, bf);
+  var df = maxF - minF;
+  if (df === 0) return 0;
+  var hf;
+  if (maxF === rf) hf = ((gf - bf) / df) % 6;
+  else if (maxF === gf) hf = (bf - rf) / df + 2;
+  else hf = (rf - gf) / df + 4;
+  return (Math.round(hf * 60) + 360) % 360;
+}
+
 function analyzeSVF(img) {
   var canvas = document.getElementById('analyzeCanvas');
   var ctx = canvas.getContext('2d');
   ctx.drawImage(img, 0, 0, 64, 64);
-  var data = ctx.getImageData(0, 0, 64, 64).data;
+  var imageData = ctx.getImageData(0, 0, 64, 64);
+  var data = imageData.data;
+  var width = 64, height = 64;
   var skyPixels = 0;
-  var total = 64 * 64;
-  for (var y = 0; y < 64; y++) {
-    for (var x = 0; x < 64; x++) {
-      var p = y * 64 + x;
-      var r = data[p * 4];
-      var g = data[p * 4 + 1];
-      var b = data[p * 4 + 2];
-      var vPos = y / 64;
-      var isBlueSky = b > 100 && b > r + 10 && b > g * 0.85;
-      var isOvercast = vPos < 0.6
-        && r > 150 && g > 150 && b > 150
-        && r < 245 && g < 245 && b < 245
-        && Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
-      var isWhiteWall = vPos > 0.4
-        && r > 220 && g > 220 && b > 220
-        && Math.abs(r - b) < 10 && Math.abs(r - g) < 10;
-      if (!isWhiteWall && (isBlueSky || isOvercast)) skyPixels++;
+  var totalPixels = 0;
+
+  for (var y = 0; y < height; y++) {
+    // 上半分を重点的に解析（上半分は2倍の重み）
+    var weight = y < height / 2 ? 2 : 1;
+    for (var x = 0; x < width; x++) {
+      var idx = (y * width + x) * 4;
+      var r = data[idx], g = data[idx + 1], b = data[idx + 2];
+
+      // HSV色空間で判別
+      var max = Math.max(r, g, b);
+      var min = Math.min(r, g, b);
+      var brightness = max / 255;
+      var saturation = max === 0 ? 0 : (max - min) / max;
+      var hue = calcHue(r, g, b, max, min);
+
+      // 青空：色相180〜260°・明るさ高め
+      var isBlueSky = hue >= 180 && hue <= 260 && brightness > 0.3;
+      // 曇り空：明るさ高い・彩度低い（白っぽいグレー）
+      var isCloudySky = brightness > 0.75 && saturation < 0.15;
+
+      totalPixels += weight;
+      if (isBlueSky || isCloudySky) skyPixels += weight;
     }
   }
-  return skyPixels / total;
+
+  return totalPixels > 0 ? skyPixels / totalPixels : 0;
 }
 
 // ============================================================

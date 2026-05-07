@@ -354,7 +354,7 @@ footer {
         <span class="faq-chevron">▼</span>
       </button>
       <div class="faq-a">
-        日中の撮影を推奨します。晴天・曇りどちらでも問題ありません。夜間に撮影した写真は精度が劣る場合があります。窓の外を正面から撮影し、遮蔽物（建物・樹木など）ができるだけ写るようにしてください。
+        日中の撮影を推奨します。晴天・曇りどちらでも問題ありません。夜間に撮影した写真は精度が劣る場合があります。窓の外を正面から撮影し、遮蔽物（建物・樹木など）ができるだけ写るようにしてください。南東・南・南西の3方向を撮影すると精度が上がります。写真の上半分に空や遮蔽物が写るよう、スマホを横向き・45°上向きで撮影してください。
       </div>
     </div>
 
@@ -366,6 +366,28 @@ footer {
       </button>
       <div class="faq-a">
         写真の空の見え方（SVF）をもとに遮蔽の度合いを計算します。ビルや樹木で空が少ししか見えない写真ほど、スコアが低くなります。数値入力と写真の両方がある場合は、より遮蔽が厳しい方の値を採用します。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">曇りの日でも正確に判定できますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        できます。SUNNYは青空だけでなく、曇りの白っぽいグレーの空も「空」として正確に認識します。HSV色空間という色の判別方式と、写真の上半分を重点的に解析する方式を組み合わせることで、曇り・晴天どちらでも精度の高い判定が可能です。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">写真の精度はLite版とPro版で違いますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        はい、異なります。Lite版はエッジ検出・HSV色空間・上半分重点解析の3つを組み合わせた画像解析を行います。Pro版ではさらにAIによる高精度な画像解析を行い、遮蔽物の種類・高さ・方向まで自動推定します。
       </div>
     </div>
   </div>
