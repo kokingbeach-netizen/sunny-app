@@ -475,8 +475,11 @@ PHOTO_TAB_MAP = {
 - 図面モード選択時：窓カードの写真セクション（`.win-photo-section`）を非表示、STEP4下部に間取り図アップエリア（`#step3FloorPlan`）を表示
 - 現地撮影モード選択時：撮影ガイドを「日中推奨・晴天曇りOK・3方向撮影」に、図面モード時は「間取り図アップ・写真不要・向き手動入力」に切り替え
 - コンパスUIの中央セルをライブコンパスSVGに変更（`id="compass-wrap-N"` / `id="compass-needle-N"`）
-- ジャイロセンサー連動コンパス実装（`_initCompass` / `compassTap`）：針がリアルタイム回転、タップで最近傍8方位を自動選択
+- ジャイロセンサー連動コンパス実装（`_initCompass` / `compassTap`）：iPhoneコンパスアプリ方式（文字盤が rotate(-alpha) で回転・照準固定）
 - iOS 13+は初回タップ時に `DeviceOrientationEvent.requestPermission()` で権限ダイアログ表示
+- コンパスデザイン：黒文字盤・赤N文字・S/E/W白文字・十字照準・中央キャップ
+- コンパスポップアップ「🧭 タップで方位を確定」→1.5秒後に半透明化→タップで即消える
+- 土地・屋外モード時はSTEP4バッジをSTEP3と動的表示（`updateStep3`内で切り替え）
 - FAQに「Lite版とPro版の違い」「どのモードを選べばいいか」「Pro版の使い方」3件を追加（使い方カテゴリ）
 - CLAUDE.mdにLite版・Pro版モード仕様（Section 13）を追記
 
