@@ -163,7 +163,7 @@
     /* ライブコンパス */
     .compass-wrap { display:flex; align-items:center; justify-content:center; width:100%; height:100%; cursor:pointer; pointer-events:auto; position:relative; }
     .compass-wrap svg { width:80px; height:80px; display:block; }
-    .compass-needle { transform-origin: 50% 50%; transition: transform 0.3s ease; }
+    .compass-dial { transform-origin: 40px 40px; transition: transform 0.3s ease; }
     .compass-popup { position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.72); color:#fff; font-size:11px; font-family:'Noto Sans JP',sans-serif; white-space:nowrap; padding:5px 11px; border-radius:20px; pointer-events:none; opacity:1; transition:opacity 0.4s; letter-spacing:0.3px; z-index:10; }
     .compass-popup::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(0,0,0,0.72); }
     .compass-popup.hidden { opacity:0 !important; }
@@ -1144,8 +1144,8 @@ function _initCompass() {
     }
     if (alpha === null) return;
     _compassHeading = alpha;
-    document.querySelectorAll('[id^="compass-needle-"]').forEach(function(el) {
-      el.style.transform = 'rotate(' + alpha + 'deg)';
+    document.querySelectorAll('[id^="compass-dial-"]').forEach(function(el) {
+      el.style.transform = 'rotate(' + (-alpha) + 'deg)';
     });
   }
 
@@ -1711,6 +1711,7 @@ function renderWindowCard(w, i) {
       + '<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">'
       + '<circle cx="40" cy="40" r="39" fill="#111" stroke="#3a3a3a" stroke-width="1.5"/>'
       + '<circle cx="40" cy="40" r="34" fill="#1c1c1c"/>'
+      + '<g id="compass-dial-'+i+'">'
       + '<line x1="40" y1="7"  x2="40" y2="14"  stroke="#555" stroke-width="1.2"/>'
       + '<line x1="40" y1="66" x2="40" y2="73"  stroke="#555" stroke-width="1.2"/>'
       + '<line x1="7"  y1="40" x2="14" y2="40"  stroke="#555" stroke-width="1.2"/>'
@@ -1723,10 +1724,9 @@ function renderWindowCard(w, i) {
       + '<text x="40" y="70"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">S</text>'
       + '<text x="10" y="44"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">W</text>'
       + '<text x="70" y="44"  text-anchor="middle" font-size="10" font-family="DM Mono,monospace" font-weight="700" fill="#888">E</text>'
-      + '<g class="compass-needle" id="compass-needle-'+i+'">'
+      + '</g>'
       + '<polygon points="40,12 35,40 40,34 45,40" fill="#E53E3E"/>'
       + '<polygon points="40,68 35,40 40,46 45,40" fill="#e8e8e8" opacity="0.8"/>'
-      + '</g>'
       + '<circle cx="40" cy="40" r="6"   fill="#222" stroke="#555" stroke-width="1.5"/>'
       + '<circle cx="40" cy="40" r="2.5" fill="#999"/>'
       + '</svg>'
