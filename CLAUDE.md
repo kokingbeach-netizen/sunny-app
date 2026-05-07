@@ -470,6 +470,15 @@ PHOTO_TAB_MAP = {
 - CLAUDE.mdにデザイン・UI統一仕様を追記
 - 計算検証レポート（sunny_test_report.html）追加
 - FAQの注意書きに「快晴時の日照可能率」の説明を追加
+- STEP番号を1〜4に整理（STEP3=モードを選択、STEP4=窓の位置と周辺環境）
+- STEP3にモード選択UI追加（現地撮影モード / 図面モード）、`selectedInputMode` 変数で管理
+- 図面モード選択時：窓カードの写真セクション（`.win-photo-section`）を非表示、STEP4下部に間取り図アップエリア（`#step3FloorPlan`）を表示
+- 現地撮影モード選択時：撮影ガイドを「日中推奨・晴天曇りOK・3方向撮影」に、図面モード時は「間取り図アップ・写真不要・向き手動入力」に切り替え
+- コンパスUIの中央セルをライブコンパスSVGに変更（`id="compass-wrap-N"` / `id="compass-needle-N"`）
+- ジャイロセンサー連動コンパス実装（`_initCompass` / `compassTap`）：針がリアルタイム回転、タップで最近傍8方位を自動選択
+- iOS 13+は初回タップ時に `DeviceOrientationEvent.requestPermission()` で権限ダイアログ表示
+- FAQに「Lite版とPro版の違い」「どのモードを選べばいいか」「Pro版の使い方」3件を追加（使い方カテゴリ）
+- CLAUDE.mdにLite版・Pro版モード仕様（Section 13）を追記
 
 ---
 
