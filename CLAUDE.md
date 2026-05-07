@@ -498,6 +498,21 @@ PHOTO_TAB_MAP = {
 - LP「導入実績」セクション追加（営業活動後）
 - SUUMO 等への BtoB 提案
 
+### Pro版 TODO
+- Claude APIによる画像解析を実装
+  （SVFをAIが直接推定・曇り夜間でも精度が高い）
+- 有料ユーザー向け機能として提供
+- 課金の仕組みと合わせて実装
+
+### Pro版の実装方法
+- index.html内に以下の定数を追加する
+  const PRO_MODE = false; // trueにするとPro版が有効
+- 画像解析の部分でフラグを分岐する
+  if (PRO_MODE) { Claude APIで高精度解析 }
+  else { 既存のSVF明るさ判別 }
+- オンオフはこの1行をfalse→trueに変更してgit pushするだけ
+- 将来的にユーザーごとのPro管理はログイン機能と組み合わせる
+
 ---
 
 ## 12. ビジネス戦略
