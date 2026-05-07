@@ -346,6 +346,28 @@ footer {
         はい。階が高くなるほど正面建物の遮蔽仰角が小さくなり、日照率は上がる傾向があります。SUNNY では 1 階あたり 3m として自分の視点高さを計算に反映しています。土地・屋外モードでは 1〜5 階まで一括比較が可能です。
       </div>
     </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">写真はどんな条件で撮ればいいですか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        日中の撮影を推奨します。晴天・曇りどちらでも問題ありません。夜間に撮影した写真は精度が劣る場合があります。窓の外を正面から撮影し、遮蔽物（建物・樹木など）ができるだけ写るようにしてください。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-mark">Q</span>
+        <span class="faq-q-text">写真を使うとスコアはどう変わりますか？</span>
+        <span class="faq-chevron">▼</span>
+      </button>
+      <div class="faq-a">
+        写真の空の見え方（SVF）をもとに遮蔽の度合いを計算します。ビルや樹木で空が少ししか見えない写真ほど、スコアが低くなります。数値入力と写真の両方がある場合は、より遮蔽が厳しい方の値を採用します。
+      </div>
+    </div>
   </div>
 
   <!-- 02: 計算ロジックについて -->

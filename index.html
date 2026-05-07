@@ -1846,13 +1846,13 @@ function calcWindowHeatmap(w, floorNum) {
   var svfVals = [w.svf.center, w.svf.left, w.svf.right].filter(function(v) { return v !== null; });
   if (svfVals.length > 0) {
     var meanSvf = svfVals.reduce(function(a, b) { return a + b; }, 0) / svfVals.length;
-    photoObst = (1 - meanSvf) * 30;
+    photoObst = (1 - meanSvf) * 80;
   }
 
-  // 遮蔽仰角の合成
+  // 遮蔽仰角の合成（大きい方を優先）
   var obstBase = 0;
   if (formulaObst !== null && photoObst !== null) {
-    obstBase = (formulaObst + photoObst) / 2;
+    obstBase = Math.max(formulaObst, photoObst);
   } else if (formulaObst !== null) {
     obstBase = formulaObst;
   } else if (photoObst !== null) {
@@ -3354,7 +3354,7 @@ function updateStep3() {
   var guideText = document.getElementById('photo-guide-text');
   var guideItems = '<li>スマホは横向きで45°上向きで撮影</li>'
     + '<li>超広角カメラ（0.5×）使用は精度向上</li>'
-    + '<li>晴天時の撮影を推奨（曇り・雨天でも計算可能）</li>'
+    + '<li>日中の撮影を推奨（夜間は精度が劣ります）</li>'
     + '<li>窓わくが写らないように</li>'
     + '<li>向かいの建物が高くて空が写らなくてもOK</li>'
     + '<li>太陽は写らなくてOK</li>';
