@@ -2324,7 +2324,7 @@ function runCalculation() {
           var all = hm.reduce(function(acc, row) { return acc.concat(row); }, []);
           return (all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100;
         });
-        orMatrix = computeOrHeatmap(heatmaps);
+        var aggMatrix = computeAggHeatmap(heatmaps);
         var validCells = [];
         for (var m = 0; m < 12; m++) {
           var ss = getSunriseSunset(m, lat, lng);
@@ -2332,7 +2332,7 @@ function runCalculation() {
             var slotWidth = (t + 1 < TIME_SLOTS.length) ? TIME_SLOTS[t+1] - TIME_SLOTS[t] : 2;
             var mid = TIME_SLOTS[t] + slotWidth / 2;
             if (mid >= ss.rise && mid <= ss.set) {
-              validCells.push(orMatrix[m][t]);
+              validCells.push(aggMatrix[m][t]);
             }
           }
         }
@@ -2491,15 +2491,15 @@ function displayResults(score, winScores, heatmaps) {
   resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   var addr = document.getElementById('address').value;
-  var orMatrix = computeOrHeatmap(heatmaps);
-  var seasons = getSeasonScoresFromMatrix(orMatrix);
+  var aggMatrix = computeAggHeatmap(heatmaps);
+  var seasons = getSeasonScoresFromMatrix(aggMatrix);
   var comment = getScreenshotComment(Math.round(score), windowStates);
 
   storedHeatmaps = heatmaps;
 
   var html = '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:20px 16px 8px;">';
 
-  html += buildSummaryCard(Math.round(score), seasons, orMatrix, addr, comment);
+  html += buildSummaryCard(Math.round(score), seasons, aggMatrix, addr, comment);
 
   if (heatmaps.length >= 2) {
     heatmaps.forEach(function(hm, i) {
