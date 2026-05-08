@@ -482,6 +482,16 @@ PHOTO_TAB_MAP = {
 - 土地・屋外モード時はSTEP4バッジをSTEP3と動的表示（`updateStep3`内で切り替え）
 - FAQに「Lite版とPro版の違い」「どのモードを選べばいいか」「Pro版の使い方」3件を追加（使い方カテゴリ）
 - CLAUDE.mdにLite版・Pro版モード仕様（Section 13）を追記
+- コンパス：2段階起動UX（第1タップで権限取得→全窓ポップアップ切替、第2タップで方位確定）
+- コンパスポップアップ文言：「🧭 タップしてコンパスを起動」→起動後「✅ タップで方位を確定」
+- window-card に overflow:hidden・win-name-input に max-width・dir-grid に box-sizing 追加（レイアウト修正）
+- 総合スコアをOR確率（computeOrHeatmap）から各窓の相加平均（computeAggHeatmap）に修正
+- FAQ「PROPERTY SCORE はどう計算していますか？」の説明をOR→平均に更新
+- STEP3モード選択の文言統一：撮影画像アップ / 間取り図アップ / 精度：高 / 精度：中 / 内覧前確認
+- 土地・屋外モードSTEP4に「撮影画像アップ／配置図アップ」選択UI追加（`selectLandMode` / `landFpUpload`）
+- 算出ボタン直前に利用規約・プライバシーポリシー同意文を追加
+- sunny_contact.html のメールアドレスを sunnysunjapan@gmail.com に変更
+- index.html に4桁パスワードロック追加（`2525`・sessionStorage で同一セッション中は再入力不要）
 
 ---
 
