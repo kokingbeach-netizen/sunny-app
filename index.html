@@ -507,6 +507,20 @@
     }
 
     /* -- Construction STEP4 -- */
+    .land-mode-cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+    .land-mode-card { background:#fff; border:2px solid rgba(0,0,0,0.12); border-radius:12px; padding:14px 12px; text-align:center; cursor:pointer; transition:all 0.15s; }
+    .land-mode-card:hover { border-color:#F5A623; }
+    .land-mode-card.active { border-color:#F5A623; background:rgba(245,166,35,0.06); }
+    .land-mode-card .lm-icon { font-size:24px; margin-bottom:6px; }
+    .land-mode-card .lm-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+    .land-mode-card .lm-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-top:4px; }
+    .lm-badge-high { background:#D1FAE5; color:#065F46; }
+    .lm-badge-mid  { background:#DBEAFE; color:#1E40AF; }
+    #land-floorplan-wrap { margin-bottom:14px; }
+    .land-fp-empty { border:2px dashed rgba(0,0,0,0.15); border-radius:12px; padding:24px 16px; text-align:center; cursor:pointer; background:#fafafa; }
+    .land-fp-empty:hover { border-color:#F5A623; }
+    .land-fp-preview { width:100%; border-radius:10px; display:block; margin-bottom:8px; }
+    .land-fp-retake { font-size:11px; color:#F5A623; font-weight:700; cursor:pointer; text-align:center; display:block; margin-top:6px; }
     .c-dir-block { background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:16px; margin:0 0 12px; overflow:hidden; }
     .c-dir-block.active { border-color:#F5A623; }
     .c-dir-head { display:flex; align-items:center; gap:8px; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,0.06); }
@@ -833,6 +847,29 @@
     <!-- 土地・屋外用STEP4 -->
     <div id="step3-construction" style="display:none;">
 
+      <div style="margin-bottom:16px;">
+        <div class="land-mode-cards">
+          <div class="land-mode-card active" id="land-mode-photo" onclick="selectLandMode('photo')">
+            <div class="lm-icon">📷</div>
+            <div class="lm-title">撮影画像アップ</div>
+            <span class="lm-badge lm-badge-high">精度：高</span>
+          </div>
+          <div class="land-mode-card" id="land-mode-floorplan" onclick="selectLandMode('floorplan')">
+            <div class="lm-icon">📐</div>
+            <div class="lm-title">配置図アップ</div>
+            <span class="lm-badge lm-badge-mid">精度：中</span>
+          </div>
+        </div>
+        <div id="land-floorplan-wrap" style="display:none;">
+          <div class="land-fp-empty" onclick="document.getElementById('land-fp-file').click()">
+            <div style="font-size:28px;margin-bottom:6px;">📐</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">配置図を選択</div>
+            <div style="font-size:11px;color:#9CA3AF;">タップして選択</div>
+          </div>
+          <input type="file" id="land-fp-file" accept="image/*" style="display:none;" onchange="landFpUpload(this)">
+        </div>
+      </div>
+
       <div id="construction-disclaimer" style="display:none;margin:0 0 16px;background:#FFF8E8;border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:14px 16px;"><div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:6px;">⚠️ 土地・屋外について</div><div style="font-size:11px;color:#555;line-height:1.9;">更地の中央から撮影した写真を使用します。<br>実際の窓の位置・階数によって誤差が生じる場合があります。<br>撮影者の身長・カメラ位置による誤差も計算上含まれます。<br><strong style="color:#555;">この結果は土地選定の参考値です。</strong><br>正確な日照シミュレーションは建築士・設計士にご相談ください。</div></div>
       <div id="construction-guide-section"></div>
 
@@ -1130,7 +1167,8 @@ var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北'
 // ライブコンパス
 // ============================================================
 var _compassHeading = null;
-var _compassStarted = false;  // センサー起動済みフラグ
+var _compassStarted = false;
+var selectedLandMode = 'photo'; // 'photo' or 'floorplan'  // センサー起動済みフラグ
 
 function _initCompass() {
   if (window._compassInited) return;
@@ -3632,6 +3670,37 @@ document.querySelectorAll('.usecase-card').forEach(function(card) {
 
 // 初期表示（usecaseConfigが定義されたあとで実行）
 updateStep2();
+
+function selectLandMode(mode) {
+  selectedLandMode = mode;
+  document.querySelectorAll('.land-mode-card').forEach(function(c) { c.classList.remove('active'); });
+  var el = document.getElementById('land-mode-' + mode);
+  if (el) el.classList.add('active');
+
+  var photoAreas = document.querySelectorAll('.c-photo-wrap');
+  var photoChecks = document.querySelectorAll('.photo-check-section');
+  if (mode === 'floorplan') {
+    photoAreas.forEach(function(el) { el.style.display = 'none'; });
+    photoChecks.forEach(function(el) { el.style.display = 'none'; });
+    document.getElementById('land-floorplan-wrap').style.display = '';
+  } else {
+    photoAreas.forEach(function(el) { el.style.display = ''; });
+    photoChecks.forEach(function(el) { el.style.display = ''; });
+    document.getElementById('land-floorplan-wrap').style.display = 'none';
+  }
+}
+
+function landFpUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var wrap = document.getElementById('land-floorplan-wrap');
+    wrap.innerHTML = '<img class="land-fp-preview" src="' + e.target.result + '" alt="配置図">'
+      + '<span class="land-fp-retake" onclick="document.getElementById(\'land-fp-file\').click()">📎 別の画像に変更</span>'
+      + '<input type="file" id="land-fp-file" accept="image/*" style="display:none;" onchange="landFpUpload(this)">';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
 
 function selectInputMode(mode) {
   selectedInputMode = mode;
