@@ -786,20 +786,20 @@
   <div class="step-card" id="modeSelectSection" style="display:none;">
     <div class="step-header">
       <span class="step-badge">STEP 3</span>
-      <span class="step-title">モードを選択</span>
+      <span class="step-title">アップ画像の種類を選択</span>
     </div>
     <div class="mode-grid">
       <div class="mode-card" id="modePhoto" onclick="selectInputMode('photo')">
         <div class="mode-icon">📷</div>
-        <div class="mode-name">現地撮影モード</div>
-        <div class="mode-desc">窓から外を撮影して、より正確に判定します。</div>
-        <div class="mode-badge badge-green">精度：高い</div>
+        <div class="mode-name">撮影画像アップ</div>
+        <div class="mode-desc">窓から外を撮影</div>
+        <div class="mode-badge badge-green">精度高</div>
       </div>
       <div class="mode-card" id="modePlan" onclick="selectInputMode('plan')">
         <div class="mode-icon">📐</div>
-        <div class="mode-name">図面モード</div>
+        <div class="mode-name">図面アップ</div>
         <div class="mode-desc">間取り図をアップして内見前でも確認できます。</div>
-        <div class="mode-badge badge-blue">内見前OK</div>
+        <div class="mode-badge badge-blue">精度中</div>
       </div>
     </div>
     <div class="mode-note" id="modeNote" style="display:none;"></div>
@@ -3639,8 +3639,8 @@ function selectInputMode(mode) {
   document.getElementById('modePlan').classList.toggle('selected', mode === 'plan');
   var note = document.getElementById('modeNote');
   var notes = {
-    photo: '<strong style="color:#1A1A1A;">現地撮影モード</strong>を選択しました。<br>次のSTEPで窓の方向・遮蔽物を入力後、窓からの写真をアップロードしてください。',
-    plan: '<strong style="color:#1A1A1A;">図面モード</strong>を選択しました。<br>次のSTEPで窓の方向を入力後、間取り図をアップロードしてください。<br>※写真なしのため現地撮影より精度がやや下がります。'
+    photo: '<strong style="color:#1A1A1A;">撮影画像アップ</strong>を選択しました。<br>次のSTEPで窓の方向・遮蔽物を入力後、窓からの写真をアップロードしてください。',
+    plan: '<strong style="color:#1A1A1A;">図面アップ</strong>を選択しました。<br>次のSTEPで窓の方向を入力後、間取り図をアップロードしてください。<br>※写真なしのため撮影画像アップより精度がやや下がります。'
   };
   note.style.display = 'block';
   note.innerHTML = notes[mode];
