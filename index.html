@@ -1130,6 +1130,7 @@ var DIR_AZ = { '南':180, '南東':135, '南西':225, '東':90, '西':270, '北'
 // ライブコンパス
 // ============================================================
 var _compassHeading = null;
+var _compassStarted = false;  // センサー起動済みフラグ
 
 function _initCompass() {
   if (window._compassInited) return;
@@ -1172,33 +1173,46 @@ function _requestCompassPermission(cb) {
 }
 
 function compassTap(i) {
-  // iOS: 初回タップで権限取得＆センサー起動
-  _requestCompassPermission(function() {
-    // センサー未取得の場合はそのまま待つ
-    if (_compassHeading === null) return;
-
-    // 文字盤を現在のheadingで即時更新
-    var needle = document.getElementById('compass-needle-' + i);
-    if (needle) {
-      needle.style.transform = 'rotate(' + (-_compassHeading) + 'deg)';
-      needle.style.transformOrigin = '40px 40px';
-    }
-
-    // 最も近い8方位を選択
-    var dirs = ['北','北東','東','南東','南','南西','西','北西'];
-    var azs  = [0, 45, 90, 135, 180, 225, 270, 315];
-    var h = _compassHeading;
-    var best = 0, bestDiff = 999;
-    azs.forEach(function(az, idx) {
-      var diff = Math.abs(((h - az + 540) % 360) - 180);
-      if (diff < bestDiff) { bestDiff = diff; best = idx; }
+  if (!_compassStarted) {
+    // 第1タップ：センサー起動
+    _requestCompassPermission(function(granted) {
+      if (!granted) return;
+      _compassStarted = true;
+      // 全窓のポップアップを「確定」に切り替え
+      document.querySelectorAll('[id^="compass-popup-"]').forEach(function(p) {
+        p.textContent = '✅ タップで方位を確定';
+        p.style.opacity = '1';
+        p.classList.remove('hidden');
+        // 2秒後にまた薄く
+        setTimeout(function() { p.style.opacity = '0.45'; }, 2000);
+      });
     });
-    setWinDir(i, dirs[best]);
-  });
+    return; // 第1タップはここで終了
+  }
 
-  // ポップアップは確定後に消す
+  // 第2タップ以降：方位を確定
   var popup = document.getElementById('compass-popup-' + i);
   if (popup) popup.classList.add('hidden');
+
+  if (_compassHeading === null) return;
+
+  // 文字盤を即時更新
+  var needle = document.getElementById('compass-needle-' + i);
+  if (needle) {
+    needle.style.transform = 'rotate(' + (-_compassHeading) + 'deg)';
+    needle.style.transformOrigin = '40px 40px';
+  }
+
+  // 最も近い8方位を選択
+  var dirs = ['北','北東','東','南東','南','南西','西','北西'];
+  var azs  = [0, 45, 90, 135, 180, 225, 270, 315];
+  var h = _compassHeading;
+  var best = 0, bestDiff = 999;
+  azs.forEach(function(az, idx) {
+    var diff = Math.abs(((h - az + 540) % 360) - 180);
+    if (diff < bestDiff) { bestDiff = diff; best = idx; }
+  });
+  setWinDir(i, dirs[best]);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1715,7 +1729,7 @@ function renderWindowCard(w, i) {
   var compassLayout = ['\u5317\u897f','\u5317','\u5317\u6771', '\u897f',null,'\u6771', '\u5357\u897f','\u5357','\u5357\u6771'];
   var dirBtns = compassLayout.map(function(d) {
     if (d === null) return '<div class="dir-center"><div class="compass-wrap" id="compass-wrap-'+i+'" onclick="compassTap('+i+')">'
-      + '<div class="compass-popup" id="compass-popup-'+i+'">🧭 タップで方位を確定</div>'
+      + '<div class="compass-popup" id="compass-popup-'+i+'">🧭 タップしてコンパスを起動</div>'
       + '<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">'
       + '<circle cx="40" cy="40" r="39" fill="#111" stroke="#3a3a3a" stroke-width="1.5"/>'
       + '<circle cx="40" cy="40" r="34" fill="#1c1c1c"/>'
@@ -1728,10 +1742,10 @@ function renderWindowCard(w, i) {
       + '<line x1="15" y1="15" x2="19" y2="19"  stroke="#444" stroke-width="0.8"/>'
       + '<line x1="15" y1="65" x2="19" y2="61"  stroke="#444" stroke-width="0.8"/>'
       + '<line x1="65" y1="65" x2="61" y2="61"  stroke="#444" stroke-width="0.8"/>'
-      + '<text x="40" y="20" text-anchor="middle" font-size="14" font-family="DM Mono,monospace" font-weight="900" fill="#E53E3E">N</text>'
-      + '<text x="40" y="72" text-anchor="middle" font-size="11" font-family="DM Mono,monospace" font-weight="700" fill="#aaa">S</text>'
-      + '<text x="11" y="45" text-anchor="middle" font-size="11" font-family="DM Mono,monospace" font-weight="700" fill="#aaa">W</text>'
-      + '<text x="69" y="45" text-anchor="middle" font-size="11" font-family="DM Mono,monospace" font-weight="700" fill="#aaa">E</text>'
+      + '<text x="40" y="21" text-anchor="middle" font-size="16" font-family="DM Mono,monospace" font-weight="900" fill="#E53E3E">N</text>'
+      + '<text x="40" y="73" text-anchor="middle" font-size="12" font-family="DM Mono,monospace" font-weight="700" fill="#ffffff">S</text>'
+      + '<text x="11" y="45" text-anchor="middle" font-size="12" font-family="DM Mono,monospace" font-weight="700" fill="#ffffff">W</text>'
+      + '<text x="69" y="45" text-anchor="middle" font-size="12" font-family="DM Mono,monospace" font-weight="700" fill="#ffffff">E</text>'
       + '</g>'
       + '<line x1="40" y1="28" x2="40" y2="36" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
       + '<line x1="40" y1="44" x2="40" y2="52" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
