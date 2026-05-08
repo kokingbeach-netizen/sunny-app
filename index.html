@@ -146,16 +146,16 @@
     .sel-card.active { border-color: #F5A623; background: rgba(245,166,35,0.08); color: #D4880F; }
 
     /* Window card */
-    .window-card { background: #F5F4F0; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+    .window-card { background: #F5F4F0; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 18px; margin-bottom: 14px; overflow: hidden; }
     .window-card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .window-card-title { font-size: 13px; font-weight: 700; }
-    .win-name-input { background: transparent; border: none; border-bottom: 1.5px solid rgba(0,0,0,0.12); border-radius: 0; padding: 2px 4px; font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 0; width: auto; font-family: 'Noto Sans JP', sans-serif; }
+    .win-name-input { background: transparent; border: none; border-bottom: 1.5px solid rgba(0,0,0,0.12); border-radius: 0; padding: 2px 4px; font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 0; width: auto; max-width: calc(100% - 60px); font-family: 'Noto Sans JP', sans-serif; }
     .win-name-input:focus { border-bottom-color: #F5A623; outline: none; }
     .del-btn { background: none; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #6B7280; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
     .del-btn:hover { border-color: #EF4444; color: #EF4444; }
 
     /* Dir grid */
-    .dir-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 14px; }
+    .dir-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 14px; width: 100%; box-sizing: border-box; }
     .dir-btn { border: 1.5px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 7px 4px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 700; color: #6B7280; background: #fff; user-select: none; transition: all 0.15s; }
     .dir-btn:hover { border-color: #F5A623; color: #D4880F; }
     .dir-btn.active { border-color: #F5A623; background: rgba(245,166,35,0.1); color: #D4880F; }
