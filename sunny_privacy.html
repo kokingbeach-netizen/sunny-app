@@ -214,7 +214,7 @@ body {
 
 <div class="container">
 
-  <p class="updated">最終更新：2025年4月</p>
+  <p class="updated">最終更新：2026年5月</p>
 
   <div class="section">
     <div class="section-title">01 — 基本方針</div>
@@ -286,27 +286,77 @@ body {
   </div>
 
   <div class="section">
-    <div class="section-title">05 — Cookieとアクセス解析</div>
+    <div class="section-title">05 — AI解析機能とデータの取り扱い</div>
+    <div class="section-body">
+      <p>本サービスのPro版では、写真の高精度解析にAnthropic社のClaude API（以下「Claude API」）を使用します。</p>
+      <ul class="item-list">
+        <li class="item-card">
+          <div class="item-icon">📤</div>
+          <div class="item-body">
+            <div class="item-title">送信されるデータ</div>
+            <div class="item-desc">Pro版でAI解析を実行した場合、アップロードされた写真画像がClaude APIに送信されます。緯度・経度・階数などの数値入力はAPI送信の対象外です。</div>
+          </div>
+        </li>
+        <li class="item-card">
+          <div class="item-icon">🚫</div>
+          <div class="item-body">
+            <div class="item-title">AIモデルの学習への不使用（規約上の根拠あり）</div>
+            <div class="item-desc">
+              Anthropicの商用API利用規約（Commercial Terms）およびデータ処理補足契約（DPA Section B.3.b）により、<strong style="color:var(--black);">API経由で送信されたデータはAIモデルの学習・改善に使用されません。</strong><br>
+              根拠条項：
+              <ul style="margin-top:6px;padding-left:16px;font-size:12px;color:var(--gray);line-height:2;">
+                <li>商用利用規約："Anthropic will not use Customer Content to train its models"</li>
+                <li>DPA B.3.b："will not retain, use, or disclose Customer Personal Data outside of the direct business relationship"</li>
+              </ul>
+              <a href="https://www.anthropic.com/legal/commercial-terms" target="_blank" rel="noopener" style="color:var(--amber-dk);font-size:12px;display:inline-block;margin-top:6px;">→ Anthropic 商用利用規約（英語）</a><br>
+              <a href="https://www.anthropic.com/legal/data-processing-addendum" target="_blank" rel="noopener" style="color:var(--amber-dk);font-size:12px;">→ Anthropic データ処理補足契約（英語）</a>
+            </div>
+          </div>
+        </li>
+        <li class="item-card">
+          <div class="item-icon">🔐</div>
+          <div class="item-body">
+            <div class="item-title">通信の安全性</div>
+            <div class="item-desc">Claude APIへの送信はTLS 1.2以上で暗号化されます。Anthropicは受信データをAES-256で保護します。</div>
+          </div>
+        </li>
+        <li class="item-card">
+          <div class="item-icon">🗑</div>
+          <div class="item-body">
+            <div class="item-title">データの保持・削除</div>
+            <div class="item-desc">Anthropicは解析完了後、顧客データをサービス提供に必要な期間のみ保持します。本サービスはAnthropicにデータを蓄積・保存しません。</div>
+          </div>
+        </li>
+      </ul>
+      <div class="highlight-box" style="margin-top:12px;">
+        <strong>BtoBご利用の不動産・建築会社の皆様へ：</strong><br>
+        お客様の物件写真・図面をAI解析する際、Anthropic社の商用API規約により、これらのデータが学習データとして使用されることはありません。顧客情報の機密性を保ちながらAI解析をご活用いただけます。
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">06 — Cookieとアクセス解析</div>
     <div class="section-body">
       <p>現在、本サービスはCookieおよびアクセス解析ツールを使用していません。</p>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">06 — ポリシーの変更</div>
+    <div class="section-title">07 — ポリシーの変更</div>
     <div class="section-body">
       <p>本ポリシーは予告なく変更される場合があります。変更後はこのページに最新版を掲載します。</p>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">07 — お問い合わせ</div>
+    <div class="section-title">08 — お問い合わせ</div>
     <div class="section-body">
       <div class="contact-box">
         <div class="contact-label">CONTACT</div>
         <div style="font-size:13px;color:var(--gray);margin-bottom:10px;">プライバシーに関するご質問・ご要望はこちらへ</div>
         <div style="font-size:13px;font-weight:700;margin-bottom:4px;">運営者：Koki</div>
-        <a href="mailto:ooo@gmail.com" class="contact-link">ooo@gmail.com</a>
+        <a href="mailto:sunnysunjapan@gmail.com" class="contact-link">sunnysunjapan@gmail.com</a>
       </div>
     </div>
   </div>
