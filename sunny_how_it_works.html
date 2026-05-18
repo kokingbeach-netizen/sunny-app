@@ -567,7 +567,7 @@ body {
         <div class="input-icon">📷</div>
         <div class="input-body">
           <div class="input-title">窓の向き・窓からの写真</div>
-          <div class="input-desc">写真から空の見え率（Sky View Factor）を解析。より正確な遮蔽角度を推定します。</div>
+          <div class="input-desc">写真から空の見え率（Sky View Factor）を解析し、遮蔽仰角を推定（最大80°）。数値入力と写真の両方がある場合は厳しい方（大きい方）を採用します。</div>
           <span class="input-badge">→ 数値入力と組み合わせて精度向上</span>
         </div>
       </li>
@@ -598,6 +598,14 @@ body {
           <div class="input-title">向かいの遮蔽物までの距離</div>
           <div class="input-desc">遮蔽物が遠いほど遮蔽仰角は小さくなり、日照率が上がります。</div>
           <span class="input-badge">→ 計算式の分母</span>
+        </div>
+      </li>
+      <li class="input-item">
+        <div class="input-icon">🌳</div>
+        <div class="input-body">
+          <div class="input-title">樹木補正（葉の透過率）</div>
+          <div class="input-desc">樹木の高さ・距離は遮蔽仰角で既に考慮されているため、追加補正は「葉の透過率」のみ。常緑樹：全季節−8%、落葉樹：冬−1%・秋−4%・春夏−8%。</div>
+          <span class="input-badge">→ 遮蔽仰角の二重計上を防止</span>
         </div>
       </li>
     </ul>

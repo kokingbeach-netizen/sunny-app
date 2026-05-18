@@ -2273,6 +2273,14 @@ function calcWindowHeatmap(w, floorNum) {
         // 方位角による遮蔽仰角のテーパー
         // 窓正面\uff080°\uff09で最大、窓縁\uff0890°\uff09で遮蔽なし
         var edgeFactor = Math.cos(azDiff * Math.PI / 180);
+        var bldHForEdge = w ? (w.bldH || 0) : 0;
+        var bldDistForEdge = w ? (w.bldDist || 15) : 15;
+        var minEdgeFactor = 0;
+        if (bldHForEdge > 0 && bldDistForEdge > 0) {
+          var ratio = bldHForEdge / bldDistForEdge;
+          minEdgeFactor = Math.min(0.7, ratio * 0.15);
+        }
+        edgeFactor = Math.max(edgeFactor, minEdgeFactor);
         var obstAngle = obstBase * edgeFactor;
 
         var effectiveObstAngle = obstAngle;
@@ -2286,13 +2294,14 @@ function calcWindowHeatmap(w, floorNum) {
 
       var val = total > 0 ? sunlit / total : 0;
 
-      // 樹木補正（常緑樹：全季節-15%、落葉樹：春夏-15%、秋-10%、冬-5%）
+      // 樹木補正（葉の透過率のみ。遮蔽角はbldHで既に考慮済み）
+      // 常緑樹：全季節-8%、落葉樹：冬-1%、秋-4%、春夏-8%
       if (surrList.indexOf('evergreen') !== -1) {
-        val = Math.max(0, val - 0.15);
+        val = Math.max(0, val - 0.08);
       } else if (surrList.indexOf('deciduous') !== -1) {
-        var treeAdj = [0,1,11].indexOf(m) !== -1 ? -0.05   // 冬(12,1,2月)
-                    : [8,9,10].indexOf(m) !== -1 ? -0.10   // 秋(9,10,11月)
-                    : -0.15;                                 // 春夏
+        var treeAdj = [0,1,11].indexOf(m) !== -1 ? -0.01   // 冬(12,1,2月)
+                    : [8,9,10].indexOf(m) !== -1 ? -0.04   // 秋(9,10,11月)
+                    : -0.08;                                 // 春夏
         val = Math.max(0, val + treeAdj);
       }
       val = Math.min(1, val);
@@ -2344,10 +2353,18 @@ function calcConstructionHeatmap(floorNum) {
           if (heightDiff > 0) {
             var baseAngle = Math.atan2(heightDiff, d.bldDist) * 180 / Math.PI;
             var edgeFactor = Math.cos(azDiff * Math.PI / 180);
+            var bldHForEdge = d ? (d.bldH || 0) : 0;
+            var bldDistForEdge = d ? (d.bldDist || 15) : 15;
+            var minEdgeFactor = 0;
+            if (bldHForEdge > 0 && bldDistForEdge > 0) {
+              var ratio = bldHForEdge / bldDistForEdge;
+              minEdgeFactor = Math.min(0.7, ratio * 0.15);
+            }
+            edgeFactor = Math.max(edgeFactor, minEdgeFactor);
             obstAngle = baseAngle * edgeFactor;
           }
           if (cState[dir] && cState[dir].svf !== undefined) {
-            var photoObst = (1 - cState[dir].svf) * 30;
+            var photoObst = (1 - cState[dir].svf) * 80;
             obstAngle = Math.max(obstAngle, photoObst);
           }
           if (altDeg > obstAngle) sunlit++;

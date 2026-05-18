@@ -492,6 +492,10 @@ PHOTO_TAB_MAP = {
 - 算出ボタン直前に利用規約・プライバシーポリシー同意文を追加
 - sunny_contact.html のメールアドレスを sunnysunjapan@gmail.com に変更
 - index.html に4桁パスワードロック追加（`2525`・sessionStorage で同一セッション中は再入力不要）
+- 計算ロジック修正①：樹木補正を二重計上から葉の透過率のみに変更（常緑樹：−8%、落葉樹：冬−1%・秋−4%・春夏−8%）
+- 計算ロジック修正②：土地・屋外モードのSVF遮蔽仰角上限を30°→80°に変更（`calcConstructionHeatmap`の`photoObst * 80`）
+- 計算ロジック修正③：建物横幅考慮のedgeFactor下限（minEdgeFactor）を`calcWindowHeatmap`・`calcConstructionHeatmap`双方に追加（`Math.min(0.7, (bldH/bldDist) * 0.15)`）
+- sunny_how_it_works.html：SVF上限80°・厳しい方採用・樹木補正（葉の透過率のみ）の説明を追加・更新
 
 ---
 
