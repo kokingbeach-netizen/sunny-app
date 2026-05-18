@@ -1838,20 +1838,20 @@ function renderWindowCard(w, i) {
     + '<div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:10px;">\ud83d\udcf7 \u64ae\u5f71\u65b9\u6cd5</div>'
     + '<div style="display:flex;gap:10px;align-items:center;">'
     + '<div style="flex:1;text-align:center;">'
-    + '<img src="hand.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">'
+    + '<img src="hand.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
     + '</div>'
-    + '<div style="width:1px;height:60px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
+    + '<div style="width:1px;height:100px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
     + '<div style="flex:1;text-align:center;" id="shoot-yoto-img-' + i + '">'
     + (function() {
         var yotoImgMap = {
-          'living':  '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-          'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-          'study':   '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-          'kids':    '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-          'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-          'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-          'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-          'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">'
+          'living':  '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+          'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+          'study':   '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+          'kids':    '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+          'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+          'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+          'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+          'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
         };
         var defaultYotoImg = '<div style="font-size:10px;color:#9CA3AF;line-height:1.6;">\u7528\u9014\u3092\u9078\u3076\u3068<br>\u64ae\u5f71\u5834\u6240\u306e<br>\u30ac\u30a4\u30c9\u304c\u51fa\u307e\u3059</div>';
         return yotoImgMap[selectedYoto] || defaultYotoImg;
@@ -2082,14 +2082,14 @@ function selYoto(el, val) {
 
   // ミニガイドの用途別イラスト更新
   var yotoImgMap = {
-    'living':  '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-    'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-    'study':   '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-    'kids':    '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-    'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-    'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-    'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
-    'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">'
+    'living':  '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+    'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+    'study':   '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+    'kids':    '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+    'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+    'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+    'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">',
+    'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
   };
   var defaultYotoImg = '<div style="font-size:10px;color:#9CA3AF;line-height:1.6;">\u7528\u9014\u3092\u9078\u3076\u3068<br>\u64ae\u5f71\u5834\u6240\u306e<br>\u30ac\u30a4\u30c9\u304c\u51fa\u307e\u3059</div>';
   var yotoHtml = yotoImgMap[val] || defaultYotoImg;
@@ -3943,7 +3943,7 @@ function updateStep3() {
       + '<div style="flex:1;text-align:center;">'
       + '<img src="hand.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
       + '</div>'
-      + '<div style="width:1px;height:80px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
+      + '<div style="width:1px;height:100px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
       + '<div style="flex:1;text-align:center;">'
       + '<img src="landshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
       + '<div style="font-size:10px;color:#6B7280;margin-top:4px;">\u66f4\u5730\u306e\u4e2d\u592e\u304b\u3089\u64ae\u5f71</div>'
