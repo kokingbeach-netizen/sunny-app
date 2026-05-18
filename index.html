@@ -3806,6 +3806,11 @@ function selectInputMode(mode) {
     el.style.display = isPhoto ? '' : 'none';
   });
 
+  // ミニ撮影ガイドの表示切り替え
+  document.querySelectorAll('[id^="shoot-guide-mini-"]').forEach(function(el) {
+    el.style.display = (mode === 'plan') ? 'none' : '';
+  });
+
   // 図面モード用アップロードエリア
   var planUpload = document.getElementById('step3FloorPlan');
   if (planUpload) planUpload.style.display = isPhoto ? 'none' : 'block';
