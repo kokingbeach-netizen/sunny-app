@@ -499,6 +499,11 @@ PHOTO_TAB_MAP = {
 - sunny_privacy.html：「05 — AI解析機能とデータの取り扱い」セクションを新設（Anthropic商用API規約根拠・学習不使用・TLS暗号化・BtoB向け説明）。最終更新日を2026年5月に更新。メールアドレスを sunnysunjapan@gmail.com に修正。
 - ヒートマップのセル内テキスト削除：`getHeatInfo` の label を空文字・color を transparent に変更
 - ヒートマップCSSを横スクロールなしに対応：`width:100% / table-layout:fixed`・th font-size 9px・hm-row-label width 44px・セル height 22px / border-radius 3px
+- 窓カードにミニ撮影ガイド（`shoot-guide-mini-{i}`）を追加：コンパスと写真アップの間に hand.png＋用途別イラスト（`shoot-yoto-img-{i}`）＋「📖詳しくみる」ボタン
+- `selYoto` に用途別イラスト更新ロジック追加（`shoot-yoto-img-` 全窓を一括更新）
+- `openShootDetailModal` / `closeShootDetailModal` 関数と `#shootDetailModal` モーダルHTMLを追加
+- `renderPhotoCards` 末尾の旧 `.dir-guide-shared`（撮影ガイドブロック）を削除
+- 図面モード（`selectedInputMode === 'plan'`）時はミニ撮影ガイドを `display:none`
 - 遮蔽物入力UIの「なし（0m）」選択肢を削除：建物・樹木の高さセレクトを「-- 選択してください --」始まりに統一（物件モード `renderPhotoCards` の bldH/treeH・土地モード south固定HTML・動的生成JS の計6箇所）
 - licenses/ ディレクトリを作成し SUNCALC.txt（BSD）・CHARTJS.txt（MIT）・NOTO.txt（SIL OFL 1.1）を追加
 - sunny_terms.html 免責事項に「算出結果の性質」「医療・健康への使用禁止」「不動産取引における専門家確認」の3項目を追記
