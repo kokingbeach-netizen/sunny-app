@@ -2754,6 +2754,14 @@ function initResultMap(lat, lng) {
       weight: 1.5
     }).addTo(map);
 
+    var gmapBtn = document.createElement('a');
+    gmapBtn.href = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+    gmapBtn.target = '_blank';
+    gmapBtn.rel = 'noopener noreferrer';
+    gmapBtn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;font-weight:700;color:#D4880F;text-decoration:none;';
+    gmapBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>Google\u30de\u30c3\u30d7\u3067\u958b\u304f';
+    el.parentNode.insertAdjacentElement('afterend', gmapBtn);
+
   }, 300);
 }
 
