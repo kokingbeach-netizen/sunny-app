@@ -3937,28 +3937,23 @@ function updateStep3() {
   if (disclaimer) disclaimer.style.display = isConstruction ? 'block' : 'none';
   var guideSection = document.getElementById('construction-guide-section');
   if (guideSection) {
-    guideSection.innerHTML = '<div class="dir-guide-shared">'
-      + '<div class="shooting-guide-wrap">'
-      + '<div class="shooting-guide-title">\u64ae\u5f71\u65b9\u6cd5</div>'
-      + '<div style="display:flex;gap:12px;align-items:center;justify-content:center;">'
+    guideSection.innerHTML = '<div style="background:rgba(245,166,35,0.05);border:1px solid rgba(245,166,35,0.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;">'
+      + '<div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:10px;">\ud83d\udcf7 \u64ae\u5f71\u65b9\u6cd5</div>'
+      + '<div style="display:flex;gap:10px;align-items:center;">'
       + '<div style="flex:1;text-align:center;">'
-      + '<img src="hand.png" alt="\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
-      + '<div style="font-size:10px;color:#6B7280;margin-top:4px;">\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d</div>'
+      + '<img src="hand.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
       + '</div>'
       + '<div style="width:1px;height:80px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
       + '<div style="flex:1;text-align:center;">'
-      + '<img src="landshoot.png" alt="\u66f4\u5730\u306e\u4e2d\u592e\u304b\u3089\u64ae\u5f71" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
+      + '<img src="landshoot.png" style="width:100%;max-width:120px;height:auto;display:block;margin:0 auto;">'
       + '<div style="font-size:10px;color:#6B7280;margin-top:4px;">\u66f4\u5730\u306e\u4e2d\u592e\u304b\u3089\u64ae\u5f71</div>'
       + '</div>'
       + '</div>'
+      + '<div style="font-size:11px;color:#6B7280;margin-top:8px;line-height:1.6;">\u30b9\u30de\u30db\u6a2a\u5411\u304d45\u00b0\u306e\u89d2\u5ea6\u3067\u64ae\u5f71\u3000<span style="color:#D4880F;font-weight:700;">\u203b\u5e83\u89d2\u64ae\u5f71\u63a8\u5968</span></div>'
+      + '<div style="text-align:right;margin-top:4px;">'
+      + '<button onclick="openShootDetailModal()" style="background:none;border:none;font-size:11px;color:#D4880F;font-weight:700;cursor:pointer;padding:0;font-family:\'Noto Sans JP\',sans-serif;">\ud83d\udcd6 \u8a73\u3057\u304f\u307f\u308b</button>'
       + '</div>'
-      + '<p class="photo-guide-desc"><ul style="margin:0;padding-left:16px;line-height:1.8;font-size:12px;">'
-      + '<li>\u30b9\u30de\u30db\u306f\u6a2a\u5411\u304d\u3067\u0034\u0035\u00b0\u4e0a\u5411\u304d\u3067\u64ae\u5f71</li>'
-      + '<li>\u8d85\u5e83\u89d2\u30ab\u30e1\u30e9\uff080.5\u00d7\uff09\u4f7f\u7528\u306f\u7cbe\u5ea6\u5411\u4e0a</li>'
-      + '<li>\u6674\u5929\u6642\u306e\u64ae\u5f71\u3092\u63a8\u5968\uff08\u66c7\u308a\u30fb\u96e8\u5929\u3067\u3082\u8a08\u7b97\u53ef\u80fd\uff09</li>'
-      + '<li>\u5411\u304b\u3044\u306e\u5efa\u7269\u304c\u9ad8\u304f\u3066\u7a7a\u304c\u5199\u3089\u306a\u304f\u3066\u3082OK</li>'
-      + '<li>\u592a\u967d\u306f\u5199\u3089\u306a\u304f\u3066OK</li>'
-      + '</ul></p></div>';
+      + '</div>';
   }
   var wc = document.getElementById('windowsContainer');
   var awb = document.getElementById('addWindowBtn');
