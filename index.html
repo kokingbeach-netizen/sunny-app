@@ -1833,31 +1833,32 @@ function renderWindowCard(w, i) {
     + '<label>\u7a93\u306e\u5411\u304d<span class="req">\u2605\u5fc5\u9808</span></label>'
     + '<div class="dir-grid">' + dirBtns + '</div>'
 
-    + '<div class="shoot-guide-mini" id="shoot-guide-mini-' + i + '" style="background:#FAFAFA;border:1px solid rgba(0,0,0,0.09);border-radius:10px;padding:10px 12px;margin-bottom:8px;' + (selectedInputMode === 'plan' ? 'display:none;' : '') + '">'
+    + '<div class="shoot-guide-mini" id="shoot-guide-mini-' + i + '" style="background:rgba(245,166,35,0.05);border:1px solid rgba(245,166,35,0.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;' + (selectedInputMode === 'plan' ? 'display:none;' : '') + '">'
+    + '<div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:10px;">\ud83d\udcf7 \u64ae\u5f71\u65b9\u6cd5</div>'
     + '<div style="display:flex;gap:10px;align-items:center;">'
     + '<div style="flex:1;text-align:center;">'
     + '<img src="hand.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">'
-    + '<div style="font-size:10px;color:#6B7280;margin-top:3px;">\u6a2a\u5411\u304d\u30fb45\u00b0\u4e0a\u5411\u304d</div>'
     + '</div>'
     + '<div style="width:1px;height:60px;background:rgba(0,0,0,0.08);flex-shrink:0;"></div>'
     + '<div style="flex:1;text-align:center;" id="shoot-yoto-img-' + i + '">'
     + (function() {
         var yotoImgMap = {
-          'living':  '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-          'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-          'study':   '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-          'kids':    '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-          'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-          'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u67f5\u304b\u3089\u5916\u306b\u5411\u3051\u3066</div>',
-          'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u4e2d\u592e\u304b\u3089</div>',
-          'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>'
+          'living':  '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+          'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+          'study':   '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+          'kids':    '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+          'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+          'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+          'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+          'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">'
         };
         var defaultYotoImg = '<div style="font-size:10px;color:#9CA3AF;line-height:1.6;">\u7528\u9014\u3092\u9078\u3076\u3068<br>\u64ae\u5f71\u5834\u6240\u306e<br>\u30ac\u30a4\u30c9\u304c\u51fa\u307e\u3059</div>';
         return yotoImgMap[selectedYoto] || defaultYotoImg;
       })()
     + '</div>'
     + '</div>'
-    + '<div style="text-align:right;margin-top:6px;">'
+    + '<div style="font-size:11px;color:#6B7280;margin-top:8px;line-height:1.6;">\u30b9\u30de\u30db\u6a2a\u5411\u304d45\u00b0\u306e\u89d2\u5ea6\u3067\u64ae\u5f71\u3000<span style="color:#D4880F;font-weight:700;">\u203b\u5e83\u89d2\u64ae\u5f71\u63a8\u5968</span></div>'
+    + '<div style="text-align:right;margin-top:4px;">'
     + '<button onclick="openShootDetailModal()" style="background:none;border:none;font-size:11px;color:#D4880F;font-weight:700;cursor:pointer;padding:0;font-family:\'Noto Sans JP\',sans-serif;">\ud83d\udcd6 \u8a73\u3057\u304f\u307f\u308b</button>'
     + '</div>'
     + '</div>'
@@ -2080,14 +2081,14 @@ function selYoto(el, val) {
 
   // ミニガイドの用途別イラスト更新
   var yotoImgMap = {
-    'living':  '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-    'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-    'study':   '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-    'kids':    '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-    'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>',
-    'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u67f5\u304b\u3089\u5916\u306b\u5411\u3051\u3066</div>',
-    'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u4e2d\u592e\u304b\u3089</div>',
-    'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;"><div style="font-size:10px;color:#6B7280;margin-top:3px;">\u5ba4\u5185\u304b\u3089\u7a93\u306b\u5411\u3051\u3066</div>'
+    'living':  '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+    'bedroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+    'study':   '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+    'kids':    '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+    'kitchen': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+    'balcony': '<img src="balconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+    'rooftop': '<img src="skybalconyshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">',
+    'sunroom': '<img src="windowshoot.png" style="width:100%;max-width:80px;height:auto;display:block;margin:0 auto;">'
   };
   var defaultYotoImg = '<div style="font-size:10px;color:#9CA3AF;line-height:1.6;">\u7528\u9014\u3092\u9078\u3076\u3068<br>\u64ae\u5f71\u5834\u6240\u306e<br>\u30ac\u30a4\u30c9\u304c\u51fa\u307e\u3059</div>';
   var yotoHtml = yotoImgMap[val] || defaultYotoImg;
