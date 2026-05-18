@@ -934,7 +934,7 @@
             <div id="c-obs-bld-south" style="display:none">
               <div class="c-field-label">建物の高さ <span class="c-key-sup">任意</span></div>
               <select class="finput" onchange="cSetBldH('south',this.value)" style="margin-bottom:8px;">
-                <option value="0">なし（0m）</option>
+                <option value="">-- 選択してください --</option>
                 <option value="7">低い 1-2階（7m）</option>
                 <option value="15">中 3-5階（15m）</option>
                 <option value="30">高い 6-10階（30m）</option>
@@ -960,7 +960,7 @@
               </select>
               <div class="c-field-label">樹木の高さ <span class="c-key-sup">任意</span></div>
               <select class="finput" onchange="cSetTreeH('south',this.value)" style="margin-bottom:8px;">
-                <option value="0">なし（0m）</option>
+                <option value="">-- 選択してください --</option>
                 <option value="7">低い 1-2階（7m）</option>
                 <option value="15">中 3-5階（15m）</option>
                 <option value="30">高い 6-10階（30m）</option>
@@ -1538,7 +1538,6 @@ function renderPhotoCards(i, w) {
   var tabs = PHOTO_TAB_MAP[w.dir] || PHOTO_TAB_MAP['\u5357'];
   var bldHOptions = '<option value=""' + (w.bldH === null ? ' selected' : '') + '>-- \u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044 --</option>'
     + [
-      [0, '\u306a\u3057 (0m)'],
       [7, '\u4f4e\u3044 1-2\u968e (7m)'],
       [15, '\u4e2d 3-5\u968e (15m)'],
       [30, '\u9ad8\u3044 6-10\u968e (30m)'],
@@ -1588,7 +1587,6 @@ function renderPhotoCards(i, w) {
   var curTreeType = surr.indexOf('evergreen') !== -1 ? 'evergreen' : 'deciduous';
   var treeHOptions = '<option value=""' + (w.treeH === null || w.treeH === undefined ? ' selected' : '') + '>-- \u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044 --</option>'
     + [
-      [0,  '\u306a\u3057 (0m)'],
       [7,  '\u4f4e\u3044 1-2\u968e (7m)'],
       [15, '\u4e2d 3-5\u968e (15m)'],
       [30, '\u9ad8\u3044 6-10\u968e (30m)'],
@@ -4014,7 +4012,7 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '<div id="c-obs-bld-'+key+'" style="display:none">'
     + '<div class="c-field-label">\u5efa\u7269\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f</span></div>'
     + '<select class="finput" onchange="cSetBldH(\''+key+'\',this.value)" style="margin-bottom:8px;">'
-    + '<option value="0">\u306a\u3057\uff080m\uff09</option>'
+    + '<option value="">-- \u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044 --</option>'
     + '<option value="7">\u4f4e\u3044 1-2\u968e\uff087m\uff09</option>'
     + '<option value="15">\u4e2d 3-5\u968e\uff0815m\uff09</option>'
     + '<option value="30">\u9ad8\u3044 6-10\u968e\uff0830m\uff09</option>'
@@ -4039,7 +4037,7 @@ function cAddSpecificDir(key, arrow, name, el) {
     + '</select>'
     + '<div class="c-field-label">\u6a39\u6728\u306e\u9ad8\u3055 <span class="c-key-sup">\u4efb\u610f</span></div>'
     + '<select class="finput" onchange="cSetTreeH(\''+key+'\',this.value)" style="margin-bottom:8px;">'
-    + '<option value="0">\u306a\u3057\uff080m\uff09</option>'
+    + '<option value="">-- \u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044 --</option>'
     + '<option value="7">\u4f4e\u3044 1-2\u968e\uff087m\uff09</option>'
     + '<option value="15">\u4e2d 3-5\u968e\uff0815m\uff09</option>'
     + '<option value="30">\u9ad8\u3044 6-10\u968e\uff0830m\uff09</option>'

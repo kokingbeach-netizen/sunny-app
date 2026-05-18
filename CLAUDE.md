@@ -496,6 +496,7 @@ PHOTO_TAB_MAP = {
 - 計算ロジック修正②：土地・屋外モードのSVF遮蔽仰角上限を30°→80°に変更（`calcConstructionHeatmap`の`photoObst * 80`）
 - 計算ロジック修正③：建物横幅考慮のedgeFactor下限（minEdgeFactor）を`calcWindowHeatmap`・`calcConstructionHeatmap`双方に追加（`Math.min(0.7, (bldH/bldDist) * 0.15)`）
 - sunny_how_it_works.html：SVF上限80°・厳しい方採用・樹木補正（葉の透過率のみ）の説明を追加・更新
+- 遮蔽物入力UIの「なし（0m）」選択肢を削除：建物・樹木の高さセレクトを「-- 選択してください --」始まりに統一（物件モード `renderPhotoCards` の bldH/treeH・土地モード south固定HTML・動的生成JS の計6箇所）
 
 ---
 
