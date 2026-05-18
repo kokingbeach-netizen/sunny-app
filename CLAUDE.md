@@ -515,6 +515,9 @@ PHOTO_TAB_MAP = {
 - `.step-badge` の `font-weight` を `900` に変更
 - STEP4タイトルをモード連動で動的切り替え：photo時「窓の向き・窓からの撮影写真をアップ」／plan時「窓の向き・間取り図をアップ」（`id="step4-title"`・`selectInputMode`・`updateStep3` の3箇所）
 - ひさしラベル：「屋根・庇」→「屋根・ひさし」に変更
+- 土地・屋外モード撮影ガイドを物件モードと同一アンバーカードデザインに統一（`construction-guide-section`・landshoot.png・「詳しくみる」ボタン）・タイトルをセンター揃えに修正
+- 撮影ガイドブロック内の全画像を `max-width:80px` → `max-width:120px` に拡大（`renderWindowCard` yotoImgMap・`selYoto` yotoImgMap・land mode landshoot.png）
+- 撮影ガイドブロック内の縦セパレーターを `height:60px`/`height:80px` → `height:100px` に統一（物件・土地両モード）
 
 ---
 
