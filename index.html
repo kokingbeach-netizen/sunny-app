@@ -823,7 +823,7 @@
         <button class="sel-card" onclick="selYoto(this,'rooftop')">ルーフバルコニー</button>
       </div>
       <div id="roofDepthSection" style="display:none;margin-top:16px;">
-        <label>窓の上に屋根・庇はありますか？<span style="font-size:11px;color:#6B7280;font-weight:400;margin-left:6px;">（日照精度が向上します）</span></label>
+        <label>窓の上に屋根・ひさしはありますか？<span style="font-size:11px;color:#6B7280;font-weight:400;margin-left:6px;">（日照精度が向上します）</span></label>
         <div class="card-row" id="roofDepthCards">
           <button class="sel-card" onclick="selRoofDepth(this, 0)">なし</button>
           <button class="sel-card" onclick="selRoofDepth(this, 0.7)">浅い 〜1m</button>
@@ -874,7 +874,7 @@
   <div class="step-card" id="step3">
     <div class="step-header">
       <span class="step-badge">STEP 4</span>
-      <span class="step-title" id="step3Title">窓の向き・窓からの画像をアップ</span>
+      <span class="step-title" id="step3Title">窓の向き・窓からの写真をアップ</span>
     </div>
 
     <div id="windowsContainer"><!-- JS renders window cards here --></div>
@@ -3907,7 +3907,7 @@ function updateStep3() {
   var step3Badge = document.querySelector('#step3 .step-badge');
   if (step3Badge) step3Badge.textContent = isConstruction ? 'STEP 3' : 'STEP 4';
   var step3Title = document.querySelector('#step3 .step-title');
-  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の向き・窓からの画像をアップ';
+  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の向き・窓からの写真をアップ';
   document.querySelectorAll('.guide-caption-1').forEach(function(el) {
     el.textContent = isConstruction ? '更地の中央に立つ' : '窓の前に立つ';
   });
