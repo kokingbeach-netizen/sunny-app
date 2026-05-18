@@ -510,6 +510,11 @@ PHOTO_TAB_MAP = {
 - licenses/ ディレクトリを作成し SUNCALC.txt（BSD）・CHARTJS.txt（MIT）・NOTO.txt（SIL OFL 1.1）を追加
 - sunny_terms.html 免責事項に「算出結果の性質」「医療・健康への使用禁止」「不動産取引における専門家確認」の3項目を追記
 - sunny_terms.html に「09 — 使用ライブラリ・ライセンス」セクションを追加（SunCalc.js・Chart.js・Noto Sans JP）
+- ミニ撮影ガイド（`shoot-guide-mini`）デザイン刷新：アンバー薄背景＋枠線・「📷 撮影方法」タイトル追加・用途別キャプション削除→「スマホ横向き45°の角度で撮影 ※広角撮影推奨」に統一・`selYoto`のyotoImgMapも画像のみに更新
+- STEP3モード選択UIの簡素化：タイトル「アップする画像タイプを選択」・カード名「撮影画像アップ→現地画像」「間取り図アップ→間取り図」・選択後メッセージ（`#modeNote`）を完全削除
+- `.step-badge` の `font-weight` を `900` に変更
+- STEP4タイトルをモード連動で動的切り替え：photo時「窓の向き・窓からの撮影写真をアップ」／plan時「窓の向き・間取り図をアップ」（`id="step4-title"`・`selectInputMode`・`updateStep3` の3箇所）
+- ひさしラベル：「屋根・庇」→「屋根・ひさし」に変更
 
 ---
 
