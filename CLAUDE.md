@@ -497,13 +497,16 @@ PHOTO_TAB_MAP = {
 - 計算ロジック修正③：建物横幅考慮のedgeFactor下限（minEdgeFactor）を`calcWindowHeatmap`・`calcConstructionHeatmap`双方に追加（`Math.min(0.7, (bldH/bldDist) * 0.15)`）
 - sunny_how_it_works.html：SVF上限80°・厳しい方採用・樹木補正（葉の透過率のみ）の説明を追加・更新
 - 遮蔽物入力UIの「なし（0m）」選択肢を削除：建物・樹木の高さセレクトを「-- 選択してください --」始まりに統一（物件モード `renderPhotoCards` の bldH/treeH・土地モード south固定HTML・動的生成JS の計6箇所）
+- licenses/ ディレクトリを作成し SUNCALC.txt（BSD）・CHARTJS.txt（MIT）・NOTO.txt（SIL OFL 1.1）を追加
+- sunny_terms.html 免責事項に「算出結果の性質」「医療・健康への使用禁止」「不動産取引における専門家確認」の3項目を追記
+- sunny_terms.html に「09 — 使用ライブラリ・ライセンス」セクションを追加（SunCalc.js・Chart.js・Noto Sans JP）
 
 ---
 
 ## 11. 今後の TODO
 
 ### フェーズ1（今すぐ・進行中）
-- サブページ（sunny_privacy・sunny_terms・sunny_contact）のフッター追加
+- サブページ（sunny_privacy・sunny_contact）のフッター追加
 
 ### 本格化のタイミングでやること
 - sunny_lp.html の「無料で使ってみる」CTAボタンのリンク先を
@@ -539,6 +542,23 @@ PHOTO_TAB_MAP = {
   else { 既存のSVF明るさ判別 }
 - オンオフはこの1行をfalse→trueに変更してgit pushするだけ
 - 将来的にユーザーごとのPro管理はログイン機能と組み合わせる
+
+### 知財・法務 TODO
+
+#### 近いうちに
+- ブランド名を SUNNY → SUNNYIN に変更する
+  - HTML内表示テキストの一括置換
+  - GitHubリポジトリ名変更（ドメイン取得と同タイミング）
+  - sunnyin.com / sunnyin.jp ドメイン取得
+
+#### Pro版実装前に
+- sunny_privacy.html に「AI解析時のデータ取り扱い」セクションを追加
+  - 画像はAnthropicのAPIに送信される旨を明記
+  - 解析後は保存しない旨を明記
+  - 写真アップロード前に同意チェックボックスを表示する設計
+
+#### 将来（地図機能追加時）
+- 地図埋め込みはGoogle MapsではなくMapbox or Leaflet+OpenStreetMapを使用する
 
 ---
 
