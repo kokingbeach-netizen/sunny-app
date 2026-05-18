@@ -505,6 +505,7 @@ PHOTO_TAB_MAP = {
 - `renderPhotoCards` 末尾の旧 `.dir-guide-shared`（撮影ガイドブロック）を削除
 - 図面モード（`selectedInputMode === 'plan'`）時はミニ撮影ガイドを `display:none`（初期描画＋`selectInputMode`内の動的切り替え両方対応）
 - 判定結果エリアに Leaflet.js（OpenStreetMap）による測定地点確認マップを追加（物件・室内モード・土地モード両方）：`initResultMap(lat, lng)` / アンバーピンアイコン・10mサークル・zoom19・scrollWheelZoom無効
+- マップ直下に「Googleマップで開く」リンクボタンを追加（`initResultMap`内で`el.parentNode.insertAdjacentElement('afterend', gmapBtn)`）
 - 遮蔽物入力UIの「なし（0m）」選択肢を削除：建物・樹木の高さセレクトを「-- 選択してください --」始まりに統一（物件モード `renderPhotoCards` の bldH/treeH・土地モード south固定HTML・動的生成JS の計6箇所）
 - licenses/ ディレクトリを作成し SUNCALC.txt（BSD）・CHARTJS.txt（MIT）・NOTO.txt（SIL OFL 1.1）を追加
 - sunny_terms.html 免責事項に「算出結果の性質」「医療・健康への使用禁止」「不動産取引における専門家確認」の3項目を追記
