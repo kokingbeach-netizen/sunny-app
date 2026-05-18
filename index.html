@@ -205,7 +205,7 @@
     .ptab-badge { font-size: 9px; color: #10B981; margin-left: 2px; }
 
     /* Heatmap symbols */
-    .hm-cell { height: 28px; border-radius: 4px; border: none; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+    .hm-cell { height: 22px; border-radius: 3px; border: none; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
     .hm-cell.light { color: rgba(0,0,0,0.5); }
     .hm-mn { font-size: 11px; font-weight: 700; color: #666; }
     .hm-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-size: 11px; }
@@ -283,10 +283,10 @@
     .hm-tab { padding: 5px 12px; border-radius: 20px; border: 1.5px solid rgba(0,0,0,0.12); font-size: 11px; font-weight: 700; cursor: pointer; color: #6B7280; background: #fff; transition: all 0.15s; }
     .hm-tab:hover { border-color: #F5A623; color: #D4880F; }
     .hm-tab.active { background: #1A1A1A; border-color: #1A1A1A; color: #F5A623; }
-    .heatmap-table { border-collapse: separate; border-spacing: 2px; min-width: 340px; font-size: 10px; }
-    .heatmap-table th { padding: 4px 3px; color: #666; text-align: center; white-space: nowrap; font-size: 10px; font-weight: 700; }
-    .heatmap-table td { width: 36px; padding: 0; }
-    .hm-row-label { font-size: 10px; font-weight: 700; color: #6B7280; padding: 2px 6px; white-space: nowrap; text-align: right; }
+    .heatmap-table { border-collapse: separate; border-spacing: 2px; width: 100%; table-layout: fixed; font-size: 10px; }
+    .heatmap-table th { padding: 3px 1px; color: #666; text-align: center; white-space: nowrap; font-size: 9px; font-weight: 700; }
+    .heatmap-table td { padding: 0; }
+    .hm-row-label { font-size: 9px; font-weight: 700; color: #6B7280; padding: 2px 4px 2px 0; white-space: nowrap; text-align: right; width: 44px; }
 
     /* Modal */
     .modal-overlay { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
@@ -3070,10 +3070,10 @@ function switchHeatmapTab(tabId) {
 // ============================================================
 function getHeatInfo(val) {
   var pct = Math.round(val * 100);
-  if (pct >= 100) return { bg: '#E8420A', label: '100%',      fontSize: '11px', color: '#fff' };
-  if (pct >= 70)  return { bg: '#F5A623', label: '\u826f\u597d',    fontSize: '11px', color: '#fff' };
-  if (pct >= 30)  return { bg: '#F5D080', label: '\u8584\u65e5',    fontSize: '11px', color: '#666' };
-  if (pct >= 1)   return { bg: '#F5ECD0', label: '\u308f\u305a\u304b', fontSize: '10px', color: '#888' };
+  if (pct >= 100) return { bg: '#E8420A', label: '', fontSize: '11px', color: 'transparent' };
+  if (pct >= 70)  return { bg: '#F5A623', label: '', fontSize: '11px', color: 'transparent' };
+  if (pct >= 30)  return { bg: '#F5D080', label: '', fontSize: '11px', color: 'transparent' };
+  if (pct >= 1)   return { bg: '#F5ECD0', label: '', fontSize: '10px', color: 'transparent' };
   return { bg: 'transparent', label: '', fontSize: '11px', color: 'transparent' };
 }
 
