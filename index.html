@@ -599,6 +599,8 @@
   });
 })();
 </script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -2513,9 +2515,20 @@ function displayConstructionResults(maxFloor) {
   document.getElementById('results').innerHTML = tabsHtml
     + '<div id="c-floor-result" style="padding:16px;"></div>'
     + '<p style="font-size:11px;color:#9CA3AF;margin:0 16px 16px;line-height:1.7;text-align:center;">⚠️ この数値は参考値です。誤差±20〜30%（周辺建物の反射・地形等による）。</p>'
+    + '<div style="margin:0 16px 16px;">'
+    + '<div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:8px;">\ud83d\udccd \u6e2c\u5b9a\u5730\u70b9\u306e\u78ba\u8a8d</div>'
+    + '<div id="resultMap" style="width:100%;height:200px;border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,0.1);"></div>'
+    + '<div style="font-size:10px;color:#9CA3AF;margin-top:4px;text-align:right;">\u00a9 OpenStreetMap contributors</div>'
+    + '</div>'
     + actionsHtml;
 
   renderConstructionFloor(selectedConstructionFloor);
+
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+  if (!isNaN(lat) && !isNaN(lng)) {
+    initResultMap(lat, lng);
+  }
 }
 
 function switchConstructionFloor(floor) {
@@ -2679,9 +2692,20 @@ function displayResults(score, winScores, heatmaps) {
     + '<span style="font-size:20px;">🔗</span><div><div style="font-size:13px;font-weight:700;">結果URLをコピーする</div><div style="font-size:11px;color:#6B7280;">同じURLを開くと同じ結果が再現されます（写真以外）</div></div>'
     + '</div>'
     + '</div>'
+    + '</div>'
+    + '<div style="margin:0 16px 16px;">'
+    + '<div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:8px;">\ud83d\udccd \u6e2c\u5b9a\u5730\u70b9\u306e\u78ba\u8a8d</div>'
+    + '<div id="resultMap" style="width:100%;height:200px;border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,0.1);"></div>'
+    + '<div style="font-size:10px;color:#9CA3AF;margin-top:4px;text-align:right;">\u00a9 OpenStreetMap contributors</div>'
     + '</div>';
 
   document.getElementById('results').innerHTML = html;
+
+  var lat = parseFloat(document.getElementById('lat').value);
+  var lng = parseFloat(document.getElementById('lng').value);
+  if (!isNaN(lat) && !isNaN(lng)) {
+    initResultMap(lat, lng);
+  }
 
   // 間取り図セクションを表示
   var fps = document.getElementById('floorPlanSection');
@@ -2689,6 +2713,48 @@ function displayResults(score, winScores, heatmaps) {
     fps.style.display = 'block';
     if (typeof fpBuildWindowBtns === 'function') fpBuildWindowBtns();
   }
+}
+
+function initResultMap(lat, lng) {
+  setTimeout(function() {
+    var el = document.getElementById('resultMap');
+    if (!el) return;
+    if (el._leaflet_id) return;
+
+    var map = L.map('resultMap', {
+      center: [lat, lng],
+      zoom: 19,
+      zoomControl: true,
+      attributionControl: false,
+      scrollWheelZoom: false
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 20
+    }).addTo(map);
+
+    var pinIcon = L.divIcon({
+      className: '',
+      html: '<svg width="28" height="36" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">'
+        + '<path d="M16 2C9.37 2 4 7.37 4 14c0 9.25 12 24 12 24S28 23.25 28 14C28 7.37 22.63 2 16 2z" fill="#F5A623" stroke="#D4880F" stroke-width="1.5"/>'
+        + '<circle cx="16" cy="14" r="5" fill="#fff"/>'
+        + '<circle cx="16" cy="14" r="2.5" fill="#F5A623"/>'
+        + '</svg>',
+      iconSize: [28, 36],
+      iconAnchor: [14, 36]
+    });
+
+    L.marker([lat, lng], { icon: pinIcon }).addTo(map);
+
+    L.circle([lat, lng], {
+      radius: 10,
+      color: '#F5A623',
+      fillColor: '#F5A623',
+      fillOpacity: 0.15,
+      weight: 1.5
+    }).addTo(map);
+
+  }, 300);
 }
 
 function computeAggHeatmap(heatmaps) {
