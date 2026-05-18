@@ -874,7 +874,7 @@
   <div class="step-card" id="step3">
     <div class="step-header">
       <span class="step-badge">STEP 4</span>
-      <span class="step-title" id="step3Title">窓の向き・窓からの写真をアップ</span>
+      <span class="step-title" id="step4-title">窓の向き・窓からの撮影写真をアップ</span>
     </div>
 
     <div id="windowsContainer"><!-- JS renders window cards here --></div>
@@ -3871,6 +3871,12 @@ function selectInputMode(mode) {
     el.style.display = isPhoto ? '' : 'none';
   });
 
+  // STEP4タイトルの切り替え
+  var step4Title = document.getElementById('step4-title');
+  if (step4Title) {
+    step4Title.textContent = (mode === 'plan') ? '窓の向き・間取り図をアップ' : '窓の向き・窓からの撮影写真をアップ';
+  }
+
   // ミニ撮影ガイドの表示切り替え
   document.querySelectorAll('[id^="shoot-guide-mini-"]').forEach(function(el) {
     el.style.display = (mode === 'plan') ? 'none' : '';
@@ -3906,8 +3912,8 @@ function updateStep3() {
   var isConstruction = selectedUsecase === '土地・屋外';
   var step3Badge = document.querySelector('#step3 .step-badge');
   if (step3Badge) step3Badge.textContent = isConstruction ? 'STEP 3' : 'STEP 4';
-  var step3Title = document.querySelector('#step3 .step-title');
-  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の向き・窓からの写真をアップ';
+  var step3Title = document.getElementById('step4-title');
+  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : (selectedInputMode === 'plan' ? '窓の向き・間取り図をアップ' : '窓の向き・窓からの撮影写真をアップ');
   document.querySelectorAll('.guide-caption-1').forEach(function(el) {
     el.textContent = isConstruction ? '更地の中央に立つ' : '窓の前に立つ';
   });
