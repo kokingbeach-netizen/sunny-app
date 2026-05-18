@@ -852,7 +852,7 @@
   <div class="step-card" id="modeSelectSection" style="display:none;">
     <div class="step-header">
       <span class="step-badge">STEP 3</span>
-      <span class="step-title">画像をアップ</span>
+      <span class="step-title">アップする画像タイプを選択</span>
     </div>
     <div class="mode-grid">
       <div class="mode-card" id="modePhoto" onclick="selectInputMode('photo')">
@@ -874,7 +874,7 @@
   <div class="step-card" id="step3">
     <div class="step-header">
       <span class="step-badge">STEP 4</span>
-      <span class="step-title" id="step3Title">窓の位置と周辺環境</span>
+      <span class="step-title" id="step3Title">窓の位置・窓からの外の画像をアップ</span>
     </div>
 
     <div id="windowsContainer"><!-- JS renders window cards here --></div>
@@ -3907,7 +3907,7 @@ function updateStep3() {
   var step3Badge = document.querySelector('#step3 .step-badge');
   if (step3Badge) step3Badge.textContent = isConstruction ? 'STEP 3' : 'STEP 4';
   var step3Title = document.querySelector('#step3 .step-title');
-  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の位置と周辺環境';
+  if (step3Title) step3Title.textContent = isConstruction ? '周辺環境の調査' : '窓の位置・窓からの外の画像をアップ';
   document.querySelectorAll('.guide-caption-1').forEach(function(el) {
     el.textContent = isConstruction ? '更地の中央に立つ' : '窓の前に立つ';
   });
