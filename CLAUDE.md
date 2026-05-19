@@ -518,6 +518,12 @@ PHOTO_TAB_MAP = {
 - 土地・屋外モード撮影ガイドを物件モードと同一アンバーカードデザインに統一（`construction-guide-section`・landshoot.png・「詳しくみる」ボタン）・タイトルをセンター揃えに修正
 - 撮影ガイドブロック内の全画像を `max-width:80px` → `max-width:120px` に拡大（`renderWindowCard` yotoImgMap・`selYoto` yotoImgMap・land mode landshoot.png）
 - 撮影ガイドブロック内の縦セパレーターを `height:60px`/`height:80px` → `height:100px` に統一（物件・土地両モード）
+- 物件・室内モードの遮蔽物入力UIを刷新：「正面（常時表示）＋左右方向（任意展開）」構造に変更
+  - 建物高さ選択肢を 0/4/7/10/12/16/25/40m の8段階に更新
+  - `toggleSideObstruction(i)` / `setWinSideObstH(i, side, val)` 関数追加
+  - `setWinDir` に左右ラベル自動更新ロジック追加（南の窓→左:南東・右:南西 等）
+  - `makeDefaultWindow` に `sideObst: { left: 0, right: 0 }` 追加
+  - `calcWindowHeatmap` に左右遮蔽補正を追加（signed azDiff × sin factor で方位角依存フェード）
 
 ---
 
