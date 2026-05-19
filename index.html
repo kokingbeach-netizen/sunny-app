@@ -1686,7 +1686,13 @@ function renderPhotoCards(i, w) {
     + '</div>'
     // ── 建物セクション
     + '<div id="obs-bld-' + i + '" style="display:' + (showBld ? 'block' : 'none') + ';margin-top:8px;">'
-    +   '<div style="font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;">\u5efa\u7269\u306e\u9ad8\u3055 <span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 6px;border-radius:4px;">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></div>'
+    +   '<div style="font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;">'
+    +     '<span style="background:rgba(245,166,35,0.15);color:#D4880F;padding:3px 8px;border-radius:4px;font-weight:700;margin-right:6px;">\u6b63\u9762</span>'
+    +     '<span id="obst-dir-label-' + i + '" style="font-size:11px;color:#6B7280;font-weight:700;">'
+    +     (windowStates[i].dir ? windowStates[i].dir : '\u2015\u2015')
+    +     '</span>'
+    +     '<span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 6px;border-radius:4px;margin-left:6px;">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span>'
+    +   '</div>'
     +   '<select class="finput" style="width:100%;margin-bottom:8px;" onchange="setWinBldH(' + i + ',this.value)">'
     +     newBldHOpts(w.bldH)
     +   '</select>'
@@ -2012,6 +2018,8 @@ function setWinDir(i, dir) {
     if (leftEl)  leftEl.textContent  = labels.left;
     if (rightEl) rightEl.textContent = labels.right;
   }
+  var obstDirLabel = document.getElementById('obst-dir-label-' + i);
+  if (obstDirLabel) obstDirLabel.textContent = dir;
   // 選択済み窓カード全体にオレンジ枠
   windowStates.forEach(function(w, idx) {
     var card = document.getElementById('win-card-' + idx);
