@@ -1602,85 +1602,133 @@ function renderPhotoCards(i, w) {
   });
   html += '</div>';
 
-  // 窓周囲の遮蔽物入力（正面 + 左右任意展開）
+  // 窓周囲の遮蔽物入力
+  var surr = w.surroundings || [];
+  var obsType = w.obstructionType || 'none';
+  var curTreeType = surr.indexOf('evergreen') !== -1 ? 'evergreen' : 'deciduous';
+  var treeHOptions = '<option value=""' + (w.treeH === null || w.treeH === undefined ? ' selected' : '') + '>-- \u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044 --</option>'
+    + [
+      [7,  '\u4f4e\u3044 1-2\u968e (7m)'],
+      [15, '\u4e2d 3-5\u968e (15m)'],
+      [30, '\u9ad8\u3044 6-10\u968e (30m)'],
+      [40, '\u3068\u3066\u3082\u9ad8\u3044 10\u968e\u4ee5\u4e0a (40m)']
+    ].map(function(item) {
+      return '<option value="' + item[0] + '"' + (w.treeH === item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+    }).join('');
+  var treeDist0 = (w.treeDist !== undefined && w.treeDist !== null) ? w.treeDist : 15;
+  var treeDistOptions = [
+    [3,  '\u63a5\u8fd1 \uff5e5m'],
+    [7,  '\u8fd1\u3044 5\uff5e10m'],
+    [15, '\u3084\u3084\u8fd1\u3044 10\uff5e20m'],
+    [27, '\u666e\u901a 20\uff5e35m'],
+    [45, '\u9060\u3044 35m\uff5e']
+  ].map(function(item) {
+    return '<option value="' + item[0] + '"' + (treeDist0 == item[0] ? ' selected' : '') + '>' + escHtml(item[1]) + '</option>';
+  }).join('');
+  var showBld  = obsType === 'building' || obsType === 'both';
+  var showTree = obsType === 'tree'     || obsType === 'both';
   var newBldHOpts = function(val) {
     var opts = [
-      ['', '-- 選択 --'],
-      ['0', 'なし'],
-      ['4', '1階建て（約4m）'],
-      ['7', '2階建て（約7m）'],
-      ['10', '3階建て（約10m）'],
-      ['12', '4階建て（約12m）'],
-      ['16', '5〜6階（約16m）'],
-      ['25', '7〜9階（約25m）'],
-      ['40', '10階以上（約40m）']
+      ['', '-- \u9078\u629e --'],
+      ['0', '\u306a\u3057'],
+      ['4', '1\u968e\u5efa\u3066\uff08\u7d044m\uff09'],
+      ['7', '2\u968e\u5efa\u3066\uff08\u7d047m\uff09'],
+      ['10', '3\u968e\u5efa\u3066\uff08\u7d0410m\uff09'],
+      ['12', '4\u968e\u5efa\u3066\uff08\u7d0412m\uff09'],
+      ['16', '5\uff5e6\u968e\uff08\u7d0416m\uff09'],
+      ['25', '7\uff5e9\u968e\uff08\u7d0425m\uff09'],
+      ['40', '10\u968e\u4ee5\u4e0a\uff08\u7d0440m\uff09']
     ];
     return opts.map(function(o) {
-      var sel = (val === null && o[0] === '') || (val !== null && parseFloat(o[0]) === val && o[0] !== '') ? ' selected' : '';
-      return '<option value="' + o[0] + '"' + sel + '>' + escHtml(o[1]) + '</option>';
+      var sel = (val === null && o[0] === '') || (val !== null && o[0] !== '' && parseFloat(o[0]) === val) ? ' selected' : '';
+      return '<option value="' + o[0] + '"' + sel + '>' + o[1] + '</option>';
     }).join('');
   };
   var sideOpts = function(val) {
     var opts = [
-      ['0', 'なし'],
-      ['4', '1階建て（約4m）'],
-      ['7', '2階建て（約7m）'],
-      ['10', '3階建て（約10m）'],
-      ['12', '4階建て（約12m）'],
-      ['16', '5〜6階（約16m）'],
-      ['25', '7〜9階（約25m）'],
-      ['40', '10階以上（約40m）']
+      ['0', '\u306a\u3057'],
+      ['4', '1\u968e\u5efa\u3066\uff08\u7d044m\uff09'],
+      ['7', '2\u968e\u5efa\u3066\uff08\u7d047m\uff09'],
+      ['10', '3\u968e\u5efa\u3066\uff08\u7d0410m\uff09'],
+      ['12', '4\u968e\u5efa\u3066\uff08\u7d0412m\uff09'],
+      ['16', '5\uff5e6\u968e\uff08\u7d0416m\uff09'],
+      ['25', '7\uff5e9\u968e\uff08\u7d0425m\uff09'],
+      ['40', '10\u968e\u4ee5\u4e0a\uff08\u7d0440m\uff09']
     ];
     return opts.map(function(o) {
-      return '<option value="' + o[0] + '"' + (parseFloat(o[0]) === val ? ' selected' : '') + '>' + escHtml(o[1]) + '</option>';
+      return '<option value="' + o[0] + '"' + (parseFloat(o[0]) === val ? ' selected' : '') + '>' + o[1] + '</option>';
     }).join('');
   };
   var sideO = w.sideObst || { left: 0, right: 0 };
-  var sideLabels = {
-    '南':  { left: '南東', right: '南西' },
-    '北':  { left: '北西', right: '北東' },
-    '東':  { left: '北東', right: '南東' },
-    '西':  { left: '南西', right: '北西' },
-    '南東':{ left: '東',   right: '南'   },
-    '南西':{ left: '南',   right: '西'   },
-    '北東':{ left: '北',   right: '東'   },
-    '北西':{ left: '西',   right: '北'   }
+  var sideLabelMap = {
+    '\u5357':  { left: '\u5357\u6771', right: '\u5357\u897f' },
+    '\u5317':  { left: '\u5317\u897f', right: '\u5317\u6771' },
+    '\u6771':  { left: '\u5317\u6771', right: '\u5357\u6771' },
+    '\u897f':  { left: '\u5357\u897f', right: '\u5317\u897f' },
+    '\u5357\u6771':{ left: '\u6771',   right: '\u5357'   },
+    '\u5357\u897f':{ left: '\u5357',   right: '\u897f'   },
+    '\u5317\u6771':{ left: '\u5317',   right: '\u6771'   },
+    '\u5317\u897f':{ left: '\u897f',   right: '\u5317'   }
   };
-  var lblMap = sideLabels[w.dir] || { left: '左', right: '右' };
+  var lblMap = sideLabelMap[w.dir] || { left: '\u5de6', right: '\u53f3' };
   html += '<div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:10px;padding:12px 14px;">'
     + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:10px;">\u7a93\u306e\u5468\u56f2\u306e\u9060\u853d\u7269\u306b\u3064\u3044\u3066</div>'
-    // ── 正面（常に表示）
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-    +   '<span style="font-size:11px;font-weight:700;background:rgba(245,166,35,0.15);color:#D4880F;padding:3px 8px;border-radius:4px;white-space:nowrap;width:42px;text-align:center;">\u6b63\u9762</span>'
-    +   '<select class="finput" style="flex:1;" onchange="setWinBldH(' + i + ',this.value)">'
-    +     newBldHOpts(w.bldH)
+    // ── 遮蔽物タイプ選択
+    + '<div style="margin-bottom:8px;">'
+    +   '<div style="font-size:11px;color:#6B7280;margin-bottom:6px;">\u9060\u853d\u7269\u306e\u7a2e\u985e <span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 6px;border-radius:4px;">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></div>'
+    +   '<select class="finput" onchange="setWinObstructionType(' + i + ',this.value)" style="margin-bottom:0;">'
+    +     '<option value="none"'     + (obsType === 'none'     ? ' selected' : '') + '>\u306a\u3057</option>'
+    +     '<option value="building"' + (obsType === 'building' ? ' selected' : '') + '>\u5efa\u7269</option>'
+    +     '<option value="tree"'     + (obsType === 'tree'     ? ' selected' : '') + '>\u6a39\u6728</option>'
+    +     '<option value="both"'     + (obsType === 'both'     ? ' selected' : '') + '>\u5efa\u7269\uff0b\u6a39\u6728</option>'
     +   '</select>'
     + '</div>'
-    + '<div id="obs-bld-dist-' + i + '" style="display:' + (w.bldH > 0 ? 'block' : 'none') + ';margin-bottom:8px;">'
-    +   '<select class="finput" style="width:100%;" onchange="setWinBldDist(' + i + ',this.value)">' + bldDistOptions + '</select>'
-    + '</div>'
-    // ── 左右方向トグル
-    + '<div style="margin-top:8px;border-top:0.5px solid rgba(0,0,0,0.08);padding-top:8px;">'
-    +   '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSideObstruction(' + i + ')">'
-    +     '<span style="font-size:11px;color:#6B7280;">\u5de6\u53f3\u65b9\u5411\u3082\u5165\u529b\u3059\u308b</span>'
-    +     '<span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 7px;border-radius:4px;font-weight:500;">\u7cbe\u5ea6\u5411\u4e0a</span>'
-    +     '<span id="side-obst-arrow-' + i + '" style="font-size:12px;color:#9CA3AF;margin-left:6px;">\u25bc</span>'
+    // ── 建物セクション
+    + '<div id="obs-bld-' + i + '" style="display:' + (showBld ? 'block' : 'none') + ';margin-top:8px;">'
+    +   '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+    +     '<span style="font-size:11px;font-weight:700;background:rgba(245,166,35,0.15);color:#D4880F;padding:3px 8px;border-radius:4px;white-space:nowrap;width:42px;text-align:center;">\u6b63\u9762</span>'
+    +     '<select class="finput" style="flex:1;" onchange="setWinBldH(' + i + ',this.value)">'
+    +       newBldHOpts(w.bldH)
+    +     '</select>'
     +   '</div>'
-    +   '<div id="side-obst-panel-' + i + '" style="display:none;margin-top:10px;">'
-    // 左方向
-    +     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-    +       '<span id="side-left-label-' + i + '" style="font-size:11px;font-weight:500;background:var(--gray-lt,#EFEFEC);color:#6B7280;padding:3px 6px;border-radius:4px;white-space:nowrap;min-width:42px;text-align:center;">' + escHtml(lblMap.left) + '</span>'
-    +       '<select class="finput" style="flex:1;" onchange="setWinSideObstH(' + i + ',\'left\',this.value)">'
-    +         sideOpts(sideO.left)
-    +       '</select>'
+    +   '<div id="obs-bld-dist-' + i + '" style="display:' + (w.bldH > 0 ? 'block' : 'none') + ';margin-bottom:8px;">'
+    +     '<select class="finput" style="width:100%;" onchange="setWinBldDist(' + i + ',this.value)">' + bldDistOptions + '</select>'
+    +   '</div>'
+    // ── 左右方向トグル（建物セクション内）
+    +   '<div style="margin-top:4px;border-top:0.5px solid rgba(0,0,0,0.08);padding-top:8px;">'
+    +     '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSideObstruction(' + i + ')">'
+    +       '<span style="font-size:11px;color:#6B7280;">\u5de6\u53f3\u65b9\u5411\u3082\u5165\u529b\u3059\u308b</span>'
+    +       '<span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 7px;border-radius:4px;font-weight:500;">\u7cbe\u5ea6\u5411\u4e0a</span>'
+    +       '<span id="side-obst-arrow-' + i + '" style="font-size:12px;color:#9CA3AF;margin-left:6px;">\u25bc</span>'
     +     '</div>'
-    // 右方向
-    +     '<div style="display:flex;align-items:center;gap:8px;">'
-    +       '<span id="side-right-label-' + i + '" style="font-size:11px;font-weight:500;background:var(--gray-lt,#EFEFEC);color:#6B7280;padding:3px 6px;border-radius:4px;white-space:nowrap;min-width:42px;text-align:center;">' + escHtml(lblMap.right) + '</span>'
-    +       '<select class="finput" style="flex:1;" onchange="setWinSideObstH(' + i + ',\'right\',this.value)">'
-    +         sideOpts(sideO.right)
-    +       '</select>'
+    +     '<div id="side-obst-panel-' + i + '" style="display:none;margin-top:10px;">'
+    +       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+    +         '<span id="side-left-label-' + i + '" style="font-size:11px;font-weight:500;background:var(--gray-lt,#EFEFEC);color:#6B7280;padding:3px 6px;border-radius:4px;white-space:nowrap;min-width:42px;text-align:center;">' + escHtml(lblMap.left) + '</span>'
+    +         '<select class="finput" style="flex:1;" onchange="setWinSideObstH(' + i + ',\'left\',this.value)">'
+    +           sideOpts(sideO.left)
+    +         '</select>'
+    +       '</div>'
+    +       '<div style="display:flex;align-items:center;gap:8px;">'
+    +         '<span id="side-right-label-' + i + '" style="font-size:11px;font-weight:500;background:var(--gray-lt,#EFEFEC);color:#6B7280;padding:3px 6px;border-radius:4px;white-space:nowrap;min-width:42px;text-align:center;">' + escHtml(lblMap.right) + '</span>'
+    +         '<select class="finput" style="flex:1;" onchange="setWinSideObstH(' + i + ',\'right\',this.value)">'
+    +           sideOpts(sideO.right)
+    +         '</select>'
+    +       '</div>'
     +     '</div>'
+    +   '</div>'
+    + '</div>'
+    // ── 樹木セクション
+    + '<div id="obs-tree-' + i + '" style="display:' + (showTree ? 'block' : 'none') + ';margin-top:8px;">'
+    +   '<label style="font-size:11px;">\u6a39\u6728\u306e\u7a2e\u985e</label>'
+    +   '<select style="width:100%;margin-bottom:8px;" onchange="setWinTreeType(' + i + ',this.value)">'
+    +     '<option value="evergreen"' + (curTreeType === 'evergreen' ? ' selected' : '') + '>\u5e38\u7dd1\u6a39\u30fb1\u5e74\u4e2d\u8449\u304c\u3042\u308b</option>'
+    +     '<option value="deciduous"' + (curTreeType === 'deciduous' ? ' selected' : '') + '>\u843d\u8449\u6a39\u30fb\u51ac\u306b\u8449\u304c\u843d\u3061\u308b</option>'
+    +   '</select>'
+    +   '<label style="font-size:11px;">\u6a39\u6728\u306e\u9ad8\u3055</label>'
+    +   '<select style="width:100%;margin-bottom:8px;" onchange="setWinTreeH(' + i + ',this.value)">' + treeHOptions + '</select>'
+    +   '<div id="obs-tree-dist-' + i + '" style="display:' + (w.treeH > 0 ? 'block' : 'none') + '">'
+    +     '<label style="font-size:11px;">\u6a39\u6728\u307e\u3067\u306e\u8ddd\u96e2</label>'
+    +     '<select style="width:100%;margin-bottom:8px;" onchange="setWinTreeDist(' + i + ',this.value)">' + treeDistOptions + '</select>'
     +   '</div>'
     + '</div>'
     + '</div>';
