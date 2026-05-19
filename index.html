@@ -1704,8 +1704,8 @@ function renderPhotoCards(i, w) {
     // ── 左右方向トグル（建物セクション内）
     +   '<div style="margin-top:4px;border-top:0.5px solid rgba(0,0,0,0.08);padding-top:8px;">'
     +     '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSideObstruction(' + i + ')">'
-    +       '<span style="font-size:11px;color:#6B7280;">\u5de6\u53f3\u65b9\u5411\u3082\u5165\u529b\u3059\u308b</span>'
-    +       '<span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 7px;border-radius:4px;font-weight:500;">\u7cbe\u5ea6\u5411\u4e0a</span>'
+    +       '<span id="side-obst-toggle-label-' + i + '" style="font-size:11px;color:#6B7280;">\u5de6\u53f3\u65b9\u5411\u3082\u5165\u529b\u3059\u308b</span>'
+    +       '<span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 6px;border-radius:4px;font-weight:400;">\u7cbe\u5ea6\u5411\u4e0a</span>'
     +       '<span id="side-obst-arrow-' + i + '" style="font-size:12px;color:#9CA3AF;margin-left:6px;">\u25bc</span>'
     +     '</div>'
     +     '<div id="side-obst-panel-' + i + '" style="display:none;margin-top:10px;">'
@@ -2021,6 +2021,10 @@ function setWinDir(i, dir) {
   }
   var obstDirLabel = document.getElementById('obst-dir-label-' + i);
   if (obstDirLabel) obstDirLabel.textContent = dir;
+  var toggleLabel = document.getElementById('side-obst-toggle-label-' + i);
+  if (toggleLabel && labels) {
+    toggleLabel.textContent = labels.left + '\u30fb' + labels.right + '\u65b9\u5411\u3082\u5165\u529b\u3059\u308b';
+  }
   // 選択済み窓カード全体にオレンジ枠
   windowStates.forEach(function(w, idx) {
     var card = document.getElementById('win-card-' + idx);
