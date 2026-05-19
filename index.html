@@ -1701,7 +1701,7 @@ function renderPhotoCards(i, w) {
     +     '<select class="finput" style="width:100%;" onchange="setWinBldDist(' + i + ',this.value)">' + bldDistOptions + '</select>'
     +   '</div>'
     // ── 左右方向トグル（建物セクション内）
-    +   '<div id="side-obst-toggle-' + i + '" style="margin-top:4px;border-top:0.5px solid rgba(0,0,0,0.08);padding-top:8px;">'
+    +   '<div id="side-obst-toggle-' + i + '" style="display:' + (showBld ? 'block' : 'none') + ';margin-top:4px;border-top:0.5px solid rgba(0,0,0,0.08);padding-top:8px;">'
     +     '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSideObstruction(' + i + ')">'
     +       '<span id="side-obst-toggle-label-' + i + '" style="font-size:11px;color:#6B7280;">\u5de6\u53f3\u65b9\u5411\u3082\u5165\u529b\u3059\u308b</span>'
     +       '<span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 6px;border-radius:4px;font-weight:400;">\u7cbe\u5ea6\u5411\u4e0a</span>'
@@ -1774,7 +1774,7 @@ function setWinObstructionType(i, val) {
   if (bldSec)  bldSec.style.display  = (val === 'building' || val === 'both') ? 'block' : 'none';
   if (treeSec) treeSec.style.display = (val === 'tree'     || val === 'both') ? 'block' : 'none';
   var sideToggle = document.getElementById('side-obst-toggle-' + i);
-  if (sideToggle) sideToggle.style.display = (val === 'tree') ? 'none' : '';
+  if (sideToggle) sideToggle.style.display = (val === 'building' || val === 'both') ? 'block' : 'none';
   updatePrecision();
 }
 function setWinBldH(i, val) {
