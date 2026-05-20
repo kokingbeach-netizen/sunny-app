@@ -3766,8 +3766,18 @@ function openScreenshot() {
       + '</div>';
   } else {
     var orMatrix = computeOrHeatmap(storedHeatmaps);
-    var orAll = orMatrix.reduce(function(acc, row) { return acc.concat(row); }, []);
-    var score = Math.round((orAll.reduce(function(a, b) { return a + b; }, 0) / orAll.length) * 100);
+    var lat = parseFloat(document.getElementById('lat').value);
+    var lng = parseFloat(document.getElementById('lng').value);
+    var validCells = [];
+    for (var m = 0; m < 12; m++) {
+      var ss = getSunriseSunset(m, lat, lng);
+      for (var t = 0; t < TIME_SLOTS.length; t++) {
+        var sw = (t + 1 < TIME_SLOTS.length) ? TIME_SLOTS[t+1] - TIME_SLOTS[t] : 2;
+        var mid = TIME_SLOTS[t] + sw / 2;
+        if (mid >= ss.rise && mid <= ss.set) validCells.push(orMatrix[m][t]);
+      }
+    }
+    var score = Math.round((validCells.reduce(function(a,b){return a+b;},0) / validCells.length) * 100);
     var seasons = getSeasonScoresFromMatrix(orMatrix);
     var comment = getScreenshotComment(score, windowStates);
     html = buildSummaryCard(score, seasons, orMatrix, addr, comment);
