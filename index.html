@@ -3082,7 +3082,7 @@ function buildHeatmapHtml(matrix, winIdx) {
   }
   html += '</tbody></table>';
   html += '<div class="hm-legend" style="font-size:12px;color:#555;margin-top:10px;line-height:2;">'
-    + '\ud83d\udfe5 100%\u3000\ud83d\udfe7 \u826f\u597d\u3000\ud83d\udfe8 \u8584\u65e5\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5ECD0;border-radius:2px;border:0.5px solid rgba(0,0,0,0.1);vertical-align:middle;margin-right:3px;"></span>\u308f\u305a\u304b'
+    + '<span style="display:inline-block;width:12px;height:12px;background:#E8420A;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>100%\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5A623;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>\u826f\u597d\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5D080;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>\u8584\u65e5\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5ECD0;border-radius:2px;border:0.5px solid rgba(0,0,0,0.1);vertical-align:middle;margin-right:3px;"></span>\u308f\u305a\u304b'
     + '</div>';
   if (wi >= 0) {
     html += '<p class="hm-desc" style="color:#888;margin-top:6px;">\u30de\u30b9\u3092\u30bf\u30c3\u30d7\u3059\u308b\u3068\u305d\u306e\u6642\u9593\u5e2f\u306e\u65e5\u5f53\u305f\u308a\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3\u3092\u8868\u793a\u3057\u307e\u3059\u3002</p>';
@@ -3407,7 +3407,7 @@ function renderHeatmapTable(matrix) {
 
   html += '</tbody></table>';
   html += '<div class="hm-legend" style="font-size:12px;color:#555;margin-top:10px;line-height:2;">'
-    + '\ud83d\udfe5 100%\u3000\ud83d\udfe7 \u826f\u597d\u3000\ud83d\udfe8 \u8584\u65e5\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5ECD0;border-radius:2px;border:0.5px solid rgba(0,0,0,0.1);vertical-align:middle;margin-right:3px;"></span>\u308f\u305a\u304b'
+    + '<span style="display:inline-block;width:12px;height:12px;background:#E8420A;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>100%\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5A623;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>\u826f\u597d\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5D080;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>\u8584\u65e5\u3000<span style="display:inline-block;width:12px;height:12px;background:#F5ECD0;border-radius:2px;border:0.5px solid rgba(0,0,0,0.1);vertical-align:middle;margin-right:3px;"></span>\u308f\u305a\u304b'
     + '</div>';
   html += '<p class="hm-desc">\u5404\u30de\u30b9\u306f\u305d\u306e\u6642\u9593\u5e2f\uff082\u6642\u9593\uff09\u306e\u65e5\u7167\u7387\u3092\u793a\u3057\u3066\u3044\u307e\u3059\u3002</p>';
   document.getElementById('heatmapTable').innerHTML = html;
