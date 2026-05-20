@@ -1674,8 +1674,8 @@ function renderPhotoCards(i, w) {
     '\u5317\u897f':{ left: '\u897f',   right: '\u5317'   }
   };
   var lblMap = sideLabelMap[w.dir] || { left: '\u5de6', right: '\u53f3' };
-  html += '<div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:10px;padding:12px 14px;">'
-    + '<div style="font-size:11px;font-weight:700;color:#D4880F;margin-bottom:10px;">\u7a93\u306e\u5468\u56f2\u306e\u9060\u853d\u7269\u306b\u3064\u3044\u3066</div>'
+  html += '<label style="margin-top:16px;">\u7a93\u306e\u5468\u56f2\u306e\u9060\u853d\u7269\u306b\u3064\u3044\u3066</label>'
+    + '<div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:10px;padding:14px;">'
     // ── 遮蔽物タイプ選択
     + '<div style="margin-bottom:8px;">'
     +   '<div style="font-size:11px;color:#6B7280;margin-bottom:6px;">\u9060\u853d\u7269\u306e\u7a2e\u985e <span style="font-size:10px;background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 6px;border-radius:4px;">\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a</span></div>'
