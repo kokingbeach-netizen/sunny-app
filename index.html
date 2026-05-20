@@ -2832,7 +2832,8 @@ function displayResults(score, winScores, heatmaps) {
 
   var html = '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:20px 16px 8px;">';
 
-  html += buildSummaryCard(Math.round(score), seasons, aggMatrix, addr, comment);
+  var judgmentLabel = windowStates.length <= 1 ? '年間判定' : '年間総合判定';
+  html += buildSummaryCard(Math.round(score), seasons, aggMatrix, addr, comment, undefined, judgmentLabel);
 
   if (heatmaps.length >= 2) {
     heatmaps.forEach(function(hm, i) {
@@ -3667,8 +3668,9 @@ function getWindowComment(dir) {
   return dirMap[dir] || '窓から差し込む光が、快適な住環境をつくり出しています。';
 }
 
-function buildSummaryCard(score, seasons, matrix, addr, comment, floor) {
+function buildSummaryCard(score, seasons, matrix, addr, comment, floor, label) {
   var floorLabel = floor ? floor + '階　' : '';
+  var catchLabel = label || '総合判定';
   return '<div class="sc-card">'
     + '<div class="sc-top-black">'
     + '<span class="sc-logo-w">☀ SUNNY</span>'
@@ -3678,7 +3680,7 @@ function buildSummaryCard(score, seasons, matrix, addr, comment, floor) {
     + '<div class="sc-catch-left">'
     + '<div class="sc-catch-q">この物件の<br>日当たりは？</div>'
     + '<div class="sc-catch-divider"></div>'
-    + '<div class="sc-catch-label-total">総合判定</div>'
+    + '<div class="sc-catch-label-total">' + escHtml(catchLabel) + '</div>'
     + '</div>'
     + '<div class="sc-catch-sep"></div>'
     + '<div class="sc-catch-right">'
@@ -3780,7 +3782,8 @@ function openScreenshot() {
     var score = Math.round((validCells.reduce(function(a,b){return a+b;},0) / validCells.length) * 100);
     var seasons = getSeasonScoresFromMatrix(orMatrix);
     var comment = getScreenshotComment(score, windowStates);
-    html = buildSummaryCard(score, seasons, orMatrix, addr, comment);
+    var judgmentLabel = windowStates.length <= 1 ? '年間判定' : '年間総合判定';
+    html = buildSummaryCard(score, seasons, orMatrix, addr, comment, undefined, judgmentLabel);
 
     if (storedHeatmaps.length >= 2) {
       storedHeatmaps.forEach(function(hm, i) {
