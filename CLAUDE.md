@@ -539,6 +539,13 @@ PHOTO_TAB_MAP = {
   - 「窓の周囲の遮蔽物について」タイトルを `<label>` タグ（グレー系・font-size:11px）に変更
   - コンテンツラッパーを `background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:10px; padding:14px` に変更
   - 「窓からの写真（3方角）」見出しと同一スタイルに統一
+- `openScreenshot` のスコア計算を `orAll` 方式（全セル平均）→ `validCells` 方式（日の出・日の入り考慮）に修正（`displayResults` と統一）
+- `buildSummaryCard` に `label` 引数追加・`buildWindowCard` に `label` 引数追加、判定ラベルを窓数で出し分け
+  - 窓1つ：「{方角}の窓の年間判定」
+  - 窓複数・サマリー：「この部屋の年間判定」
+  - 窓複数・窓別カード：「{方角}の窓の年間判定」
+  - `displayResults` / `openScreenshot` 両方に適用
+- ヒートマップ凡例を全4項目（100%・良好・薄日・わずか）`display:inline-block` カラースウォッチ `<span>` に統一（絵文字との混在を廃止し縦ズレ解消）
 
 ---
 
