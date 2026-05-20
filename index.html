@@ -2832,7 +2832,9 @@ function displayResults(score, winScores, heatmaps) {
 
   var html = '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:20px 16px 8px;">';
 
-  var judgmentLabel = windowStates.length <= 1 ? '年間判定' : '年間総合判定';
+  var judgmentLabel = windowStates.length === 1
+    ? (windowStates[0].dir || '') + 'の窓の年間判定'
+    : 'この部屋の年間判定';
   html += buildSummaryCard(Math.round(score), seasons, aggMatrix, addr, comment, undefined, judgmentLabel);
 
   if (heatmaps.length >= 2) {
@@ -2842,7 +2844,8 @@ function displayResults(score, winScores, heatmaps) {
       var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
       var winSeasons = getSeasonScoresFromMatrix(hm);
       var winComment = getWindowComment(w.dir);
-      html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
+      var winLabel = (w.dir || '') + 'の窓の年間判定';
+      html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment, winLabel);
     });
   }
 
@@ -3706,7 +3709,8 @@ function buildSummaryCard(score, seasons, matrix, addr, comment, floor, label) {
     + '</div>';
 }
 
-function buildWindowCard(w, i, score, seasons, matrix, comment) {
+function buildWindowCard(w, i, score, seasons, matrix, comment, label) {
+  var winCatchLabel = label || (escHtml(w.dir || '') + 'の窓の年間判定');
   return '<div class="sc-card">'
     + '<div class="sc-top-black">'
     + '<span class="sc-logo-w">☀ SUNNY</span>'
@@ -3716,7 +3720,7 @@ function buildWindowCard(w, i, score, seasons, matrix, comment) {
     + '<div class="sc-catch-left">'
     + '<div class="sc-catch-q">この窓の<br>日当たりは？</div>'
     + '<div class="sc-catch-divider"></div>'
-    + '<div class="sc-catch-label-win">窓' + (i+1) + '（' + escHtml(w.dir || '') + '向き）<br>の判定</div>'
+    + '<div class="sc-catch-label-win">' + winCatchLabel + '</div>'
     + '</div>'
     + '<div class="sc-catch-sep"></div>'
     + '<div class="sc-catch-right">'
@@ -3782,7 +3786,9 @@ function openScreenshot() {
     var score = Math.round((validCells.reduce(function(a,b){return a+b;},0) / validCells.length) * 100);
     var seasons = getSeasonScoresFromMatrix(orMatrix);
     var comment = getScreenshotComment(score, windowStates);
-    var judgmentLabel = windowStates.length <= 1 ? '年間判定' : '年間総合判定';
+    var judgmentLabel = windowStates.length === 1
+      ? (windowStates[0].dir || '') + 'の窓の年間判定'
+      : 'この部屋の年間判定';
     html = buildSummaryCard(score, seasons, orMatrix, addr, comment, undefined, judgmentLabel);
 
     if (storedHeatmaps.length >= 2) {
@@ -3792,7 +3798,8 @@ function openScreenshot() {
         var winScore = Math.round((all.reduce(function(a, b) { return a + b; }, 0) / all.length) * 100);
         var winSeasons = getSeasonScoresFromMatrix(hm);
         var winComment = getWindowComment(w.dir);
-        html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment);
+        var winLabel = (w.dir || '') + 'の窓の年間判定';
+        html += buildWindowCard(w, i, winScore, winSeasons, hm, winComment, winLabel);
       });
     }
     ssHeatmapHtml = '<div style="padding:16px;overflow-x:auto;">'
