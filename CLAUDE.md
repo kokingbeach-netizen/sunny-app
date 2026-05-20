@@ -527,6 +527,18 @@ PHOTO_TAB_MAP = {
   - 遮蔽物タイプ選択（なし/建物/樹木/建物＋樹木）を復元し、左右トグルは建物セクション内に配置
   - 左右セレクトは高さのみ（種類選択なし）・正面と同じ8段階選択肢
 - `#shootDetailModal` に「なぜ45°なのか？」の解説項目を追加（黄金角度の理由：高さ＝距離で仰角45°、住宅地環境との対応）
+- 樹木セクション（`obs-tree-{i}`）に建物セクションと同一の左右トグルUIを追加
+  - 方角バッジ（`obst-tree-dir-label-{i}`）＋「任意・精度向上」バッジを追加
+  - `side-tree-toggle-{i}` / `side-tree-panel-{i}` / `side-tree-left-label-{i}` / `side-tree-right-label-{i}` を追加
+  - `toggleSideTreeObstruction(i)` / `setWinSideTreeH(i, side, val)` 関数追加
+  - `makeDefaultWindow` に `sideTreeObst: { left: 0, right: 0 }` 追加
+  - `setWinDir` に樹木側ラベル更新ロジック追加（`obst-tree-dir-label` / `side-tree-toggle-label` / 左右ラベル）
+  - `setWinObstructionType` に `side-tree-toggle` の表示制御追加（tree/both のみ表示）
+  - `calcWindowHeatmap` に `sideTreeObst` の左右遮蔽補正を追加（建物側と同ロジック）
+- 遮蔽物セクションのデザイン変更：オレンジ枠ボックス→外出し `<label>` 見出し＋白背景カード
+  - 「窓の周囲の遮蔽物について」タイトルを `<label>` タグ（グレー系・font-size:11px）に変更
+  - コンテンツラッパーを `background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:10px; padding:14px` に変更
+  - 「窓からの写真（3方角）」見出しと同一スタイルに統一
 
 ---
 
