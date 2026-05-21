@@ -1590,7 +1590,17 @@ function makeDefaultWindow(i) {
 // Render 3-direction photo cards
 // ============================================================
 function renderPhotoCards(i, w) {
-  var tabs = PHOTO_TAB_MAP[w.dir] || PHOTO_TAB_MAP['\u5357'];
+  var tabs = (PHOTO_TAB_MAP && PHOTO_TAB_MAP[w.dir]) || PHOTO_TAB_MAP['\u5357'];
+  var tabsForLabel = (PHOTO_TAB_MAP && PHOTO_TAB_MAP[w.dir]) || {};
+  var centerLabel = w.dir
+    ? '\ud83d\udfe0 ' + (tabsForLabel.center || w.dir) + '\uff08\u6b63\u9762\uff09'
+    : '\ud83d\udfe0 \u6b63\u9762';
+  var leftLabel = w.dir
+    ? '\u26ab ' + (tabsForLabel.left || '\u5de6') + '\uff08\u5de6\u5074\uff09'
+    : '\u26ab \u5de6\u5074';
+  var rightLabel = w.dir
+    ? '\u26ab ' + (tabsForLabel.right || '\u53f3') + '\uff08\u53f3\u5074\uff09'
+    : '\u26ab \u53f3\u5074';
   var bldDistOptions = [
     [3, '\u63a5\u8fd1 \uff5e5m'],
     [7, '\u8fd1\u3044 5\uff5e10m'],
@@ -1727,9 +1737,9 @@ function renderPhotoCards(i, w) {
   // ══════════════════════════════════════
   html += '<div class="dir-single-block">'
     + '<div class="dir-single-head">'
-    +   '<span id="obst-dir-label-' + i + '" style="background:rgba(245,166,35,0.15);color:#D4880F;padding:2px 8px;border-radius:4px;margin-right:6px;">' + escHtml(w.dir || '\u2015\u2015') + '</span>'
-    +   escHtml(tabs.center) + '\uff08\u6b63\u9762\uff09'
+    +   escHtml(centerLabel)
     +   '<span style="color:#E8420A;font-size:11px;font-weight:400;margin-left:8px;">\u2605 \u6700\u91cd\u8981</span>'
+    +   '<span id="obst-dir-label-' + i + '" style="display:none;"></span>'
     + '</div>'
     + onePhoto('center')
     + '<label style="margin-top:12px;">\u9060\u853d\u7269\uff08\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a\uff09</label>'
@@ -1785,9 +1795,9 @@ function renderPhotoCards(i, w) {
   var showSideTreeL = sideTypeL === 'tree'     || sideTypeL === 'both';
   html += '<div class="dir-single-block">'
     + '<div class="dir-single-head">'
-    +   '<span id="side-left-label-' + i + '" style="background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 8px;border-radius:4px;margin-right:6px;">' + escHtml(lblMap.left) + '</span>'
-    +   escHtml(tabs.left) + '\uff08\u5de6\u5074\uff09'
+    +   escHtml(leftLabel)
     +   '<span style="font-size:11px;color:#9CA3AF;font-weight:400;margin-left:8px;">\u4efb\u610f</span>'
+    +   '<span id="side-left-label-' + i + '" style="display:none;">' + escHtml(lblMap.left) + '</span>'
     + '</div>'
     + onePhoto('left')
     + '<label style="margin-top:12px;">\u9060\u853d\u7269\uff08\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a\uff09</label>'
@@ -1831,9 +1841,9 @@ function renderPhotoCards(i, w) {
   var showSideTreeR = sideTypeR === 'tree'     || sideTypeR === 'both';
   html += '<div class="dir-single-block">'
     + '<div class="dir-single-head">'
-    +   '<span id="side-right-label-' + i + '" style="background:rgba(0,0,0,0.06);color:#6B7280;padding:2px 8px;border-radius:4px;margin-right:6px;">' + escHtml(lblMap.right) + '</span>'
-    +   escHtml(tabs.right) + '\uff08\u53f3\u5074\uff09'
+    +   escHtml(rightLabel)
     +   '<span style="font-size:11px;color:#9CA3AF;font-weight:400;margin-left:8px;">\u4efb\u610f</span>'
+    +   '<span id="side-right-label-' + i + '" style="display:none;">' + escHtml(lblMap.right) + '</span>'
     + '</div>'
     + onePhoto('right')
     + '<label style="margin-top:12px;">\u9060\u853d\u7269\uff08\u4efb\u610f\u30fb\u7cbe\u5ea6\u5411\u4e0a\uff09</label>'
