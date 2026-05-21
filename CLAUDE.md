@@ -546,6 +546,21 @@ PHOTO_TAB_MAP = {
   - 窓複数・窓別カード：「{方角}の窓の年間判定」
   - `displayResults` / `openScreenshot` 両方に適用
 - ヒートマップ凡例を全4項目（100%・良好・薄日・わずか）`display:inline-block` カラースウォッチ `<span>` に統一（絵文字との混在を廃止し縦ズレ解消）
+- `renderPhotoCards` を3ブロック縦並び構造に刷新（center=正面★最重要 / left=左側 / right=右側）
+  - `.dir-block-wrap` / `.dir-single-block` / `.dir-single-head` CSS追加
+  - 各ブロックに写真アップ＋遮蔽物UIをそれぞれ独立配置
+- 左右ブロックに「遮蔽物の種類」セレクト追加（なし/建物/樹木/建物＋樹木）
+  - `setSideObstType(i, side, val)` 関数追加
+  - 建物高さを `side-bld-wrap-{i}-{side}`・樹木高さを `side-tree-wrap-{i}-{side}` でラップし条件表示
+  - `makeDefaultWindow` に `sideObstType: { left: 'none', right: 'none' }` 追加
+- 左右遮蔽物に独立距離フィールドを追加
+  - `makeDefaultWindow` に `sideObstDist: { left:15, right:15 }` / `sideTreeObstDist: { left:15, right:15 }` 追加
+  - `setWinSideObstDist(i, side, val)` / `setWinSideTreeObstDist(i, side, val)` 関数追加
+  - `calcWindowHeatmap` の左右遮蔽距離を `sideObstDist[sideDir]` / `sideTreeObstDist[sideDirT]` で独立参照
+- 写真プレビュー `.dir-card-thumb` を `height:220px / object-fit:contain / background:#000` に変更
+- `showLightSim`：日照なし（val ≤ 0）セルをタップ時はシミュレーション非表示・「☁️ この時間帯は日照がありません」を表示
+- `initResultMap`：Leaflet地図を非表示にし Google マップリンクボタン（`.gmap-link-btn`・アンバーボーダースタイル）のみ表示
+- `parseLatLng` で緯度経度確定後、住所フィールドが空の場合 Nominatim 逆ジオコーディングで住所を自動入力
 
 ---
 
