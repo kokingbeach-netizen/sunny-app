@@ -1590,7 +1590,7 @@ function makeDefaultWindow(i) {
 // Render 3-direction photo cards
 // ============================================================
 function renderPhotoCards(i, w) {
-  var tabs = (PHOTO_TAB_MAP && PHOTO_TAB_MAP[w.dir]) || PHOTO_TAB_MAP['\u5357'];
+  var tabs = w.dir ? (PHOTO_TAB_MAP[w.dir] || { center: w.dir, left: '\u5de6\u5074', right: '\u53f3\u5074' }) : { center: '\u6b63\u9762', left: '\u5de6\u5074', right: '\u53f3\u5074' };
   var tabsForLabel = (PHOTO_TAB_MAP && PHOTO_TAB_MAP[w.dir]) || {};
   var centerLabel = w.dir
     ? '\ud83d\udfe0 ' + (tabsForLabel.center || w.dir) + '\uff08\u6b63\u9762\uff09'
