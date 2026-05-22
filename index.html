@@ -1590,17 +1590,17 @@ function makeDefaultWindow(i) {
 // Render 3-direction photo cards
 // ============================================================
 function renderPhotoCards(i, w) {
-  var tabs = w.dir ? (PHOTO_TAB_MAP[w.dir] || { center: w.dir, left: '\u5de6\u5074', right: '\u53f3\u5074' }) : { center: '\u6b63\u9762', left: '\u5de6\u5074', right: '\u53f3\u5074' };
+  var tabs = w.dir ? (PHOTO_TAB_MAP[w.dir] || { center: w.dir, left: '\u659c\u3081\u5de6', right: '\u659c\u3081\u53f3' }) : { center: '\u6b63\u9762', left: '\u659c\u3081\u5de6', right: '\u659c\u3081\u53f3' };
   var tabsForLabel = (PHOTO_TAB_MAP && PHOTO_TAB_MAP[w.dir]) || {};
   var centerLabel = w.dir
     ? '\ud83d\udfe0 ' + (tabsForLabel.center || w.dir) + '\uff08\u6b63\u9762\uff09'
     : '\ud83d\udfe0 \u6b63\u9762';
   var leftLabel = w.dir
-    ? '\u26ab ' + (tabsForLabel.left || '\u5de6') + '\uff08\u5de6\u5074\uff09'
-    : '\u26ab \u5de6\u5074';
+    ? '\u26ab ' + (tabsForLabel.left || '\u659c\u3081\u5de6') + '\uff08\u659c\u3081\u5de6\uff09'
+    : '\u26ab \u659c\u3081\u5de6';
   var rightLabel = w.dir
-    ? '\u26ab ' + (tabsForLabel.right || '\u53f3') + '\uff08\u53f3\u5074\uff09'
-    : '\u26ab \u53f3\u5074';
+    ? '\u26ab ' + (tabsForLabel.right || '\u659c\u3081\u53f3') + '\uff08\u659c\u3081\u53f3\uff09'
+    : '\u26ab \u659c\u3081\u53f3';
   var bldDistOptions = [
     [3, '\u63a5\u8fd1 \uff5e5m'],
     [7, '\u8fd1\u3044 5\uff5e10m'],
@@ -1788,7 +1788,7 @@ function renderPhotoCards(i, w) {
     + '</div>';  // dir-single-block center
 
   // ══════════════════════════════════════
-  // ブロック2: 左側（left）任意
+  // ブロック2: 斜め左（left）任意
   // ══════════════════════════════════════
   var sideTypeL = (w.sideObstType && w.sideObstType.left) || 'none';
   var showSideBldL  = sideTypeL === 'building' || sideTypeL === 'both';
@@ -1834,7 +1834,7 @@ function renderPhotoCards(i, w) {
     + '</div>';  // dir-single-block left
 
   // ══════════════════════════════════════
-  // ブロック3: 右側（right）任意
+  // ブロック3: 斜め右（right）任意
   // ══════════════════════════════════════
   var sideTypeR = (w.sideObstType && w.sideObstType.right) || 'none';
   var showSideBldR  = sideTypeR === 'building' || sideTypeR === 'both';
