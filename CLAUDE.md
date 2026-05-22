@@ -546,7 +546,7 @@ PHOTO_TAB_MAP = {
   - 窓複数・窓別カード：「{方角}の窓の年間判定」
   - `displayResults` / `openScreenshot` 両方に適用
 - ヒートマップ凡例を全4項目（100%・良好・薄日・わずか）`display:inline-block` カラースウォッチ `<span>` に統一（絵文字との混在を廃止し縦ズレ解消）
-- `renderPhotoCards` を3ブロック縦並び構造に刷新（center=正面★最重要 / left=左側 / right=右側）
+- `renderPhotoCards` を3ブロック縦並び構造に刷新（center=正面★最重要 / left=斜め左 / right=斜め右）
   - `.dir-block-wrap` / `.dir-single-block` / `.dir-single-head` CSS追加
   - 各ブロックに写真アップ＋遮蔽物UIをそれぞれ独立配置
 - 左右ブロックに「遮蔽物の種類」セレクト追加（なし/建物/樹木/建物＋樹木）
@@ -561,6 +561,8 @@ PHOTO_TAB_MAP = {
 - `showLightSim`：日照なし（val ≤ 0）セルをタップ時はシミュレーション非表示・「☁️ この時間帯は日照がありません」を表示
 - `initResultMap`：Leaflet地図を非表示にし Google マップリンクボタン（`.gmap-link-btn`・アンバーボーダースタイル）のみ表示
 - `parseLatLng` で緯度経度確定後、住所フィールドが空の場合 Nominatim 逆ジオコーディングで住所を自動入力
+- `renderPhotoCards` ブロックヘッダーを方位未選択/選択済みで動的切り替え（未選択:「🟠 正面」「⚫ 斜め左」「⚫ 斜め右」/ 選択後:「🟠 {方角名}（正面）」「⚫ {左方角名}（斜め左）」「⚫ {右方角名}（斜め右）」）
+- 「左側」「右側」表記をすべて「斜め左」「斜め右」に統一（tabs フォールバック・ヘッダーラベル）
 
 ---
 
